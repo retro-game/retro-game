@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{espionageReports}">Espionage Reports</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:replace="reports-tabs :: reports-tabs">
+  </table>
+  <table th:if="${#lists.isEmpty(reports)}">
+    <tr>
+      <td th:text="#{noReports}">No reports</td>
+    </tr>
+  </table>
+  <table th:unless="${#lists.isEmpty(reports)}">
+    <tr>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='AT',direction=${order == 'AT' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{at}">At</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='ENEMY_NAME',direction=${order == 'ENEMY_NAME' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{enemy}">Enemy</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='COORDINATES',direction=${order == 'COORDINATES' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{coords}">Coords</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='ACTIVITY',direction=${order == 'ACTIVITY' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{activity}">Activity</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='RESOURCES',direction=${order == 'RESOURCES' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{resources}">Resources</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='FLEET',direction=${order == 'FLEET' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{fleet}">Fleet</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/espionage(body=${bodyId},order='DEFENSE',direction=${order == 'DEFENSE' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{defense}">Defense</a>
+      </th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <th:block th:each="report : ${reports}">
+      <tr th:with="c=${report.coordinates}">
+        <td th:text="${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        <td>
+          <a th:href="@{/messages/send(body=${bodyId},recipient=${report.enemyId})}" th:title="#{sendMessage}"
+             th:text="${report.enemyName}"></a>
+        </td>
+        <td>
+          <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+             th:title="#{goToGalaxy}" th:text="${c}"></a>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="'<strong>' + ${report.activity == 0 ? '(0, 15 min)' : (report.activity < 60 ? '[' + report.activity + ' min, ' + (report.activity + 1) + ' min)' : '[60 min, ∞)')} + '</strong>'"
+                th:text="${report.activity == 0 ? '<15' : (report.activity < 60 ? report.activity : '>=60')}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="
+                  '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(report.resources.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(report.resources.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(report.resources.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+                th:text="${@formatterService.prefixedNumber(report.resources.metal + report.resources.crystal + report.resources.deuterium)}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="'<strong>' + ${report.fleet != null ? #numbers.formatInteger(report.fleet, 1, 'DEFAULT') : '?'} + '</strong>'"
+                th:text="${report.fleet != null ? @formatterService.prefixedNumber(report.fleet) : '?'}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="'<strong>' + ${report.defense != null ? #numbers.formatInteger(report.defense, 1, 'DEFAULT') : '?'} + '</strong>'"
+                th:text="${report.defense != null ? @formatterService.prefixedNumber(report.defense) : '?'}"></span>
+        </td>
+        <td class="report-actions">
+          <a class="btn"
+             th:href="@{/flights/send(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind},mission='ATTACK',units[SMALL_CARGO]=${report.neededSmallCargoes})}"
+             th:title="#{raidWithSmallCargoes}">SC</a>
+          <a class="btn"
+             th:href="@{/flights/send(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind},mission='ATTACK',units[LARGE_CARGO]=${report.neededLargeCargoes})}"
+             th:title="#{raidWithLargeCargoes}">LC</a>
+          <a class="btn" th:href="@{/espionage-report(id=${report.id},token=${report.token})}"
+             th:title="#{openFullReport}">F</a>
+          <button data-spy th:data-body="${bodyId}" th:data-galaxy="${c.galaxy}" th:data-system="${c.system}"
+                  th:data-position="${c.position}" th:data-kind="${c.kind}" th:title="#{spy}">
+            S
+          </button>
+          <button data-delete-report th:data-body="${bodyId}" data-kind="espionage" th:data-id="${report.id}"
+                  th:title="#{delete}">
+            D
+          </button>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <div th:replace="reports-pagination :: reports-pagination('espionage')"></div>
+  <input id="num-probes" type="hidden" th:value="${numProbes}">
+  <script th:src="@{/static/js/reports.js?{v}(v=${version})}"></script>
+  <script th:src="@{/static/js/reports-espionage.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

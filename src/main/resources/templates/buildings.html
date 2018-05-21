@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{buildings}">Buildings</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:unless="${#lists.isEmpty(pair.queue)}">
+    <tr>
+      <th>#</th>
+      <th th:text="#{building}">Building</th>
+      <th th:text="#{level}">Level</th>
+      <th th:text="#{finishAt}">Finish at</th>
+      <th th:text="#{requiredTime}">Required time</th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <tr th:each="entry,iter : ${pair.queue}">
+      <td th:text="${iter.index + 1}"></td>
+      <td>
+        <a th:href="@{/details/building(body=${bodyId},kind=${entry.kind})}"
+           th:text="#{${'items.' + entry.kind + '.name'}}"></a>
+      </td>
+      <td data-tooltip data-tooltip-html
+          th:data-tooltip-title="
+            '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.metal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(entry.cost.deuterium, 1, 'DEFAULT')} + '</strong></p>' +
+            (${entry.requiredEnergy == 0} ? '' : '<p>' + #{energy} + ': <strong>' + ${#numbers.formatInteger(entry.requiredEnergy, 1, 'DEFAULT')} + '</strong></p>')">
+        <span th:text="${entry.levelFrom}">1</span>
+        →
+        <span th:text="${entry.levelTo}">2</span>
+      </td>
+      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
+      <td class="queue-entry-actions">
+        <form th:action="@{/buildings/move-up}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{moveUp}" th:disabled="${!entry.upMovable}">↑</button>
+        </form>
+        <form th:action="@{/buildings/move-down}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{moveDown}" th:disabled="${!entry.downMovable}">↓</button>
+        </form>
+        <form th:action="@{/buildings/cancel}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{cancel}" th:disabled="${!entry.cancelable}">×</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th colspan="3" th:text="#{buildings}">Buildings</th>
+    </tr>
+    <tr th:each="building : ${pair.buildings}" class="item">
+      <td class="item-image">
+        <a th:href="@{/details/building(body=${bodyId},kind=${building.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${building.kind})}">
+        </a>
+      </td>
+      <td class="item-info">
+        <h2>
+          <a th:href="@{/details/building(body=${bodyId},kind=${building.kind})}"
+             th:text="#{${'items.' + building.kind + '.name'}}"></a>
+          <th:block th:if="${building.currentLevel > 0 || building.futureLevel > 0}">
+            (<span
+              th:text="${building.currentLevel + (building.currentLevel != building.futureLevel ? ' → ' + building.futureLevel : '')}">1</span>)
+          </th:block>
+        </h2>
+        <p th:text="#{${'items.' + building.kind + '.description'}}"></p>
+        <p th:if="${building.kind == T(com.github.retro_game.retro_game.service.dto.BuildingKindDto).JUMP_GATE && building.currentLevel > 0}">
+          <a th:href="@{/jump-gate(body=${bodyId})}">
+            <strong th:text="#{goToJumpGate}">Go to Jump Gate</strong>
+          </a>
+        </p>
+        <p th:with="cost=${building.cost}">
+          <span th:text="#{metal}">Metal</span>:
+          <strong th:text="${#numbers.formatInteger(cost.metal, 1, 'DEFAULT')}">200</strong>
+          <span th:text="#{crystal}">Crystal</span>:
+          <strong th:text="${#numbers.formatInteger(cost.crystal, 1, 'DEFAULT')}">50</strong>
+          <span th:text="#{deuterium}">Deuterium</span>:
+          <strong th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
+          <th:block th:if="${building.requiredEnergy > 0}">
+            <span th:text="#{energy}">Energy</span>:
+            <strong th:text="${#numbers.formatInteger(building.requiredEnergy, 1, 'DEFAULT')}">200</strong>
+          </th:block>
+        </p>
+        <p>
+          <span th:text="#{constructionTime}">Construction time</span>:
+          <strong th:text="${@formatterService.formatTime(building.constructionTime)}">01:02:03</strong>
+        </p>
+      </td>
+      <td class="item-actions">
+        <form th:if="${building.canConstructNow}" th:action="@{/buildings/construct}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="kind" type="hidden" th:value="${building.kind}">
+          <button th:text="#{construct}">Construct</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

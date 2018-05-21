@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{messages}">Messages</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${#lists.isEmpty(messages)}">
+    <tr>
+      <td th:text="#{noMessages}">No messages</td>
+    </tr>
+  </table>
+  <table class="message" th:each="message : ${messages}">
+    <tr>
+      <th th:text="#{messageFromAtFormat(${message.senderName != null ? message.senderName : '[deleted]'},${#dates.format(message.at, 'yyyy-MM-dd HH:mm:ss')})}">
+        Message from Gaius at 2006-06-06 03:00:00
+      </th>
+    </tr>
+    <tr>
+      <td>
+        <p th:each="paragraph : ${#strings.arraySplit(message.message, T(org.apache.commons.lang3.StringUtils).LF)}"
+           th:text="${paragraph}"></p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:if="${message.senderId != null}" class="btn"
+           th:href="@{/messages/send(body=${bodyId},recipient=${message.senderId})}" th:text="#{reply}">
+          Reply
+        </a>
+        <button data-delete-message th:data-body="${bodyId}" th:data-id="${message.id}" th:text="#{delete}">
+          Delete
+        </button>
+      </td>
+    </tr>
+  </table>
+  <div id="messages-pagination">
+    <table>
+      <tr>
+        <td>
+          <form th:action="@{/messages}">
+            <input name="body" type="hidden" th:value="${bodyId}">
+            <input name="page" type="hidden" th:value="${page - 1}">
+            <input name="size" type="hidden" th:value="${size}">
+            <button th:disabled="${page - 1 < 1}">←</button>
+          </form>
+        </td>
+        <td th:text="${page}"></td>
+        <td>
+          <form th:action="@{/messages}">
+            <input name="body" type="hidden" th:value="${bodyId}">
+            <input name="page" type="hidden" th:value="${page + 1}">
+            <input name="size" type="hidden" th:value="${size}">
+            <button th:disabled="${#lists.size(messages) < size}">→</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <script th:src="@{/static/js/messages.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{settings}">Settings</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/settings}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <table th:with="settings=${@userService.currentUserSettings}">
+      <tr>
+        <th colspan="2" th:text="#{settings}">Settings</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="language" th:text="#{language}">Language</label>
+        </td>
+        <td>
+          <select id="language" name="language">
+            <option th:each="l : ${languages}" th:value="${l}" th:selected="${l.equals(settings.language)}"
+                    th:text="#{${'language.' + l}}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="skin" th:text="#{skin}">Skin</label>
+        </td>
+        <td>
+          <select id="skin" name="skin">
+            <option th:each="s : ${skins}" th:value="${s}" th:selected="${s.equals(settings.skin)}"
+                    th:text="${s}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="numProbes" th:text="#{numProbes}">Num probes</label>
+        </td>
+        <td>
+          <input id="numProbes" name="numProbes" type="number" th:value="${settings.numProbes}" min="1" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="numberInputScrollingEnabled" th:text="#{numberInputScrolling}">Number input scrolling</label>
+        </td>
+        <td>
+          <input id="numberInputScrollingEnabled" name="numberInputScrollingEnabled" type="checkbox"
+                 th:checked="${settings.numberInputScrollingEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="showNewMessagesInOverviewEnabled" th:text="#{showNewMessagesInOverview}">Show new messages in
+            overview</label>
+        </td>
+        <td>
+          <input id="showNewMessagesInOverviewEnabled" name="showNewMessagesInOverviewEnabled" type="checkbox"
+                 th:checked="${settings.showNewMessagesInOverviewEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="showNewReportsInOverviewEnabled" th:text="#{showNewReportsInOverview}">Show new reports in
+            overview</label>
+        </td>
+        <td>
+          <input id="showNewReportsInOverviewEnabled" name="showNewReportsInOverviewEnabled" type="checkbox"
+                 th:checked="${settings.showNewReportsInOverviewEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{save}">Save</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

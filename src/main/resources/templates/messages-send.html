@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{sendMessage}">Send message</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/messages/send(body=${bodyId})}" method="post">
+    <input name="recipient" type="hidden" th:value="${recipientId}">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{sendMessage}">Send message</th>
+      </tr>
+      <tr>
+        <td th:text="#{recipient}">Recipient</td>
+        <td th:text="${recipientName}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{message}">Message</td>
+        <td>
+          <textarea name="message" rows="10" maxlength="4095" required></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{send}"></button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

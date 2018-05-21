@@ -1,0 +1,437 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.container nav {
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .container {
+    flex-direction: row;
+    height: 100vh;
+  }
+
+  .container > div {
+    flex: 1 1 100%;
+    order: 2;
+    overflow: auto;
+  }
+
+  .container > div > div {
+    margin-left: auto;
+    margin-right: auto;
+    width: 624px;
+  }
+}
+
+@media (min-width: 992px) {
+  .container > div > div {
+    width: 848px;
+  }
+}
+
+/**
+ * Based on Bootstrap, which is licensed MIT.
+ * https://getbootstrap.com/
+ */
+
+/**
+ * Document
+ *
+ * 1. Change from `box-sizing: content-box` so that `width` is not affected by `padding` or `border`.
+ * 2. Change the default font family in all browsers.
+ * 3. Correct the line height in all browsers.
+ * 4. Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.
+ * 5. Setting @viewport causes scrollbars to overlap content in IE11 and Edge, so
+ *    we force a non-overlapping, non-auto-hiding scrollbar to counteract.
+ * 6. Change the default tap highlight to be completely transparent in iOS.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* 1 */
+}
+
+html {
+  font-family: sans-serif; /* 2 */
+  line-height: 1.15; /* 3 */
+  font-size: 12px;
+  -webkit-text-size-adjust: 100%; /* 4 */
+  -ms-text-size-adjust: 100%; /* 4 */
+  -ms-overflow-style: scrollbar; /* 5 */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* 6 */
+}
+
+/**
+ * Body
+ *
+ * 1. Remove the margin in all browsers.
+ */
+
+body {
+  background-image: url(background.jpg);
+  color: #eee;
+  font-family: sans-serif;
+  margin: 0; /* 1 */
+}
+
+/**
+ * Forms
+ *
+ * 1. Remove the default `border-radius` that macOS Chrome adds.
+ */
+
+a.btn,
+button {
+  background-color: #344566;
+  border: 1px solid #415680;
+  border-radius: 0; /* 1 */
+  color: #eee;
+  display: inline-block;
+  padding: .25rem .5rem;
+  text-align: center;
+}
+
+a.btn.disabled,
+button:disabled {
+  color: #999;
+  cursor: auto;
+  text-decoration: none;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+a.btn:not(.disabled):hover,
+button:not(:disabled):hover {
+  border: 1px solid #234;
+  text-decoration: none;
+}
+
+input,
+select,
+textarea {
+  background-color: #344566;
+  border: 1px solid #415680;
+  border-radius: 0;
+  color: #eee;
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  padding: .25rem .5rem;
+}
+
+textarea {
+  width: 100%;
+}
+
+/**
+ * Images
+ *
+ * 1. Remove the border on images inside links in IE 10.
+ */
+
+img {
+  border-style: none; /* 1 */
+  vertical-align: top;
+}
+
+/**
+ * Links
+ *
+ * 1. Remove the gray background on active links in IE 10.
+ * 2. Remove gaps in links underline in iOS 8+ and Safari 8+.
+ */
+
+a {
+  background-color: transparent; /* 1 */
+  color: #eee;
+  text-decoration: none;
+  -webkit-text-decoration-skip: objects; /* 2 */
+}
+
+a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/**
+ * Lists
+ */
+
+ul {
+  list-style: none;
+}
+
+/**
+ * Tables
+ *
+ * 1. Prevent double borders.
+ */
+
+table {
+  border-collapse: collapse; /* 1 */
+  max-width: 100%;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px #415680 solid;
+  padding: .25rem;
+  vertical-align: middle;
+}
+
+th {
+  background: linear-gradient(#202840, #283850);
+  text-align: left;
+}
+
+td {
+  background-color: #344566;
+  font-weight: normal;
+  text-align: center;
+}
+
+td.highlight {
+  border: 2px #c00 solid;
+}
+
+/**
+ * Texts
+ */
+
+h2 {
+  font-size: 1.05rem;
+}
+
+strong {
+  font-weight: bolder;
+}
+
+#top-bar {
+  display: flex;
+  margin: 1rem 0 1rem 0;
+}
+
+#top-bar-bodies > div,
+#top-bar-bodies > img {
+  display: inline-block;
+}
+
+#top-bar-bodies img {
+  height: 55px;
+  width: 55px;
+}
+
+#top-bar-body-pointers form {
+  display: inline-block;
+  padding-top: .25rem;
+}
+
+#top-bar-resources {
+  display: flex;
+  flex-grow: 1;
+}
+
+#top-bar-resources > div {
+  flex-grow: 1;
+  text-align: center;
+}
+
+#top-bar-resources p {
+  margin: .25rem 0 0 0;
+}
+
+#sidebar {
+  padding: 1rem;
+}
+
+#sidebar h2 {
+  font-size: 10px;
+  margin: 0;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar li a {
+  background-color: #344566;
+  border-left: 1px #415680 solid;
+  border-right: 1px #415680 solid;
+  border-top: 1px #415680 solid;
+  display: block;
+  padding: .35rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+#sidebar li:last-child a {
+  border-bottom: 1px #415680 solid;
+}
+
+#sidebar li a:hover {
+  background-color: #3c4d6e;
+}
+
+.tooltip {
+  background-color: #344566;
+  border: 1px #234 solid;
+  padding: .25rem;
+}
+
+.tooltip p {
+  color: #eee;
+  margin: 0;
+  padding-bottom: .25rem;
+}
+
+.event mark {
+  background: transparent;
+  color: #eee;
+}
+
+.overview-body a,
+.overview-body span {
+  display: block;
+  padding-top: .1rem;
+}
+
+#overview-other-planets {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#overview-other-planets > div {
+  flex-basis: 33%;
+  padding-bottom: .5rem;
+}
+
+.item-image {
+  padding: 0;
+  vertical-align: top;
+}
+
+.item-image img {
+  height: 120px;
+  width: 120px;
+}
+
+.item-info {
+  padding: .25rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.item-info h2,
+.item-info p {
+  margin: 0 0 .5rem 0;
+}
+
+.item-actions {
+  padding: .25rem;
+}
+
+.item-actions button,
+.item-actions input {
+  margin: .125rem;
+}
+
+.queue-entry-actions form {
+  display: inline-block;
+}
+
+#galaxy-navigation {
+  display: flex;
+  justify-content: center;
+}
+
+#galaxy-navigation table {
+  margin: .5rem .25rem .5rem .25rem;
+  width: auto;
+}
+
+#galaxy-reload,
+#phalanx-reload {
+  text-align: center;
+}
+
+.message {
+  margin-top: .5rem;
+}
+
+#messages-pagination,
+#reports-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+#messages-pagination table,
+#reports-pagination table {
+  margin-top: .5rem;
+  width: auto;
+}
+
+.report-actions form,
+.report-actions button {
+  display: inline-block;
+}
+
+.combat-report-combatants {
+  margin-bottom: .5rem;
+}
+
+.date {
+  color: #5f5;
+}
+
+.no-capacity, .no-energy {
+  color: red;
+}
+
+.own-attack, .own-destroy {
+  color: #0ff;
+}
+
+.own-colonization, .own-harvest {
+  color: #8f0;
+}
+
+.own-deployment, .own-transport {
+  color: #0f0;
+}
+
+.own-espionage {
+  color: #0f8;
+}
+
+.own-hold {
+  color: #8f8;
+}
+
+.foreign-attack, .foreign-destroy {
+  color: #f00;
+}
+
+.foreign-colonization, .foreign-harvest {
+  color: #f88;
+}
+
+.foreign-deployment, .foreign-transport {
+  color: #ff0;
+}
+
+.foreign-espionage {
+  color: #f80;
+}
+
+.foreign-hold {
+  color: #ff8;
+}

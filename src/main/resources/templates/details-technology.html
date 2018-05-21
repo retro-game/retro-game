@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{technologyDetails}">Technology details</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th colspan="2" th:text="#{${'items.' + kind + '.name'}}"></th>
+    </tr>
+    <tr class="item">
+      <td class="item-image">
+        <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${kind})}">
+      </td>
+      <td class="item-info">
+        <p th:text="#{${'items.' + kind + '.description'}}"></p>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

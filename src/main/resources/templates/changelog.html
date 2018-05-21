@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{changelog}">Changelog</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th th:text="#{changelog}">Changelog</th>
+    </tr>
+    <tr>
+      <td>
+        <pre>
+* 0.23.0
+- add proper activities
+- add more options in settings
+- fix some race conditions
+
+* 0.22.0
+- improve Send Fleet page
+- fix flight duration of missile attacks
+- add graviton technology
+- add astrophysics
+
+* 0.21.0
+- add shield domes
+- add missiles
+- add missile attack
+- improve shipyard
+
+* 0.20.0
+- abandoning planets is possible now
+- add destroy mission
+- add info about diameter to espionage reports
+- add hold mission (aka ACS defend)
+- fleets in a party are recallable now
+- improve plunder algorithm
+- add two mixed skins
+
+* 0.19.0
+- add descriptions for buildings, technologies and units
+- add keyboard shortcuts to galaxy view and phalanx ([↓], [↑], [←], [→], [space])
+- add settings
+- add evolution skin
+- add polish translation
+- improve frontend
+
+* 0.18.1
+- fix deuterium consumption of fusion reactor
+
+* 0.18.0
+- improve overview
+
+* 0.17.0
+- add technology queue
+
+* 0.16.1
+- fix sending private messages
+
+* 0.16.0
+- add jump gate
+
+* 0.15.0
+- add proper espionage
+- improve messages
+- improve reports
+- change behaviour of phalanx
+
+* 0.14.0
+- add possibility to destroy buildings
+
+* 0.13.0
+- add images for bodies
+
+* 0.12.1
+- fix resources button in the send fleet page
+
+* 0.12.0
+- add details page
+- add rapid fire table page
+- improve shipyard/defense view
+- add bomber
+- remove battle cruiser
+- change cost of battleship
+
+* 0.11.0
+- add harvest reports
+- disable reports of returning espionage
+- forbid sending fleet to the same body as the start one
+- forbid sending attacks and espionage to own bodies
+
+* 0.10.2
+- fix ships speed
+- fix moon chance
+
+* 0.10.1
+- fix reports
+
+* 0.10.0
+- change costs, params, formulas etc.
+- add fusion reactor
+
+* 0.9.0
+- rename methane to deuterium
+- rename some buildings and technologies
+- add missing requirements
+
+* 0.8.0
+- forbid sending fleet to non-existing debris field
+- add deletion of old debris fields
+
+* 0.7.1
+- fix fleet return when there is no fight
+
+* 0.7.0
+- basic ACS
+
+* 0.6.0
+- add proper combat reports
+- add flights limit
+- add send-fleet link to flights page for better usability
+- increase resource limit when sending fleet
+
+* 0.5.1
+- fix death star rapid fire
+- fix fuel consumption
+
+* 0.5.0
+- change cost of mines
+
+* 0.4.1
+- fix intergalactic research network
+
+* 0.4.0
+- split fleet page into flights and send-fleet pages for better usability
+- add move down/up, cancel operations to building queue
+- improve buildings view
+- improve technologies view
+- add intergalactic research network functionality
+- add more technologies
+- add info page
+
+* 0.3.0
+- add requirements for buildings, technologies, ships and defense systems
+- add technology tree
+
+* 0.2.1
+- fix displaying flight messages when remaining time is 0
+- fix initial value of deuterium production factor for new planets
+
+* 0.2.0
+- add flight messages in overview
+
+* 0.1.0
+- initial version
+        </pre>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

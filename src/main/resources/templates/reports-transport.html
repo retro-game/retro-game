@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{transportReports}">Transport Reports</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:replace="reports-tabs :: reports-tabs">
+  </table>
+  <table th:if="${#lists.isEmpty(reports)}">
+    <tr>
+      <td th:text="#{noReports}">No reports</td>
+    </tr>
+  </table>
+  <table th:unless="${#lists.isEmpty(reports)}">
+    <tr>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='AT',direction=${order == 'AT' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{at}">At</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='KIND',direction=${order == 'KIND' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{kind}">Kind</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='PARTNER_NAME',direction=${order == 'PARTNER_NAME' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{partner}">Partner</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='START_COORDINATES',direction=${order == 'START_COORDINATES' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{start}">Start</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='TARGET_COORDINATES',direction=${order == 'TARGET_COORDINATES' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{target}">Target</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/transport(body=${bodyId},order='RESOURCES',direction=${order == 'RESOURCES' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{resources}">Resources</a>
+      </th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <th:block th:each="report : ${reports}">
+      <tr>
+        <td th:text="${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        <td th:text="#{${'transportKind.' + report.kind}}"></td>
+        <td>
+          <a th:href="@{/messages/send(body=${bodyId},recipient=${report.partnerId})}" th:title="#{sendMessage}"
+             th:text="${report.partnerName}"></a>
+        </td>
+        <td>
+          <a th:with="c=${report.startCoordinates}"
+             th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+             th:title="#{goToGalaxy}" th:text="${c}"></a>
+        </td>
+        <td>
+          <a th:with="c=${report.targetCoordinates}"
+             th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+             th:title="#{goToGalaxy}" th:text="${c}"></a>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="
+                  '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(report.resources.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(report.resources.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(report.resources.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+                th:text="${@formatterService.prefixedNumber(report.resources.metal + report.resources.crystal + report.resources.deuterium)}"></span>
+        </td>
+        <td class="report-actions">
+          <button data-delete-report th:data-body="${bodyId}" data-kind="transport" th:data-id="${report.id}"
+                  th:title="#{delete}">
+            D
+          </button>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <div th:replace="reports-pagination :: reports-pagination('transport')"></div>
+  <script th:src="@{/static/js/reports.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

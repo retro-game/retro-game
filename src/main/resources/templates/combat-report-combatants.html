@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Combat Report - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <div th:fragment="combatants(combatants, namePrefix)" class="combat-report-combatants">
+        <table th:each="combatant : ${combatants}">
+          <tr>
+            <th th:text="${namePrefix + ' ' + combatant.name}"></th>
+          </tr>
+          <tr>
+            <td>
+              <span data-tooltip th:data-tooltip-title="#{weapons}"
+                    th:text="#{combatTechFormat(${10 * combatant.weaponsTechnology})}">100%</span>
+              <span data-tooltip th:data-tooltip-title="#{shields}"
+                    th:text="#{combatTechFormat(${10 * combatant.shieldingTechnology})}">100%</span>
+              <span data-tooltip th:data-tooltip-title="#{armor}"
+                    th:text="#{combatTechFormat(${10 * combatant.armorTechnology})}">100%</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table th:with="kinds=${combatant.unitGroups.keySet()},groups=${combatant.unitGroups.values()}">
+                <tr>
+                  <td th:text="#{kind}">Kind</td>
+                  <td th:each="kind : ${kinds}" th:text="#{${'items.' + kind + '.name'}}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{total}">Total</td>
+                  <td th:each="group : ${groups}"
+                      th:text="${#numbers.formatInteger(group.numUnits, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{weapons}">Weapons</td>
+                  <td th:each="group : ${groups}" th:text="${#numbers.formatInteger(group.weapons, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{shields}">Shields</td>
+                  <td th:each="group : ${groups}" th:text="${#numbers.formatInteger(group.shields, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{armor}">Armor</td>
+                  <td th:each="group : ${groups}" th:text="${#numbers.formatInteger(group.armor, 1, 'DEFAULT')}"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

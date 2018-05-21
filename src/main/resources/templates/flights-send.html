@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{sendFleet}">Send Fleet</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form id="send-fleet" th:action="@{/flights/send}" method="post">
+    <input type="hidden" name="body" th:value="${bodyId}">
+    <table>
+      <tr>
+        <th colspan="2">
+          <span th:text="#{sendFleet}">Send Fleet</span>
+          (<span th:text="${occupiedSlots}"></span> / <span th:text="${maxSlots}"></span>)
+        </th>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{units}">Units</th>
+      </tr>
+      <tr th:each="entry : ${units}" th:with="kind=${entry.key},info=${entry.value}">
+        <td>
+          <label th:for="'unit_' + ${kind}">
+            <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                    '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(info.capacity, 1, 'DEFAULT')} + '</strong></p>' +
+                    '<p>' + #{consumption} + ': <strong>' + ${#numbers.formatInteger(info.consumption, 1, 'DEFAULT')} + '</strong></p>' +
+                    '<p>' + #{speed} + ': <strong>' + ${#numbers.formatInteger(info.speed, 1, 'DEFAULT')} + '</strong></p>' +
+                    '<p>' + #{weapons} + ': <strong>' + ${#numbers.formatDecimal(info.weapons, 1, 'DEFAULT', 2, 'DEFAULT')} + '</strong></p>' +
+                    '<p>' + #{shield} + ': <strong>' + ${#numbers.formatDecimal(info.shield, 1, 'DEFAULT', 2, 'DEFAULT')} + '</strong></p>' +
+                    '<p>' + #{armor} + ': <strong>' + ${#numbers.formatDecimal(info.armor, 1, 'DEFAULT', 2, 'DEFAULT')} + '</strong></p>'"
+                  th:text="#{${'items.' + kind + '.name'}}">Small Cargo</span>
+            (<span th:text="${#numbers.formatInteger(info.count, 1, 'DEFAULT')}"></span>)
+          </label>
+        </td>
+        <td th:with="name=${'units[' + kind + ']'}">
+          <input th:id="'unit_' + ${kind}" th:name="${name}"
+                 th:data-capacity="${info.capacity}" th:data-consumption="${info.consumption}"
+                 th:data-speed="${info.speed}"
+                 type="number" th:value="${#maps.containsKey(params, name) ? params.get(name) : ''}" min="0">
+          <button data-set th:data-set-for="'unit_' + ${kind}" th:data-set-value="${info.count}" th:text="#{max}">
+            Max
+          </button>
+          <button data-set th:data-set-for="'unit_' + ${kind}" data-set-value="" th:text="#{reset}">
+            Reset
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button id="all-units" th:text="#{allUnits}">All units</button>
+          <button id="no-units" th:text="#{noUnits}">No units</button>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{target}">Target</th>
+      </tr>
+      <tr>
+        <td th:text="#{mission}">Mission</td>
+        <td>
+          <input id="attack" name="mission" type="radio" value="ATTACK"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).ATTACK}" required>
+          <label for="attack" th:text="#{mission.ATTACK}">Attack</label>
+          <input id="colonization" name="mission" type="radio" value="COLONIZATION"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).COLONIZATION}"
+                 required>
+          <label for="colonization" th:text="#{mission.COLONIZATION}">Colonization</label>
+          <input id="deployment" name="mission" type="radio" value="DEPLOYMENT"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).DEPLOYMENT}"
+                 required>
+          <label for="deployment" th:text="#{mission.DEPLOYMENT}">Deployment</label>
+          <input id="destroy" name="mission" type="radio" value="DESTROY"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).DESTROY}" required>
+          <label for="destroy" th:text="#{mission.DESTROY}">Destroy</label>
+          <input id="espionage" name="mission" type="radio" value="ESPIONAGE"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).ESPIONAGE}"
+                 required>
+          <label for="espionage" th:text="#{mission.ESPIONAGE}">Espionage</label>
+          <input id="harvest" name="mission" type="radio" value="HARVEST"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).HARVEST}" required>
+          <label for="harvest" th:text="#{mission.HARVEST}">Harvest</label>
+          <input id="hold" name="mission" type="radio" value="HOLD"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).HOLD}" required>
+          <label for="hold" th:text="#{mission.HOLD}">Hold</label>
+          <input id="transport" name="mission" type="radio" value="TRANSPORT"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).TRANSPORT}"
+                 required>
+          <label for="transport" th:text="#{mission.TRANSPORT}">Transport</label>
+        </td>
+      </tr>
+      <tr id="hold-time" th:data-hold-time-message="#{holdTime}"></tr>
+      <tr>
+        <td th:text="#{coordinates}">Coordinates</td>
+        <td>
+          <input name="galaxy" type="number" th:value="${galaxy}" min="1" max="5" required>
+          <input name="system" type="number" th:value="${system}" min="1" max="500" required>
+          <input name="position" type="number" th:value="${position}" min="1" max="15" required>
+          <select name="kind">
+            <option value="PLANET"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET}"
+                    th:text="#{planet}">
+              Planet
+            </option>
+            <option value="MOON"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON}"
+                    th:text="#{moon}">
+              Moon
+            </option>
+            <option value="DEBRIS_FIELD"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).DEBRIS_FIELD}"
+                    th:text="#{debrisField}">
+              Debris field
+            </option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{yourBodies}">Your bodies</td>
+        <td>
+          <select id="own-bodies">
+            <option disabled></option>
+            <option th:each="body : ${bodies}" th:with="c=${body.coordinates}"
+                    th:data-galaxy="${c.galaxy}" th:data-system="${c.system}" th:data-position="${c.position}"
+                    th:data-kind="${c.kind}" th:text="${body.name} + ' [' + ${c} + ']'"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{speedFactor}">Speed factor</td>
+        <td>
+          <select name="factor">
+            <option value="10">100%</option>
+            <option value="9">90%</option>
+            <option value="8">80%</option>
+            <option value="7">70%</option>
+            <option value="6">60%</option>
+            <option value="5">50%</option>
+            <option value="4">40%</option>
+            <option value="3">30%</option>
+            <option value="2">20%</option>
+            <option value="1">10%</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{maxSpeed}">Max speed</td>
+        <td id="max-speed">-</td>
+      </tr>
+      <tr>
+        <td th:text="#{distance}">Distance</td>
+        <td id="distance">-</td>
+      </tr>
+      <tr>
+        <td th:text="#{duration}">Duration</td>
+        <td id="duration">-</td>
+      </tr>
+      <th:block th:unless="${#lists.isEmpty(parties)}">
+        <tr>
+          <th colspan="2" th:text="#{parties}">Parties</th>
+        </tr>
+        <tr th:each="party : ${parties}">
+          <td>
+            <a th:href="@{/party(body=${bodyId},party=${party.id})}" th:text="${'#' + party.id}">#1</a>
+          </td>
+          <td th:with="c=${party.targetCoordinates}">
+            <label th:for="'party_' + ${party.id}" th:text="${party.targetBodyName}"></label>
+            <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+               th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
+            <input th:id="'party_' + ${party.id}" name="party" th:data-galaxy="${c.galaxy}" th:data-system="${c.system}"
+                   th:data-position="${c.position}" th:data-kind="${c.kind}" type="radio" th:value="${party.id}"
+                   th:title="#{joinParty}">
+          </td>
+        </tr>
+      </th:block>
+      <tr>
+        <th colspan="2" th:text="#{resources}">Resources</th>
+      </tr>
+      <tr>
+        <td th:text="#{consumption}">Consumption</td>
+        <td id="consumption">-</td>
+      </tr>
+      <tr>
+        <td th:text="#{capacity}">Capacity</td>
+        <td id="capacity">0</td>
+      </tr>
+      <tr>
+        <td th:text="#{metal}">Metal</td>
+        <td>
+          <input id="metal" name="metal" type="number">
+          <button data-set-max-resource="metal" th:text="#{max}">Max</button>
+          <button data-set data-set-for="metal" data-set-value="" th:text="#{reset}">Reset</button>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{crystal}">Crystal</td>
+        <td>
+          <input id="crystal" name="crystal" type="number">
+          <button data-set-max-resource="crystal" th:text="#{max}">Max</button>
+          <button data-set data-set-for="crystal" data-set-value="" th:text="#{reset}">Reset</button>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{deuterium}">Deuterium</td>
+        <td>
+          <input id="deuterium" name="deuterium" type="number">
+          <button data-set-max-resource="deuterium" th:text="#{max}">Max</button>
+          <button data-set data-set-for="deuterium" data-set-value="" th:text="#{reset}">Reset</button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button id="all-resources" th:text="#{allResources}">All resources</button>
+          <button id="no-resources" th:text="#{noResources}">No resources</button>
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{sendFleet}">Send Fleet</th>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{send}">Send</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <script th:src="@{/static/js/send-fleet.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

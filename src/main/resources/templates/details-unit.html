@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{unitDetails}">Unit Details</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th colspan="2" th:text="#{${'items.' + kind + '.name'}}"></th>
+    </tr>
+    <tr class="item">
+      <td class="item-image">
+        <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${kind})}">
+      </td>
+      <td class="item-info">
+        <p th:text="#{${'items.' + kind + '.description'}}"></p>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2" th:text="#{characteristics}">Characteristics</th>
+    </tr>
+    <tr>
+      <td th:text="#{weapons}">Weapons</td>
+      <td>
+        <span data-tooltip
+              th:data-tooltip-title="${#numbers.formatDecimal(details.baseWeapons, 1, 'DEFAULT', 2, 'DEFAULT') + ' + ' + #numbers.formatDecimal(details.weapons - details.baseWeapons, 1, 'DEFAULT', 2, 'DEFAULT')}"
+              th:text="${#numbers.formatDecimal(details.weapons, 1, 'DEFAULT', 2, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{shield}">Shield</td>
+      <td>
+        <span data-tooltip
+              th:data-tooltip-title="${#numbers.formatDecimal(details.baseShield, 1, 'DEFAULT', 2, 'DEFAULT') + ' + ' + #numbers.formatDecimal(details.shield - details.baseShield, 1, 'DEFAULT', 2, 'DEFAULT')}"
+              th:text="${#numbers.formatDecimal(details.shield, 1, 'DEFAULT', 2, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{armor}">Armor</td>
+      <td>
+        <span data-tooltip
+              th:data-tooltip-title="${#numbers.formatDecimal(details.baseArmor, 1, 'DEFAULT', 2, 'DEFAULT') + ' + ' + #numbers.formatDecimal(details.armor - details.baseArmor, 1, 'DEFAULT', 2, 'DEFAULT')}"
+              th:text="${#numbers.formatDecimal(details.armor, 1, 'DEFAULT', 2, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr th:if="${details.capacity != 0}">
+      <td th:text="#{capacity}">Capacity</td>
+      <td>
+        <span th:text="${#numbers.formatInteger(details.capacity, 1, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr th:if="${details.consumption != 0}">
+      <td th:text="#{consumption}">Consumption</td>
+      <td>
+        <span th:text="${#numbers.formatInteger(details.consumption, 1, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr th:if="${details.speed != 0}">
+      <td th:text="#{speed}">Speed</td>
+      <td>
+        <span data-tooltip
+              th:data-tooltip-title="${#numbers.formatInteger(details.baseSpeed, 1, 'DEFAULT') + ' + ' + #numbers.formatInteger(details.speed - details.baseSpeed, 1, 'DEFAULT')}"
+              th:text="${#numbers.formatInteger(details.speed, 1, 'DEFAULT')}"></span>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2" th:text="#{rapidFireAgainst}">Rapid fire against</th>
+    </tr>
+    <tr th:each="entry : ${details.rapidFireAgainst}">
+      <td>
+        <a th:href="@{/details/unit(body=${bodyId},kind=${entry.key})}"
+           th:text="#{${'items.' + entry.key + '.name'}}"></a>
+      </td>
+      <td th:text="${#numbers.formatInteger(entry.value, 1, 'DEFAULT')}"></td>
+    </tr>
+    <tr th:if="${#maps.isEmpty(details.rapidFireAgainst)}">
+      <td colspan="2" th:text="#{none}">None</td>
+    </tr>
+    <tr>
+      <th colspan="2" th:text="#{rapidFireFrom}">Rapid fire from</th>
+    </tr>
+    <tr th:each="entry : ${details.rapidFireFrom}">
+      <td>
+        <a th:href="@{/details/unit(body=${bodyId},kind=${entry.key})}"
+           th:text="#{${'items.' + entry.key + '.name'}}"></a>
+      </td>
+      <td th:text="${#numbers.formatInteger(entry.value, 1, 'DEFAULT')}"></td>
+    </tr>
+    <tr th:if="${#maps.isEmpty(details.rapidFireFrom)}">
+      <td colspan="2" th:text="#{none}">None</td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

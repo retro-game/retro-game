@@ -1,0 +1,9 @@
+# Battle engine build
+build/
+
+# Maven
+target/
+
+# IntelliJ
+*.iml
+.idea/

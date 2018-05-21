@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:with="version='@project.version@',skin=${@userService.currentUserSettings.skin}">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{createHomeworld} + ' - Retro Game'">Create homeworld - Retro Game</title>
+  <link th:href="@{/static/skins/{skin}/style.css?{v}(skin=${skin},v=${version})}" rel="stylesheet">
+  <script th:src="@{/static/js/jquery-3.3.1.min.js}"></script>
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table>
+        <tr>
+          <th th:text="#{welcome}">Welcome</th>
+        </tr>
+        <tr>
+          <td th:text="#{chooseYourHomeworldCoordinatesAndClickCreateHomeworld}">
+            Choose your homeworld coordinates and click 'Create homeworld'!
+          </td>
+        </tr>
+      </table>
+      <div th:replace="galaxy-navigation :: galaxy-navigation"></div>
+      <table>
+        <tr>
+          <th width="30" th:text="#{slot}">Slot</th>
+          <th width="30" th:text="#{planet}">Planet</th>
+          <th width="130" th:text="#{planetName}">Planet name</th>
+          <th width="30" th:text="#{moon}">Moon</th>
+          <th width="200" th:text="#{debris}">Debris</th>
+          <th width="150" th:text="#{userName}">User name</th>
+        </tr>
+        <tr th:each="i : ${#numbers.sequence(1, 15)}" th:with="slot=${slots.get(i)}">
+          <td th:text="${i}"></td>
+          <th:block th:if="${slot}">
+            <td>
+              <img
+                  th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
+                  width="30" height="30">
+            </td>
+            <td th:text="${slot.planetName}"></td>
+            <td th:if="${slot.moonName}">
+              <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})}"
+                   width="25" height="25">
+            </td>
+            <td th:unless="${slot.moonName}"></td>
+            <td>
+              <div th:if="${slot.debrisMetal >= 0 || slot.debrisCrystal >= 0}">
+                <span th:text="${#numbers.formatInteger(slot.debrisMetal, 1, 'DEFAULT')}"></span>
+                <br>
+                <span th:text="${#numbers.formatInteger(slot.debrisCrystal, 1, 'DEFAULT')}"></span>
+              </div>
+            </td>
+            <td th:text="${slot.userName}"></td>
+          </th:block>
+          <th:block th:unless="${slot}">
+            <td></td>
+            <td>
+              <form th:if="${i >= 4 && i <= 12}" th:action="@{/create-homeworld}" method="post">
+                <input type="hidden" name="galaxy" th:value="${galaxy}">
+                <input type="hidden" name="system" th:value="${system}">
+                <input type="hidden" name="position" th:value="${i}">
+                <button th:text="#{createHomeworld}">Create homeworld</button>
+              </form>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </th:block>
+        </tr>
+      </table>
+      <script th:src="@{/static/js/galaxy.js?{v}(v=${version})}"></script>
+    </div>
+  </div>
+</div>
+</body>
+</html>

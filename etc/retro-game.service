@@ -1,0 +1,13 @@
+[Unit]
+Description=Retro Game Service
+After=postgresql.service redis.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/retro-game
+ExecStart=/usr/bin/java -Djava.library.path=/home/retro-game -jar /home/retro-game/retro-game.jar
+User=retro-game
+Group=retro-game
+
+[Install]
+WantedBy=multi-user.target

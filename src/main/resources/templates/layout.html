@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html th:with="version='@project.version@',
+        settings=${@userService.currentUserSettings},
+        skin=${settings.skin},
+        locale=${@userService.currentUserLocaleIfAuthenticated.orElse(T(java.util.Locale).default)}"
+      th:lang="${locale.language}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Retro Game</title>
+  <link th:href="@{/static/skins/{skin}/style.css?{v}(skin=${skin},v=${version})}" rel="stylesheet">
+  <script th:src="@{/static/js/jquery-3.3.1.min.js}"></script>
+  <script th:src="@{/static/js/popper-1.14.3.min.js}"></script>
+  <script th:src="@{/static/js/tooltip-1.2.0.min.js}"></script>
+  <script th:src="@{/static/js/retrogame.js?{v}(v=${version})}"></script>
+</head>
+<body th:data-number-input-scrolling="${settings.numberInputScrollingEnabled}">
+<div class="container">
+  <div>
+    <div>
+      <table th:replace="top-bar :: top-bar"></table>
+      <div layout:fragment="content"></div>
+    </div>
+  </div>
+  <nav th:replace="menu :: menu"></nav>
+</div>
+</body>
+</html>

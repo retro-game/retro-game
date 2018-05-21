@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{phalanx}">Phalanx</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th id="phalanx-reload">
+        <form>
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="galaxy" type="hidden" th:value="${galaxy}">
+          <input name="system" type="hidden" th:value="${system}">
+          <input name="position" type="hidden" th:value="${position}">
+          <button th:title="#{keyboardShortcutSpace}" th:text="#{reload}">Reload</button>
+        </form>
+      </th>
+      <th>
+        <span th:text="#{time}">Time</span>:
+        <span th:text="${#dates.format(time, 'yyyy-MM-dd HH:mm:ss')}">2006-06-06 03:00:00</span>
+      </th>
+    </tr>
+    <tr th:if="${#lists.isEmpty(events)}">
+      <td colspan="2" th:text="#{noEvents}"></td>
+    </tr>
+    <tr th:each="event : ${events}">
+      <td th:data-timer="${event.at.time / 1000}" th:text="${#dates.format(event.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:class="${'event ' + (event.own ? 'own-' : 'foreign-') + #strings.toLowerCase(event.mission)}"
+          th:with="
+            sc=${event.startCoordinates},
+            tc=${event.targetCoordinates},
+            startLink=@{/galaxy(body=${bodyId},galaxy=${sc.galaxy},system=${sc.system},position=${sc.position},kind=${sc.kind})},
+            targetLink=@{/galaxy(body=${bodyId},galaxy=${tc.galaxy},system=${tc.system},position=${tc.position},kind=${tc.kind})},
+            start=${event.startBodyName} + ' <a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${sc} + ']</a>',
+            target=${event.targetBodyName != null ? event.targetBodyName + ' ' : ''} + '<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
+            mission=#{${'mission.' + event.mission}},
+            units='<mark>' + ${@formatterService.formatUnits(event.units)} + '</mark>',
+            sendMessageLink=@{/messages/send(body=${bodyId},recipient=${event.startUserId})},
+            user='<a href=\'' + ${#strings.escapeXml(sendMessageLink)} + '\' title=\'' + #{sendMessage} + '\'>' + ${event.startUserName} + '</a>',
+            partyLink=@{/party(body=${bodyId},party=${event.partyId})},
+            party='<a href=\'' + ${#strings.escapeXml(partyLink)} + '\'>#' + ${event.partyId} + '</a>',
+            kind=${event.kind}">
+        <div th:if="${event.own}"
+             th:utext="${#messages.msg('eventOwnFormat.' + kind, start, target, units)}"
+             th:remove="tag"></div>
+        <div th:unless="${event.own}"
+             th:utext="${#messages.msgWithParams('eventForeignFormat.' + kind, { start, target, units, user })}"
+             th:remove="tag"></div>
+        <div th:utext="#{eventMissionFormat(${mission})}" th:remove="tag"></div>
+        <div th:if="${event.partyId}" th:utext="#{eventPartyFormat(${party})}" th:remove="tag"></div>
+      </td>
+    </tr>
+  </table>
+  <script th:src="@{/static/js/phalanx.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

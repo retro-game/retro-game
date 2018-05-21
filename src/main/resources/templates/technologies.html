@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{technologies}">Technologies</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:unless="${#lists.isEmpty(pair.queue)}">
+    <tr>
+      <th>#</th>
+      <th th:text="#{technology}">Technology</th>
+      <th th:text="#{level}">Level</th>
+      <th th:text="#{planet}">Planet</th>
+      <th th:text="#{finishAt}">Finish at</th>
+      <th th:text="#{requiredTime}">Required time</th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <tr th:each="entry,iter : ${pair.queue}">
+      <td th:text="${iter.index + 1}"></td>
+      <td>
+        <a th:href="@{/details/technology(body=${bodyId},kind=${entry.kind})}"
+           th:text="#{${'items.' + entry.kind + '.name'}}"></a>
+      </td>
+      <td data-tooltip data-tooltip-html
+          th:data-tooltip-title="
+            '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.metal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(entry.cost.deuterium, 1, 'DEFAULT')} + '</strong></p>' +
+            (${entry.requiredEnergy == 0} ? '' : '<p>' + #{energy} + ': <strong>' + ${#numbers.formatInteger(entry.requiredEnergy, 1, 'DEFAULT')} + '</strong></p>')"
+          th:text="${entry.level}">
+      </td>
+      <td>
+        <a th:href="@{/technologies(body=${entry.bodyId})}" th:title="#{goToThisPlanet}"
+           th:text="${entry.bodyName}"></a>
+        <a th:with="c=${entry.bodyCoordinates}"
+           th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+           th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
+      </td>
+      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td data-tooltip data-tooltip-html
+          th:data-tooltip-title="'<p>' + #{effectiveLabLevel} + ': <strong>' + ${entry.effectiveLabLevel} + '</strong></p>'"
+          th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
+      <td class="queue-entry-actions">
+        <form th:action="@{/technologies/move-up}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{moveUp}" th:disabled="${!entry.upMovable}">↑</button>
+        </form>
+        <form th:action="@{/technologies/move-down}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{moveDown}" th:disabled="${!entry.downMovable}">↓</button>
+        </form>
+        <form th:action="@{/technologies/cancel}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="sequence-number" type="hidden" th:value="${entry.sequence}">
+          <button th:title="#{cancel}" th:disabled="${!entry.cancelable}">×</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th colspan="3" th:text="#{technologies}">Technologies</th>
+    </tr>
+    <tr th:each="technology : ${pair.technologies}" class="item">
+      <td class="item-image">
+        <a th:href="@{/details/technology(body=${bodyId},kind=${technology.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${technology.kind})}">
+        </a>
+      </td>
+      <td class="item-info">
+        <h2>
+          <a th:href="@{/details/technology(body=${bodyId},kind=${technology.kind})}"
+             th:text="#{${'items.' + technology.kind + '.name'}}"></a>
+          <th:block th:if="${technology.currentLevel > 0 || technology.futureLevel > 0}">
+            (<span
+              th:text="${technology.currentLevel + (technology.currentLevel != technology.futureLevel ? ' → ' + technology.futureLevel : '')}">1</span>)
+          </th:block>
+        </h2>
+        <p th:text="#{${'items.' + technology.kind + '.description'}}"></p>
+        <p th:with="cost=${technology.cost}">
+          <span th:text="#{metal}">Metal</span>:
+          <strong th:text="${#numbers.formatInteger(cost.metal, 1, 'DEFAULT')}">200</strong>
+          <span th:text="#{crystal}">Crystal</span>:
+          <strong th:text="${#numbers.formatInteger(cost.crystal, 1, 'DEFAULT')}">50</strong>
+          <span th:text="#{deuterium}">Deuterium</span>:
+          <strong th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
+          <th:block th:if="${technology.requiredEnergy > 0}">
+            <span th:text="#{energy}">Energy</span>:
+            <strong th:text="${#numbers.formatInteger(technology.requiredEnergy, 1, 'DEFAULT')}">200</strong>
+          </th:block>
+        </p>
+        <p>
+          <span th:text="#{researchTime}">Research time</span>:
+          <strong th:text="${@formatterService.formatTime(technology.researchTime)}">01:02:03</strong>
+          <span th:text="#{effectiveLabLevel}">Effective lab level</span>:
+          <strong th:text="${technology.effectiveLabLevel}">100</strong>
+        </p>
+      </td>
+      <td class="item-actions">
+        <form th:if="${technology.canResearchNow}" th:action="@{/technologies/research}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="kind" type="hidden" th:value="${technology.kind}">
+          <button th:text="#{research}">Research</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(pair.technologies)}">
+      <td th:text="#{youHaveToConstructResearchLabFirst}">You have to construct a Research Lab first!</td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

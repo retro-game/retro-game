@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Top bar</title>
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <div th:fragment="top-bar" id="top-bar">
+        <div id="top-bar-bodies">
+          <img th:with="pair=${@bodyService.getBodyTypeAndImagePair(bodyId)}"
+               th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${pair.type},image=${pair.image})}">
+          <div th:with="bodiesBasicInfo=${@bodyService.getBodiesBasicInfo(bodyId)}">
+            <form id="top-bar-body-list">
+              <select name="body">
+                <option th:each="info : ${bodiesBasicInfo}" th:with="c=${info.coordinates}" th:data-galaxy="${c.galaxy}"
+                        th:data-system="${c.system}" th:data-position="${c.position}" th:data-kind="${c.kind}"
+                        th:value="${info.id}" th:text="|${info.name} [${c}]|"
+                        th:selected="${info.id} == ${bodyId}"></option>
+              </select>
+              <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+                     th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
+            </form>
+            <div id="top-bar-body-pointers" th:with="pointers=${@bodyService.getBodiesPointers(bodyId)}">
+              <form th:with="info=${pointers.previous}">
+                <input name="body" type="hidden" th:value="${info?.id}">
+                <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+                       th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
+                <button th:title="${info == null ? '' : info.name + ' [' + info.coordinates + ']'}"
+                        th:disabled="${info == null}">
+                  ←
+                </button>
+              </form>
+              <form th:with="info=${pointers.next}">
+                <input name="body" type="hidden" th:value="${info?.id}">
+                <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+                       th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
+                <button th:title="${info == null ? '' : info.name + ' [' + info.coordinates + ']'}"
+                        th:disabled="${info == null}">
+                  →
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div id="top-bar-resources"
+             th:with="r=${@bodyService.getResources(bodyId)},p=${@bodyService.getProduction(bodyId)},c=${@bodyService.getCapacity(bodyId)}"
+             th:data-resources-metal="${r.metal}" th:data-resources-crystal="${r.crystal}"
+             th:data-resources-deuterium="${r.deuterium}">
+          <div data-tooltip data-tooltip-html
+               th:data-tooltip-title="
+                 '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.metalProduction, 1, 'DEFAULT')} + '</strong></p>' +
+                 '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.metal, 1, 'DEFAULT')} + '</strong></p>'">
+            <img th:src="@{/static/skins/{skin}/resources/METAL.gif(skin=${skin})}">
+            <p th:text="#{metal}">Metal</p>
+            <p th:class="${r.metal >= c.metal ? 'no-capacity' : ''}"
+               th:text="${#numbers.formatDecimal(r.metal, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+          </div>
+          <div data-tooltip data-tooltip-html
+               th:data-tooltip-title="
+                 '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.crystalProduction, 1, 'DEFAULT')} + '</strong></p>' +
+                 '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.crystal, 1, 'DEFAULT')} + '</strong></p>'">
+            <img th:src="@{/static/skins/{skin}/resources/CRYSTAL.gif(skin=${skin})}">
+            <p th:text="#{crystal}">Crystal</p>
+            <p th:class="${r.crystal >= c.crystal ? 'no-capacity' : ''}"
+               th:text="${#numbers.formatDecimal(r.crystal, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+          </div>
+          <div data-tooltip data-tooltip-html
+               th:data-tooltip-title="
+                 '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.deuteriumProduction, 1, 'DEFAULT')} + '</strong></p>' +
+                 '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.deuterium, 1, 'DEFAULT')} + '</strong></p>'">
+            <img th:src="@{/static/skins/{skin}/resources/DEUTERIUM.gif(skin=${skin})}">
+            <p th:text="#{deuterium}">Deuterium</p>
+            <p th:class="${r.deuterium >= c.deuterium ? 'no-capacity' : ''}"
+               th:text="${#numbers.formatDecimal(r.deuterium, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+          </div>
+          <div data-tooltip data-tooltip-html
+               th:data-tooltip-title="'<p>' + #{requiredEnergy} + ': <strong>' + ${#numbers.formatInteger(p.usedEnergy, 1, 'DEFAULT')} + '</strong></p>'">
+            <img th:src="@{/static/skins/{skin}/resources/ENERGY.gif(skin=${skin})}">
+            <p th:text="#{energy}">Energy</p>
+            <p th:class="${p.availableEnergy < 0 ? 'no-energy' : ''}">
+              <span th:text="${#numbers.formatInteger(p.availableEnergy, 1, 'DEFAULT')}"></span>
+              /
+              <span th:text="${#numbers.formatInteger(p.totalEnergy, 1, 'DEFAULT')}"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
