@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -123,7 +123,7 @@ class EventScheduler implements Runnable {
             return;
         }
         numRetries = 0;
-      } catch (TransactionException e) {
+      } catch (DataAccessException e) {
         logger.warn("Transaction failed: msg={}", e.getMessage());
         numRetries++;
       }
