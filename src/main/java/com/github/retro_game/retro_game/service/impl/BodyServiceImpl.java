@@ -318,6 +318,12 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
+  public int getTemperature(long bodyId) {
+    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesntExistException::new);
+    return body.getTemperature();
+  }
+
+  @Override
   public BodyBasicInfoDto getBodyBasicInfo(long bodyId) {
     List<BodyBasicInfoDto> bodies = getBodiesBasicInfo(bodyId);
     return bodies.stream().filter(b -> b.getId() == bodyId).findAny().orElseThrow(BodyDoesntExistException::new);

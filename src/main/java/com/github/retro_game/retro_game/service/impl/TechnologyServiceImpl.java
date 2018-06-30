@@ -70,6 +70,14 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public int getLevel(long bodyId, TechnologyKindDto kind) {
+    long userId = CustomUser.getCurrentUserId();
+    User user = userRepository.getOne(userId);
+    return user.getTechnologyLevel(Converter.convert(kind));
+  }
+
+  @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public TechnologiesAndQueuePairDto getTechnologiesAndQueuePair(long bodyId) {
     Body body = bodyServiceInternal.getUpdated(bodyId);

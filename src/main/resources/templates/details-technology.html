@@ -6,9 +6,15 @@
 </head>
 <body>
 <div layout:fragment="content">
-  <table>
+  <table id="details">
     <tr>
-      <th colspan="2" th:text="#{${'items.' + kind + '.name'}}"></th>
+      <th colspan="2">
+        <span th:text="#{${'items.' + kind + '.name'}}"></span>
+        <th:block th:if="${details.currentLevel > 0 || details.futureLevel > 0}">
+          (<span
+            th:text="${details.currentLevel + (details.currentLevel != details.futureLevel ? ' → ' + details.futureLevel : '')}">1</span>)
+        </th:block>
+      </th>
     </tr>
     <tr class="item">
       <td class="item-image">
@@ -19,6 +25,15 @@
       </td>
     </tr>
   </table>
+  <input id="details-table" type="hidden"
+         th:data-kind="${kind}"
+         th:data-level="${details.currentLevel}"
+         th:data-msg-level-from="#{levelFrom}"
+         th:data-msg-level-to="#{levelTo}"
+         th:data-msg-level="#{level}"
+         th:data-msg-max-planets="#{maxPlanets}"
+         th:data-msg-table="#{table}">
+  <script th:src="@{/static/js/details.js?{v}(v=${version})}"></script>
 </div>
 </body>
 </html>

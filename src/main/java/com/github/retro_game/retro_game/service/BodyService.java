@@ -11,6 +11,10 @@ public interface BodyService {
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  int getTemperature(long bodyId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   BodyBasicInfoDto getBodyBasicInfo(long bodyId);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")

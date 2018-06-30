@@ -91,6 +91,21 @@ class DetailsServiceImpl implements DetailsService {
   }
 
   @Override
+  public TechnologyDetailsDto getTechnologyDetails(long bodyId, TechnologyKindDto kind) {
+    long userId = CustomUser.getCurrentUserId();
+    User user = userRepository.getOne(userId);
+
+    TechnologyKind k = Converter.convert(kind);
+
+    int currentLevel = user.getTechnologyLevel(k);
+    int futureLevel = currentLevel + (int) user.getTechnologyQueue().values().stream()
+        .filter(e -> e.getKind() == k)
+        .count();
+
+    return new TechnologyDetailsDto(currentLevel, futureLevel);
+  }
+
+  @Override
   public UnitDetailsDto getUnitDetails(long bodyId, UnitKindDto kind) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);

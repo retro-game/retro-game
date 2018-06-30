@@ -6,7 +6,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-  <table>
+  <table id="details">
     <tr>
       <th colspan="2">
         <span th:text="#{${'items.' + kind + '.name'}}"></span>
@@ -63,6 +63,28 @@
       <td colspan="2" th:text="#{thisBuildingCannotBeDestroyed}">This building cannot be destroyed</td>
     </tr>
   </table>
+  <input id="details-table" type="hidden"
+         th:data-kind="${kind}"
+         th:data-level="${details.currentLevel}"
+         th:data-temperature="${temperature}"
+         th:data-energy-technology-level="${energyTechnologyLevel}"
+         th:data-msg-additional-fields-diff="#{additionalFieldsDiff}"
+         th:data-msg-additional-fields="#{additionalFields}"
+         th:data-msg-capacity-diff="#{capacityDiff}"
+         th:data-msg-capacity="#{capacity}"
+         th:data-msg-deuterium-diff="#{deuteriumDiff}"
+         th:data-msg-deuterium="#{deuterium}"
+         th:data-msg-energy-diff="#{energyDiff}"
+         th:data-msg-energy="#{energy}"
+         th:data-msg-level-from="#{levelFrom}"
+         th:data-msg-level-to="#{levelTo}"
+         th:data-msg-level="#{level}"
+         th:data-msg-production-diff="#{productionDiff}"
+         th:data-msg-production="#{production}"
+         th:data-msg-range-diff="#{rangeDiff}"
+         th:data-msg-range="#{range}"
+         th:data-msg-table="#{table}">
+  <script th:src="@{/static/js/details.js?{v}(v=${version})}"></script>
 </div>
 </body>
 </html>

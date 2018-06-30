@@ -7,6 +7,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface TechnologyService {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  int getLevel(long bodyId, TechnologyKindDto kind);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   TechnologiesAndQueuePairDto getTechnologiesAndQueuePair(long bodyId);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")

@@ -14,7 +14,19 @@
   <script th:src="@{/static/js/tooltip-1.2.0.min.js}"></script>
   <script th:src="@{/static/js/retrogame.js?{v}(v=${version})}"></script>
 </head>
-<body th:data-number-input-scrolling="${settings.numberInputScrollingEnabled}">
+<body th:data-production-speed="${@environment.getProperty('retro-game.production-speed')}"
+      th:data-metal-mine-base-production="${@environment.getProperty('retro-game.metal-mine-base-production')}"
+      th:data-crystal-mine-base-production="${@environment.getProperty('retro-game.crystal-mine-base-production')}"
+      th:data-deuterium-synthesizer-base-production="${@environment.getProperty('retro-game.deuterium-synthesizer-base-production')}"
+      th:data-metal-mine-base-energy-usage="${@environment.getProperty('retro-game.metal-mine-base-energy-usage')}"
+      th:data-crystal-mine-base-energy-usage="${@environment.getProperty('retro-game.crystal-mine-base-energy-usage')}"
+      th:data-deuterium-synthesizer-base-energy-usage="${@environment.getProperty('retro-game.deuterium-synthesizer-base-energy-usage')}"
+      th:data-solar-plant-base-energy-production="${@environment.getProperty('retro-game.solar-plant-base-energy-production')}"
+      th:data-fusion-reactor-base-energy-production="${@environment.getProperty('retro-game.fusion-reactor-base-energy-production')}"
+      th:data-fusion-reactor-base-deuterium-usage="${@environment.getProperty('retro-game.fusion-reactor-base-deuterium-usage')}"
+      th:data-fields-per-terraformer-level="${@environment.getProperty('retro-game.fields-per-terraformer-level')}"
+      th:data-fields-per-lunar-base-level="${@environment.getProperty('retro-game.fields-per-lunar-base-level')}"
+      th:data-number-input-scrolling="${settings.numberInputScrollingEnabled}">
 <div class="container">
   <div>
     <div>

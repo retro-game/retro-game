@@ -1,6 +1,8 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.DetailsService;
+import com.github.retro_game.retro_game.service.TechnologyService;
 import com.github.retro_game.retro_game.service.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.service.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.service.dto.UnitKindDto;
@@ -11,10 +13,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class DetailsController {
+  private final BodyService bodyService;
   private final DetailsService detailsService;
+  private final TechnologyService technologyService;
 
-  public DetailsController(DetailsService detailsService) {
+  public DetailsController(BodyService bodyService, DetailsService detailsService,
+                           TechnologyService technologyService) {
+    this.bodyService = bodyService;
     this.detailsService = detailsService;
+    this.technologyService = technologyService;
   }
 
   @GetMapping("/details/building")
@@ -23,6 +30,9 @@ public class DetailsController {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);
     model.addAttribute("details", detailsService.getBuildingDetails(bodyId, kind));
+    model.addAttribute("temperature", bodyService.getTemperature(bodyId));
+    model.addAttribute("energyTechnologyLevel", technologyService.getLevel(bodyId,
+        TechnologyKindDto.ENERGY_TECHNOLOGY));
     return "details-building";
   }
 
@@ -31,6 +41,7 @@ public class DetailsController {
                                   Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);
+    model.addAttribute("details", detailsService.getTechnologyDetails(bodyId, kind));
     return "details-technology";
   }
 
