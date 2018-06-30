@@ -48,7 +48,7 @@
         <div th:unless="${event.own}"
              th:utext="${#messages.msgWithParams('eventForeignFormat.' + kind, { start, target, units, user })}"
              th:remove="tag"></div>
-        <div th:utext="#{eventMissionFormat(${mission})}" th:remove="tag"></div>
+        <div th:utext="${#messages.msg('eventMissionFormat.' + kind, mission)}" th:remove="tag"></div>
         <div th:if="${event.partyId}" th:utext="#{eventPartyFormat(${party})}" th:remove="tag"></div>
       </td>
     </tr>

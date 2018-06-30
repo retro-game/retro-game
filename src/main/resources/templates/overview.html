@@ -67,10 +67,12 @@
         <div th:unless="${event.own}"
              th:utext="${#messages.msgWithParams('eventForeignFormat.' + kind, { start, target, units, user })}"
              th:remove="tag"></div>
-        <div th:if="${withResources}" th:utext="#{eventMissionWithResourcesFormat(${mission}, ${resources})}"
+        <div th:if="${withResources}"
+             th:utext="${#messages.msg('eventMissionWithResourcesFormat.' + kind, mission, resources)}" th:remove="tag">
+        </div>
+        <div th:unless="${withResources}" th:utext="${#messages.msg('eventMissionFormat.' + kind, mission)}"
              th:remove="tag">
         </div>
-        <div th:unless="${withResources}" th:utext="#{eventMissionFormat(${mission})}" th:remove="tag"></div>
         <div th:if="${event.partyId}" th:utext="#{eventPartyFormat(${party})}" th:remove="tag"></div>
       </td>
     </tr>
