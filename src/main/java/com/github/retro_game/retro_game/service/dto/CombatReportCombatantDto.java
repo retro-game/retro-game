@@ -4,14 +4,17 @@ import java.util.Map;
 
 public class CombatReportCombatantDto {
   private final String name;
+  private final CoordinatesDto coordinates;
   private final int weaponsTechnology;
   private final int shieldingTechnology;
   private final int armorTechnology;
   private final Map<UnitKindDto, CombatReportUnitGroupDto> unitGroups;
 
-  public CombatReportCombatantDto(String name, int weaponsTechnology, int shieldingTechnology, int armorTechnology,
+  public CombatReportCombatantDto(String name, CoordinatesDto coordinates, int weaponsTechnology,
+                                  int shieldingTechnology, int armorTechnology,
                                   Map<UnitKindDto, CombatReportUnitGroupDto> unitGroups) {
     this.name = name;
+    this.coordinates = coordinates;
     this.weaponsTechnology = weaponsTechnology;
     this.shieldingTechnology = shieldingTechnology;
     this.armorTechnology = armorTechnology;
@@ -20,6 +23,10 @@ public class CombatReportCombatantDto {
 
   public String getName() {
     return name;
+  }
+
+  public CoordinatesDto getCoordinates() {
+    return coordinates;
   }
 
   public int getWeaponsTechnology() {

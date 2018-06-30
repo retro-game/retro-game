@@ -12,7 +12,7 @@
       <div th:fragment="combatants(combatants, namePrefix)" class="combat-report-combatants">
         <table th:each="combatant : ${combatants}">
           <tr>
-            <th th:text="${namePrefix + ' ' + combatant.name}"></th>
+            <th th:text="${namePrefix + ' ' + combatant.name + ' [' + combatant.coordinates + ']'}"></th>
           </tr>
           <tr>
             <td>

@@ -76,6 +76,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @PostConstruct
   private void check() {
+    Assert.isTrue(CoordinatesKind.values().length <= 256,
+        "Too many values in CoordinatesKind, combat report serialization won't work");
     Assert.isTrue(UnitKind.values().length <= 256,
         "Too many values in UnitKind, combat report serialization won't work");
   }
@@ -211,6 +213,12 @@ class ReportServiceImpl implements ReportServiceInternal {
   private void storeCombatant(DataOutputStream stream, Combatant combatant) throws IOException {
     stream.writeLong(combatant.getUserId());
 
+    Coordinates coords = combatant.getCoordinates();
+    stream.writeInt(coords.getGalaxy());
+    stream.writeInt(coords.getSystem());
+    stream.writeInt(coords.getPosition());
+    stream.writeByte(coords.getKind().ordinal());
+
     stream.writeByte(combatant.getWeaponsTechnology());
     stream.writeByte(combatant.getShieldingTechnology());
     stream.writeByte(combatant.getArmorTechnology());
@@ -233,6 +241,12 @@ class ReportServiceImpl implements ReportServiceInternal {
     User user = users.get(id);
     String name = user != null ? user.getName() : "[deleted]";
 
+    int g = stream.readInt();
+    int s = stream.readInt();
+    int p = stream.readInt();
+    CoordinatesKind k = CoordinatesKind.values()[stream.readUnsignedByte()];
+    CoordinatesDto coords = Converter.convert(new Coordinates(g, s, p, k));
+
     int weaponsTechnology = stream.readUnsignedByte();
     int shieldingTechnology = stream.readUnsignedByte();
     int armorTechnology = stream.readUnsignedByte();
@@ -252,7 +266,8 @@ class ReportServiceImpl implements ReportServiceInternal {
       unitGroups.put(Converter.convert(kind), new CombatReportUnitGroupDto(numUnits, weapons, shields, armor));
     }
 
-    return new CombatReportCombatantDto(name, weaponsTechnology, shieldingTechnology, armorTechnology, unitGroups);
+    return new CombatReportCombatantDto(name, coords, weaponsTechnology, shieldingTechnology, armorTechnology,
+        unitGroups);
   }
 
   private void storeCombatantsOutcomes(DataOutputStream stream, Combatant[] combatants, CombatantOutcome[] outcomes,
@@ -350,6 +365,9 @@ class ReportServiceImpl implements ReportServiceInternal {
       for (int j = 0; j < numCombatants; j++) {
         long id = stream.readLong();
         ids.add(id);
+
+        // Skip coordinates.
+        stream.skipBytes(4 + 4 + 4 + 1);
 
         // Skip technologies.
         stream.skipBytes(3);

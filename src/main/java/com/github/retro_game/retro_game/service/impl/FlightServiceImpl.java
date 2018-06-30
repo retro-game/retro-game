@@ -1037,6 +1037,7 @@ class FlightServiceImpl implements FlightServiceInternal {
         Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
             FlightUnit::getCount);
         attackers[i] = new Combatant((int) u.getId(), // FIXME: cast
+            f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
@@ -1050,6 +1051,7 @@ class FlightServiceImpl implements FlightServiceInternal {
         Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
             FlightUnit::getCount);
         defenders[i] = new Combatant((int) u.getId(), // FIXME: cast
+            f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
@@ -1067,6 +1069,7 @@ class FlightServiceImpl implements FlightServiceInternal {
                 },
                 () -> new EnumMap<>(UnitKind.class)));
         defenders[defenders.length - 1] = new Combatant((int) u.getId(), // FIXME: cast
+            flight.getTargetCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),

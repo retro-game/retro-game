@@ -1,19 +1,22 @@
 package com.github.retro_game.retro_game.service.impl.battleengine;
 
+import com.github.retro_game.retro_game.model.entity.Coordinates;
 import com.github.retro_game.retro_game.model.entity.UnitKind;
 
 import java.util.Map;
 
 public class Combatant {
   private final int userId;
+  private final Coordinates coordinates;
   private final int weaponsTechnology;
   private final int shieldingTechnology;
   private final int armorTechnology;
   private final int[] unitGroups;
 
-  public Combatant(int userId, int weaponsTechnology, int shieldingTechnology, int armorTechnology,
-                   Map<UnitKind, Integer> unitGroups) {
+  public Combatant(int userId, Coordinates coordinates, int weaponsTechnology, int shieldingTechnology,
+                   int armorTechnology, Map<UnitKind, Integer> unitGroups) {
     this.userId = userId;
+    this.coordinates = coordinates;
     this.weaponsTechnology = weaponsTechnology;
     this.shieldingTechnology = shieldingTechnology;
     this.armorTechnology = armorTechnology;
@@ -25,6 +28,10 @@ public class Combatant {
 
   public int getUserId() {
     return userId;
+  }
+
+  public Coordinates getCoordinates() {
+    return coordinates;
   }
 
   public int getWeaponsTechnology() {
