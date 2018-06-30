@@ -684,7 +684,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   private double getCapacity(int level) {
-    return Math.ceil((1 + Math.pow(1.6, level))) * 50000;
+    return Math.ceil(1 + Math.pow(1.6, level)) * 50000;
   }
 
   @Override
