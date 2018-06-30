@@ -6,14 +6,14 @@ import com.github.retro_game.retro_game.model.entity.UnitKind;
 import java.util.Map;
 
 public class Combatant {
-  private final int userId;
+  private final long userId;
   private final Coordinates coordinates;
   private final int weaponsTechnology;
   private final int shieldingTechnology;
   private final int armorTechnology;
   private final int[] unitGroups;
 
-  public Combatant(int userId, Coordinates coordinates, int weaponsTechnology, int shieldingTechnology,
+  public Combatant(long userId, Coordinates coordinates, int weaponsTechnology, int shieldingTechnology,
                    int armorTechnology, Map<UnitKind, Integer> unitGroups) {
     this.userId = userId;
     this.coordinates = coordinates;
@@ -26,7 +26,7 @@ public class Combatant {
     }
   }
 
-  public int getUserId() {
+  public long getUserId() {
     return userId;
   }
 

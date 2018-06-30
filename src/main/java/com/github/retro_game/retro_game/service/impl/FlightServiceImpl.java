@@ -1036,7 +1036,7 @@ class FlightServiceImpl implements FlightServiceInternal {
         User u = f.getStartUser();
         Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
             FlightUnit::getCount);
-        attackers[i] = new Combatant((int) u.getId(), // FIXME: cast
+        attackers[i] = new Combatant(u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
@@ -1050,7 +1050,7 @@ class FlightServiceImpl implements FlightServiceInternal {
         User u = f.getStartUser();
         Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
             FlightUnit::getCount);
-        defenders[i] = new Combatant((int) u.getId(), // FIXME: cast
+        defenders[i] = new Combatant(u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
@@ -1068,7 +1068,7 @@ class FlightServiceImpl implements FlightServiceInternal {
                   throw new IllegalStateException();
                 },
                 () -> new EnumMap<>(UnitKind.class)));
-        defenders[defenders.length - 1] = new Combatant((int) u.getId(), // FIXME: cast
+        defenders[defenders.length - 1] = new Combatant(u.getId(),
             flight.getTargetCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
