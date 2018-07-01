@@ -51,8 +51,9 @@ public class SettingsController {
   @PostMapping("/settings")
   public String saveSettings(@Valid SettingsForm form) {
     UserSettingsDto settings = new UserSettingsDto(form.getLanguage(), form.getSkin(), form.getNumProbes(),
-        form.isNumberInputScrollingEnabled(), form.isShowNewMessagesInOverviewEnabled(),
-        form.isShowNewReportsInOverviewEnabled());
+        form.getBodiesSortOrder(), form.getBodiesSortDirection(), form.isNumberInputScrollingEnabled(),
+        form.isShowNewMessagesInOverviewEnabled(), form.isShowNewReportsInOverviewEnabled(),
+        form.isStickyMoonsEnabled());
     userService.saveCurrentUserSettings(settings);
     return "redirect:/settings?body=" + form.getBody();
   }

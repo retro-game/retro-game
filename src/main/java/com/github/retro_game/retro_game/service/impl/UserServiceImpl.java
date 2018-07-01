@@ -1,11 +1,14 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.model.entity.BodiesSortOrder;
 import com.github.retro_game.retro_game.model.entity.User;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +52,8 @@ class UserServiceImpl implements UserServiceInternal {
     user.setOtherReportsSeenAt(now);
     user.setLanguage(defaultLanguage);
     user.setSkin(defaultSkin);
+    user.setBodiesSortOrder(BodiesSortOrder.EMERGENCE);
+    user.setBodiesSortDirection(Sort.Direction.ASC);
     user.setNumProbes(1);
     user.setNumberInputScrolling(true);
     userRepository.save(user);
@@ -86,21 +91,29 @@ class UserServiceImpl implements UserServiceInternal {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
     return new UserSettingsDto(user.getLanguage(), user.getSkin(), user.getNumProbes(),
+        Converter.convert(user.getBodiesSortOrder()), user.getBodiesSortDirection(),
         user.isNumberInputScrollingEnabled(), user.isShowNewMessagesInOverviewEnabled(),
-        user.isShowNewReportsInOverviewEnabled());
+        user.isShowNewReportsInOverviewEnabled(), user.isStickyMoonsEnabled());
   }
 
   @Override
   @Transactional
+  // Evict bodiesBasicInfo, as the user may change the sort order of bodies and thus making the cached list invalid.
+  // A better way would be to retrieve the cached value and then sort it, but the declarative nature of caching API in
+  // Spring disallows it without using some hacks.
+  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public void saveCurrentUserSettings(UserSettingsDto settings) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
     user.setLanguage(settings.getLanguage());
     user.setSkin(settings.getSkin());
     user.setNumProbes(settings.getNumProbes());
+    user.setBodiesSortOrder(Converter.convert(settings.getBodiesSortOrder()));
+    user.setBodiesSortDirection(settings.getBodiesSortDirection());
     user.setNumberInputScrolling(settings.isNumberInputScrollingEnabled());
     user.setShowNewMessagesInOverview(settings.isShowNewMessagesInOverviewEnabled());
     user.setShowNewReportsInOverview(settings.isShowNewReportsInOverviewEnabled());
+    user.setStickyMoons(settings.isStickyMoonsEnabled());
   }
 
   @Override

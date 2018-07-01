@@ -24,6 +24,8 @@ create table users (
   language text not null,
   skin text not null,
   num_probes integer not null,
+  bodies_sort_order integer not null,
+  bodies_sort_direction integer not null,
   flags integer not null
 );
 

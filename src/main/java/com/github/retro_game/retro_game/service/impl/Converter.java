@@ -35,6 +35,32 @@ class Converter {
     }
   }
 
+  static BodiesSortOrderDto convert(BodiesSortOrder entity) {
+    switch (entity) {
+      case EMERGENCE:
+        return BodiesSortOrderDto.EMERGENCE;
+      case COORDINATES:
+        return BodiesSortOrderDto.COORDINATES;
+      case NAME:
+        return BodiesSortOrderDto.NAME;
+      default:
+        throw new IllegalArgumentException("Illegal value for BodiesSortOrder");
+    }
+  }
+
+  static BodiesSortOrder convert(BodiesSortOrderDto dto) {
+    switch (dto) {
+      case EMERGENCE:
+        return BodiesSortOrder.EMERGENCE;
+      case COORDINATES:
+        return BodiesSortOrder.COORDINATES;
+      case NAME:
+        return BodiesSortOrder.NAME;
+      default:
+        throw new IllegalArgumentException("Illegal value for BodiesSortOrderDto");
+    }
+  }
+
   static BodyTypeDto convert(BodyType entity) {
     switch (entity) {
       case MOON:

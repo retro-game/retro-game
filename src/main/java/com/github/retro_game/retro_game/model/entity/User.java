@@ -1,5 +1,7 @@
 package com.github.retro_game.retro_game.model.entity;
 
+import org.springframework.data.domain.Sort;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +15,7 @@ public class User {
   private final static int NUMBER_INPUT_SCROLLING = 1 << 0;
   private final static int SHOW_NEW_MESSAGES_IN_OVERVIEW = 1 << 1;
   private final static int SHOW_NEW_REPORTS_IN_OVERVIEW = 1 << 2;
+  private final static int STICKY_MOONS = 1 << 3;
 
   @Column(name = "id")
   @Id
@@ -60,6 +63,12 @@ public class User {
 
   @Column(name = "num_probes", nullable = false)
   private int numProbes;
+
+  @Column(name = "bodies_sort_order", nullable = false)
+  private BodiesSortOrder bodiesSortOrder;
+
+  @Column(name = "bodies_sort_direction", nullable = false)
+  private Sort.Direction bodiesSortDirection;
 
   @Column(name = "flags", nullable = false)
   private int flags;
@@ -116,6 +125,17 @@ public class User {
       flags |= SHOW_NEW_REPORTS_IN_OVERVIEW;
     else
       flags &= ~SHOW_NEW_REPORTS_IN_OVERVIEW;
+  }
+
+  public boolean isStickyMoonsEnabled() {
+    return (flags & STICKY_MOONS) != 0;
+  }
+
+  public void setStickyMoons(boolean enabled) {
+    if (enabled)
+      flags |= STICKY_MOONS;
+    else
+      flags &= ~STICKY_MOONS;
   }
 
   public int getTechnologyLevel(TechnologyKind kind) {
@@ -221,6 +241,22 @@ public class User {
 
   public void setNumProbes(int numProbes) {
     this.numProbes = numProbes;
+  }
+
+  public BodiesSortOrder getBodiesSortOrder() {
+    return bodiesSortOrder;
+  }
+
+  public void setBodiesSortOrder(BodiesSortOrder bodiesSortOrder) {
+    this.bodiesSortOrder = bodiesSortOrder;
+  }
+
+  public Sort.Direction getBodiesSortDirection() {
+    return bodiesSortDirection;
+  }
+
+  public void setBodiesSortDirection(Sort.Direction bodiesSortDirection) {
+    this.bodiesSortDirection = bodiesSortDirection;
   }
 
   public int getFlags() {

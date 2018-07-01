@@ -1,11 +1,21 @@
 package com.github.retro_game.retro_game.controller.form;
 
+import com.github.retro_game.retro_game.service.dto.BodiesSortOrderDto;
+import org.springframework.data.domain.Sort;
 import reactor.util.annotation.NonNull;
 
 import javax.validation.constraints.Min;
 
 public class SettingsForm {
   private long body;
+
+  @NonNull
+  private BodiesSortOrderDto bodiesSortOrder;
+
+  @NonNull
+  private Sort.Direction bodiesSortDirection;
+
+  private boolean stickyMoonsEnabled;
 
   @NonNull
   private String language;
@@ -26,6 +36,30 @@ public class SettingsForm {
 
   public void setBody(long body) {
     this.body = body;
+  }
+
+  public BodiesSortOrderDto getBodiesSortOrder() {
+    return bodiesSortOrder;
+  }
+
+  public void setBodiesSortOrder(BodiesSortOrderDto bodiesSortOrder) {
+    this.bodiesSortOrder = bodiesSortOrder;
+  }
+
+  public Sort.Direction getBodiesSortDirection() {
+    return bodiesSortDirection;
+  }
+
+  public void setBodiesSortDirection(Sort.Direction bodiesSortDirection) {
+    this.bodiesSortDirection = bodiesSortDirection;
+  }
+
+  public boolean isStickyMoonsEnabled() {
+    return stickyMoonsEnabled;
+  }
+
+  public void setStickyMoonsEnabled(boolean stickyMoonsEnabled) {
+    this.stickyMoonsEnabled = stickyMoonsEnabled;
   }
 
   public String getLanguage() {

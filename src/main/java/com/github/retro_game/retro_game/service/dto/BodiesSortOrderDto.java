@@ -4,5 +4,4 @@ public enum BodiesSortOrderDto {
   EMERGENCE,
   COORDINATES,
   NAME,
-  DIAMETER,
 }

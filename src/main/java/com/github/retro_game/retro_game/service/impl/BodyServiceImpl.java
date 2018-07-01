@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("bodyService")
@@ -330,13 +332,19 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
+  // The cache must be evicted every time the list may change, this includes colonizing, deleting bodies, updating name
+  // and also when the sort order of bodies changes (when a user updates hers settings, see UserServiceImpl).
   @Cacheable(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<BodyBasicInfoDto> getBodiesBasicInfo(long bodyId) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
-    return user.getBodies().values().stream()
+    List<BodyBasicInfoDto> bodies = user.getBodies().values().stream()
         .map(b -> new BodyBasicInfoDto(b.getId(), b.getName(), Converter.convert(b.getCoordinates())))
         .collect(Collectors.toList());
+    BodyKeyExtractors<BodyBasicInfoDto> keyExtractors = new BodyKeyExtractors<>(BodyBasicInfoDto::getId,
+        BodyBasicInfoDto::getCoordinates, BodyBasicInfoDto::getName);
+    sort(bodies, keyExtractors, user);
+    return bodies;
   }
 
   @Override
@@ -414,23 +422,6 @@ class BodyServiceImpl implements BodyServiceInternal {
         .map(Map.Entry::getValue)
         .collect(Collectors.toList());
 
-    // Sort planets.
-    // FIXME: move it to user settings.
-    BodiesSortOrderDto order = BodiesSortOrderDto.EMERGENCE;
-    Comparator<Body> comparator;
-    switch (order) {
-      case COORDINATES:
-        comparator = Comparator.comparing(Body::getCoordinates);
-      case NAME:
-        comparator = Comparator.comparing(Body::getName);
-      case DIAMETER:
-        comparator = Comparator.comparing(Body::getDiameter);
-      default:
-        comparator = Comparator.comparing(Body::getId);
-        break;
-    }
-    otherBodies.sort(comparator);
-
     // Put associated body into otherBodies, so that we can generate required information without code duplication.
     associatedOptional.ifPresent(otherBodies::add);
 
@@ -446,15 +437,72 @@ class BodyServiceImpl implements BodyServiceInternal {
         level = ongoingBuilding.getLevel();
       }
 
-      basicInfo.add(new OverviewBodyBasicInfoDto(body.getId(), body.getName(), Converter.convert(body.getType()),
-          body.getImage(), kind, level));
+      basicInfo.add(new OverviewBodyBasicInfoDto(body.getId(), Converter.convert(body.getCoordinates()), body.getName(),
+          Converter.convert(body.getType()), body.getImage(), kind, level));
     }
 
     // The associated body info is at the end, remove it from the rest.
     OverviewBodyBasicInfoDto associatedInfo =
         associatedOptional.isPresent() ? basicInfo.remove(basicInfo.size() - 1) : null;
 
+    // Sort other bodies.
+    BodyKeyExtractors<OverviewBodyBasicInfoDto> keyExtractors = new BodyKeyExtractors<>(OverviewBodyBasicInfoDto::getId,
+        OverviewBodyBasicInfoDto::getCoordinates, OverviewBodyBasicInfoDto::getName);
+    sort(basicInfo, keyExtractors, user);
+
     return new OverviewBodiesDto(selectedInfo, associatedInfo, basicInfo);
+  }
+
+  private static <T> void sort(List<T> bodies, BodyKeyExtractors<T> extractors, User user) {
+    Comparator<T> comparator;
+    switch (user.getBodiesSortOrder()) {
+      case COORDINATES:
+        comparator = Comparator.comparing(extractors.getCoordinatesExtractor());
+        break;
+      case NAME:
+        comparator = Comparator.comparing(extractors.getNameExtractor());
+        break;
+      default:
+        assert user.getBodiesSortOrder() == BodiesSortOrder.EMERGENCE;
+        comparator = Comparator.comparing(extractors.getIdExtractor());
+    }
+    if (user.getBodiesSortDirection() == Sort.Direction.DESC) {
+      comparator = comparator.reversed();
+    }
+
+    if (!user.isStickyMoonsEnabled()) {
+      bodies.sort(comparator);
+      return;
+    }
+
+    // Sticky moons, i.e. a moon will be always after the associated planet.
+
+    // Partition by kind.
+    Function<? super T, ? extends CoordinatesDto> coordinatesExtractor = extractors.getCoordinatesExtractor();
+    Map<Boolean, ArrayList<T>> partition = bodies.stream()
+        .collect(
+            Collectors.partitioningBy(
+                b -> coordinatesExtractor.apply(b).getKind() == CoordinatesKindDto.PLANET,
+                Collectors.toCollection(ArrayList::new)));
+    ArrayList<T> moons = partition.get(false);
+    ArrayList<T> planets = partition.get(true);
+
+    // Sort planets using user specified comparator.
+    planets.sort(comparator);
+
+    bodies.clear();
+    for (T planet : planets) {
+      bodies.add(planet);
+      // Add the associated moon, if any.
+      CoordinatesDto planetCoords = coordinatesExtractor.apply(planet);
+      assert planetCoords.getKind() == CoordinatesKindDto.PLANET;
+      CoordinatesDto moonCoords = new CoordinatesDto(planetCoords.getGalaxy(), planetCoords.getSystem(),
+          planetCoords.getPosition(), CoordinatesKindDto.MOON);
+      moons.stream()
+          .filter(m -> coordinatesExtractor.apply(m).equals(moonCoords))
+          .findFirst()
+          .ifPresent(bodies::add);
+    }
   }
 
   @Override
