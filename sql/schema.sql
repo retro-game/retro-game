@@ -5,7 +5,7 @@ create domain user_name as text check (
 );
 
 create domain body_name as text check (
-  char_length(value) between 1 and 16 and value ~ '^[[:alnum:]]+( ?[[:alnum:]])*$'
+  char_length(value) between 1 and 16 and value ~ '^[0-9A-Za-z\-._]+( ?[0-9A-Za-z\-._])*$'
 );
 
 -- Users

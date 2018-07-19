@@ -30,7 +30,7 @@ public class BodySettingsRenameController {
 
   @PostMapping("/body-settings/rename")
   public String doRename(@RequestParam(name = "body") long bodyId,
-                         @RequestParam @Valid @NotNull @Size(min = 3, max = 16) @Pattern(regexp = "^[A-Za-z0-9]+( ?[A-Za-z0-9])*$") String name) {
+                         @RequestParam @Valid @NotNull @Size(min = 1, max = 16) @Pattern(regexp = "^[0-9A-Za-z\\-._]+( ?[0-9A-Za-z\\-._])*$") String name) {
     bodyService.rename(bodyId, name);
     return "redirect:/overview?body=" + bodyId;
   }

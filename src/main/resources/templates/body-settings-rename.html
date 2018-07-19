@@ -17,7 +17,8 @@
           <label for="name" th:text="#{name}">Name</label>
         </td>
         <td>
-          <input id="name" name="name" minlength="3" maxlength="16" pattern="^[A-Za-z0-9]+( ?[A-Za-z0-9])*$" required>
+          <input id="name" name="name" minlength="1" maxlength="16" pattern="^[0-9A-Za-z\-._]+( ?[0-9A-Za-z\-._])*$"
+                 required>
         </td>
       </tr>
       <tr>
