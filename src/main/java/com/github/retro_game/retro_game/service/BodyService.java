@@ -1,6 +1,7 @@
 package com.github.retro_game.retro_game.service;
 
 import com.github.retro_game.retro_game.service.dto.*;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
@@ -33,6 +34,11 @@ public interface BodyService {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
   OverviewBodiesDto getOverviewBodies(long bodyId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
+  EmpireDto getEmpire(long bodyId, @Nullable Integer galaxy, @Nullable Integer system, @Nullable Integer position,
+                      @Nullable CoordinatesKindDto kind);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")

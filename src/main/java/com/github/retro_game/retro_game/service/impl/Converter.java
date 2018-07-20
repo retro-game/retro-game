@@ -191,7 +191,7 @@ class Converter {
     return new Coordinates(dto.getGalaxy(), dto.getSystem(), dto.getPosition(), convert(dto.getKind()));
   }
 
-  private static CoordinatesKindDto convert(CoordinatesKind entity) {
+  static CoordinatesKindDto convert(CoordinatesKind entity) {
     switch (entity) {
       case PLANET:
         return CoordinatesKindDto.PLANET;
@@ -204,7 +204,7 @@ class Converter {
     }
   }
 
-  private static CoordinatesKind convert(CoordinatesKindDto dto) {
+  static CoordinatesKind convert(CoordinatesKindDto dto) {
     switch (dto) {
       case PLANET:
         return CoordinatesKind.PLANET;

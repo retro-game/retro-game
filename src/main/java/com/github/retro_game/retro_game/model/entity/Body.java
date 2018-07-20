@@ -65,6 +65,7 @@ public class Body implements Serializable {
 
   @OneToMany(mappedBy = "key.body")
   @MapKey(name = "key.kind")
+  @Fetch(FetchMode.SUBSELECT)
   private Map<UnitKind, BodyUnit> units;
 
   @OneToMany(mappedBy = "key.body")
@@ -75,6 +76,7 @@ public class Body implements Serializable {
 
   @OneToMany(mappedBy = "key.body")
   @OrderBy("key.sequence")
+  @Fetch(FetchMode.SUBSELECT)
   private List<ShipyardQueueEntry> shipyardQueue;
 
   public int getBuildingLevel(BuildingKind kind) {

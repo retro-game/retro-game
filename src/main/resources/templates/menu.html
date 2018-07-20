@@ -42,6 +42,9 @@
            th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system})}" th:text="#{galaxy}">Galaxy</a>
       </li>
       <li>
+        <a th:href="@{/empire(body=${bodyId})}" th:text="#{empire}">Empire</a>
+      </li>
+      <li>
         <a th:href="@{/reports(body=${bodyId})}" th:with="summary=${@reportService.getSummary(bodyId)}"
            th:text="#{reports} + ${summary.totalReports > 0 ? ' (' + summary.totalReports + ')' : ''}"></a>
       </li>

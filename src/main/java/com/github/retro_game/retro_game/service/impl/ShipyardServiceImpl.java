@@ -8,6 +8,8 @@ import com.github.retro_game.retro_game.model.repository.ShipyardQueueEntryRepos
 import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.util.Assert;
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 class ShipyardServiceImpl implements ShipyardServiceInternal {
@@ -174,6 +178,31 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     units.sort(Comparator.comparing(UnitDto::getKind));
 
     return new UnitsAndQueuePairDto(units, queue);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Map<UnitKind, Tuple2<Integer, Integer>> getCurrentAndFutureCounts(Body body) {
+    EnumMap<UnitKind, Integer> inQueue = body.getShipyardQueue().stream()
+        .collect(Collectors.toMap(
+            ShipyardQueueEntry::getKind,
+            ShipyardQueueEntry::getCount,
+            (a, b) -> a + b,
+            () -> new EnumMap<>(UnitKind.class)
+        ));
+    return Arrays.stream(UnitKind.values())
+        .filter(kind -> body.getNumUnits(kind) != 0 || inQueue.getOrDefault(kind, 0) != 0)
+        .collect(Collectors.toMap(
+            Function.identity(),
+            kind -> {
+              int n = body.getNumUnits(kind);
+              return Tuple.of(n, n + inQueue.getOrDefault(kind, 0));
+            },
+            (a, b) -> {
+              throw new IllegalStateException();
+            },
+            () -> new EnumMap<>(UnitKind.class)
+        ));
   }
 
   @Override

@@ -6,6 +6,8 @@ import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.exception.*;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +25,9 @@ import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service("bodyService")
@@ -453,6 +458,159 @@ class BodyServiceImpl implements BodyServiceInternal {
     return new OverviewBodiesDto(selectedInfo, associatedInfo, basicInfo);
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public EmpireDto getEmpire(long bodyId, @Nullable Integer galaxy, @Nullable Integer system,
+                             @Nullable Integer position, @Nullable CoordinatesKindDto kind) {
+    long userId = CustomUser.getCurrentUserId();
+    User user = userRepository.getOne(userId);
+
+    CoordinatesKind k = kind != null ? Converter.convert(kind) : null;
+
+    List<Body> bodies = bodyRepository.findByUserForEmpire(user, galaxy, system, position, k);
+
+    // Selected bodies.
+    List<EmpireBodyDto> empireBodies = bodies.stream()
+        .map(body -> {
+          int usedFields = getUsedFields(body);
+          int maxFields = getMaxFields(body);
+
+          ResourcesDto res = Converter.convert(body.getResources());
+          long totalRes = (long) (res.getMetal() + res.getCrystal() + res.getDeuterium());
+          Tuple2<ResourcesDto, Long> resources = Tuple.of(res, totalRes);
+
+          ProductionDto production = getProduction(body);
+
+          int availableEnergy = production.getAvailableEnergy();
+          int totalEnergy = production.getTotalEnergy();
+
+          double m = production.getMetalProduction();
+          double c = production.getCrystalProduction();
+          double d = production.getDeuteriumProduction();
+
+          ResourcesDto hourly = new ResourcesDto(m, c, d);
+          long hourlyTotal = (long) (m + c + d);
+          Tuple2<ResourcesDto, Long> productionHourly = Tuple.of(hourly, hourlyTotal);
+
+          ResourcesDto daily = new ResourcesDto(24 * m, 24 * c, 24 * d);
+          long dailyTotal = 24 * (long) (m + c + d);
+          Tuple2<ResourcesDto, Long> productionDaily = Tuple.of(daily, dailyTotal);
+
+          ResourcesDto weekly = new ResourcesDto(24 * 7 * m, 24 * 7 * c, 24 * 7 * d);
+          long weeklyTotal = 24 * 7 * (long) (m + c + d);
+          Tuple2<ResourcesDto, Long> productionWeekly = Tuple.of(weekly, weeklyTotal);
+
+          ResourcesDto _30days = new ResourcesDto(24 * 30 * m, 24 * 30 * c, 24 * 30 * d);
+          long _30daysTotal = 24 * 30 * (long) (m + c + d);
+          Tuple2<ResourcesDto, Long> production30days = Tuple.of(_30days, _30daysTotal);
+
+          ResourcesDto cap = getCapacity(body);
+          long totalCap = (long) (cap.getMetal() + cap.getCrystal() + cap.getDeuterium());
+          Tuple2<ResourcesDto, Long> capacity = Tuple.of(cap, totalCap);
+
+          Map<BuildingKindDto, Tuple2<Integer, Integer>> buildings = Converter.convertToEnumMap(
+              buildingsServiceInternal.getCurrentAndFutureLevels(body), BuildingKindDto.class, Converter::convert,
+              Function.identity());
+
+          Map<UnitKindDto, Tuple2<Integer, Integer>> units = Converter.convertToEnumMap(
+              shipyardServiceInternal.getCurrentAndFutureCounts(body), UnitKindDto.class, Converter::convert,
+              Function.identity());
+
+          return new EmpireBodyDto(body.getId(), body.getName(), Converter.convert(body.getCoordinates()),
+              Converter.convert(body.getType()), body.getImage(), body.getDiameter(), usedFields, maxFields,
+              body.getTemperature(), resources, availableEnergy, totalEnergy, productionHourly, productionDaily,
+              productionWeekly, production30days, capacity, buildings, units);
+        })
+        .collect(Collectors.toList());
+
+    // Total.
+    Supplier<Tuple2<ResourcesDto, Long>> resTuplesId = () -> Tuple.of(new ResourcesDto(0.0, 0.0, 0.0), 0L);
+    BinaryOperator<Tuple2<ResourcesDto, Long>> resTuplesAcc = (acc, elem) -> {
+      ResourcesDto a = acc._1;
+      ResourcesDto b = elem._1;
+      ResourcesDto r = new ResourcesDto(
+          a.getMetal() + b.getMetal(),
+          a.getCrystal() + b.getCrystal(),
+          a.getDeuterium() + b.getDeuterium());
+      return Tuple.of(r, acc._2 + elem._2);
+    };
+    EmpireSummaryDto<Long> total = new EmpireSummaryDto<>(
+        empireBodies.stream().mapToLong(EmpireBodyDto::getDiameter).sum(),
+        empireBodies.stream().mapToLong(EmpireBodyDto::getUsedFields).sum(),
+        empireBodies.stream().mapToLong(EmpireBodyDto::getMaxFields).sum(),
+        empireBodies.stream().mapToLong(EmpireBodyDto::getTemperature).sum(),
+        empireBodies.stream().map(EmpireBodyDto::getResources).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().mapToLong(EmpireBodyDto::getAvailableEnergy).sum(),
+        empireBodies.stream().mapToLong(EmpireBodyDto::getTotalEnergy).sum(),
+        empireBodies.stream().map(EmpireBodyDto::getProductionHourly).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().map(EmpireBodyDto::getProductionDaily).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().map(EmpireBodyDto::getProductionWeekly).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().map(EmpireBodyDto::getProduction30days).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().map(EmpireBodyDto::getCapacity).reduce(resTuplesId.get(), resTuplesAcc),
+        empireBodies.stream().flatMap(body -> body.getBuildings().entrySet().stream())
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> Tuple.of((long) e.getValue()._1, (long) e.getValue()._2),
+                (a, b) -> Tuple.of(a._1 + b._1, a._2 + b._2),
+                () -> new EnumMap<>(BuildingKindDto.class)
+            )),
+        empireBodies.stream().flatMap(body -> body.getUnits().entrySet().stream())
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> Tuple.of((long) e.getValue()._1, (long) e.getValue()._2),
+                (a, b) -> Tuple.of(a._1 + b._1, a._2 + b._2),
+                () -> new EnumMap<>(UnitKindDto.class)
+            )));
+
+    // Average.
+    final int size = empireBodies.size();
+    assert size > 0;
+    Function<Tuple2<ResourcesDto, Long>, Tuple2<ResourcesDto, Double>> resTuplesAvg = (t) -> {
+      ResourcesDto r = t._1;
+      return Tuple.of(
+          new ResourcesDto(r.getMetal() / size, r.getCrystal() / size, r.getDeuterium() / size),
+          (double) t._2 / size);
+    };
+    EmpireSummaryDto<Double> average = new EmpireSummaryDto<>(
+        (double) total.getDiameter() / size,
+        (double) total.getUsedFields() / size,
+        (double) total.getMaxFields() / size,
+        (double) total.getTemperature() / size,
+        resTuplesAvg.apply(total.getResources()),
+        (double) total.getAvailableEnergy() / size,
+        (double) total.getTotalEnergy() / size,
+        resTuplesAvg.apply(total.getProductionHourly()),
+        resTuplesAvg.apply(total.getProductionDaily()),
+        resTuplesAvg.apply(total.getProductionWeekly()),
+        resTuplesAvg.apply(total.getProduction30days()),
+        resTuplesAvg.apply(total.getCapacity()),
+        total.getBuildings().entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> Tuple.of((double) e.getValue()._1 / size, (double) e.getValue()._2 / size),
+                (a, b) -> {
+                  throw new IllegalStateException();
+                },
+                () -> new EnumMap<>(BuildingKindDto.class)
+            )),
+        total.getUnits().entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> Tuple.of((double) e.getValue()._1 / size, (double) e.getValue()._2 / size),
+                (a, b) -> {
+                  throw new IllegalStateException();
+                },
+                () -> new EnumMap<>(UnitKindDto.class)
+            )));
+
+    // Sort.
+    BodyKeyExtractors<EmpireBodyDto> keyExtractors = new BodyKeyExtractors<>(EmpireBodyDto::getId,
+        EmpireBodyDto::getCoordinates, EmpireBodyDto::getName);
+    sort(empireBodies, keyExtractors, user);
+
+    return new EmpireDto(empireBodies, total, average);
+  }
+
   private static <T> void sort(List<T> bodies, BodyKeyExtractors<T> extractors, User user) {
     Comparator<T> comparator;
     switch (user.getBodiesSortOrder()) {
@@ -535,7 +693,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     if (body.getCoordinates().getKind() == CoordinatesKind.PLANET) {
       Resources resources = body.getResources();
       ProductionDto production = getProduction(body);
-      Resources capacity = getCapacity(body);
+      ResourcesDto capacity = getCapacity(body);
       double seconds = at.toInstant().getEpochSecond() - updatedAt.toInstant().getEpochSecond();
 
       // Metal.
@@ -721,14 +879,14 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Transactional(readOnly = true)
   public ResourcesDto getCapacity(long bodyId) {
     Body body = bodyRepository.getOne(bodyId);
-    return Converter.convert(getCapacity(body));
+    return getCapacity(body);
   }
 
-  private Resources getCapacity(Body body) {
+  private ResourcesDto getCapacity(Body body) {
     double metal = getCapacity(body.getBuildingLevel(BuildingKind.METAL_STORAGE));
     double crystal = getCapacity(body.getBuildingLevel(BuildingKind.CRYSTAL_STORAGE));
     double deuterium = getCapacity(body.getBuildingLevel(BuildingKind.DEUTERIUM_TANK));
-    return new Resources(metal, crystal, deuterium);
+    return new ResourcesDto(metal, crystal, deuterium);
   }
 
   private double getCapacity(int level) {

@@ -11,6 +11,8 @@ import com.github.retro_game.retro_game.service.dto.BuildingQueueEntryDto;
 import com.github.retro_game.retro_game.service.dto.BuildingsAndQueuePairDto;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ import org.springframework.util.Assert;
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 class BuildingsServiceImpl implements BuildingsServiceInternal {
@@ -246,6 +250,22 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     buildings.sort(Comparator.comparing(BuildingDto::getKind));
 
     return new BuildingsAndQueuePairDto(buildings, queue);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Map<BuildingKind, Tuple2<Integer, Integer>> getCurrentAndFutureLevels(Body body) {
+    State state = new State(body, body.getBuildingQueue());
+    return Arrays.stream(BuildingKind.values())
+        .filter(kind -> body.getBuildingLevel(kind) != 0 || state.buildings.getOrDefault(kind, 0) != 0)
+        .collect(Collectors.toMap(
+            Function.identity(),
+            kind -> Tuple.of(body.getBuildingLevel(kind), state.buildings.getOrDefault(kind, 0)),
+            (a, b) -> {
+              throw new IllegalStateException();
+            },
+            () -> new EnumMap<>(BuildingKind.class)
+        ));
   }
 
   @Override

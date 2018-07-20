@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{empire}">Empire</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/empire}">
+    <table>
+      <tr>
+        <th th:text="#{restrictions}">Restrictions</th>
+      </tr>
+      <tr>
+        <td>
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <label for="galaxy" th:text="#{galaxy}">Galaxy</label>
+          <input id="galaxy" name="galaxy" type="number" th:value="${galaxy}">
+          <label for="system" th:text="#{system}">System</label>
+          <input id="system" name="system" type="number" th:value="${system}">
+          <label for="position" th:text="#{position}">Position</label>
+          <input id="position" name="position" type="number" th:value="${position}">
+          <label for="kind" th:text="#{kind}">Kind</label>
+          <select id="kind" name="kind">
+            <option></option>
+            <option value="PLANET"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET}"
+                    th:text="#{planet}">
+              Planet
+            </option>
+            <option value="MOON"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON}"
+                    th:text="#{moon}">
+              Moon
+            </option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button th:text="#{show}">Show</button>
+        </td>
+      </tr>
+    </table>
+    <table th:with="bodies=${empire.bodies},total=${empire.total},average=${empire.average}">
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{empire}"></th>
+      </tr>
+      <tr>
+        <td></td>
+        <td th:each="body : ${bodies}">
+          <img
+              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${body.type},image=${body.image})}"
+              width="50" height="50">
+        </td>
+        <td>Σ</td>
+        <td>μ</td>
+      </tr>
+      <tr>
+        <td th:text="#{name}">Name</td>
+        <td th:each="body : ${bodies}" th:text="${body.name}"></td>
+        <td th:text="#{total}">Total</td>
+        <td th:text="#{average}">Average</td>
+      </tr>
+      <tr>
+        <td th:text="#{coordinates}">Coordinates</td>
+        <td th:each="body : ${bodies}" th:with="c=${body.coordinates}">
+          <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+             th:title="#{goToGalaxy}" th:text="${c}"></a>
+        </td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td th:text="#{diameter}">Diameter</td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.diameter, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.diameter, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.diameter, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{usedFields}">Used fields</td>
+        <td th:each="body : ${bodies}" th:text="${body.usedFields}"></td>
+        <td th:text="${#numbers.formatInteger(total.usedFields, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.usedFields, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{maxFields}">Max fields</td>
+        <td th:each="body : ${bodies}" th:text="${body.maxFields}"></td>
+        <td th:text="${#numbers.formatInteger(total.maxFields, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.maxFields, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{temperature}">Temperature</td>
+        <td th:each="body : ${bodies}" th:text="${body.temperature}"></td>
+        <td th:text="${#numbers.formatInteger(total.temperature, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.temperature, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{resources}">Resources</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.resources._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.resources._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.resources._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.resources._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.resources._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.resources._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{energy}">Energy</th>
+      </tr>
+      <tr>
+        <td th:text="#{availableEnergy}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.availableEnergy, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.availableEnergy, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.availableEnergy, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{totalEnergy}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.totalEnergy, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.totalEnergy, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.totalEnergy, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{productionHourly}">Production hourly</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}"
+            th:text="${#numbers.formatInteger(body.productionHourly._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionHourly._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionHourly._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.productionHourly._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionHourly._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionHourly._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{productionDaily}">Production daily</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}"
+            th:text="${#numbers.formatInteger(body.productionDaily._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionDaily._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionDaily._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.productionDaily._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionDaily._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionDaily._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{productionWeekly}">Production weekly</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}"
+            th:text="${#numbers.formatInteger(body.productionWeekly._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionWeekly._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionWeekly._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.productionWeekly._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.productionWeekly._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.productionWeekly._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{production30days}">Production 30 days</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}"
+            th:text="${#numbers.formatInteger(body.production30days._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.production30days._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.production30days._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.production30days._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.production30days._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.production30days._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{capacities}">Capacities</th>
+      </tr>
+      <tr th:each="r : ${ {'metal', 'crystal', 'deuterium'} }">
+        <td th:text="#{${r}}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.capacity._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.capacity._1[r], 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.capacity._1[r], 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <td th:text="#{total}"></td>
+        <td th:each="body : ${bodies}" th:text="${#numbers.formatInteger(body.capacity._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(total.capacity._2, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatDecimal(average.capacity._2, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{buildings}">Buildings</th>
+      </tr>
+      <tr th:each="kind : ${T(com.github.retro_game.retro_game.service.dto.BuildingKindDto).values()}">
+        <td>
+          <a th:href="@{/details/building(body=${bodyId},kind=${kind})}" th:text="#{${'items.' + kind + '.name'}}"></a>
+        </td>
+        <td th:each="body : ${bodies}" th:with="t=${body.buildings.get(kind)}"
+            th:text="${t == null ? '-' : (t._1 + (t._1 != t._2 ? ' → ' + t._2 : ''))}">
+        </td>
+        <td th:with="t=${total.buildings.get(kind)}"
+            th:text="${t == null ? '-' : (#numbers.formatInteger(t._1, 1, 'DEFAULT') + (t._1 != t._2 ? ' → ' + #numbers.formatInteger(t._2, 1, 'DEFAULT') : ''))}">
+        </td>
+        <td th:with="t=${average.buildings.get(kind)}"
+            th:text="${t == null ? '-' : (#numbers.formatDecimal(t._1, 1, 'DEFAULT', 2, 'DEFAULT') + (t._1 != t._2 ? ' → ' + #numbers.formatDecimal(t._2, 1, 'DEFAULT', 2, 'DEFAULT') : ''))}">
+        </td>
+      </tr>
+      <tr>
+        <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{units}">Units</th>
+      </tr>
+      <tr th:each="kind : ${T(com.github.retro_game.retro_game.service.dto.UnitKindDto).values()}">
+        <td>
+          <a th:href="@{/details/unit(body=${bodyId},kind=${kind})}" th:text="#{${'items.' + kind + '.name'}}"></a>
+        </td>
+        <td th:each="body : ${bodies}" th:with="t=${body.units.get(kind)}"
+            th:text="${t == null ? '-' : (#numbers.formatInteger(t._1, 1, 'DEFAULT') + (t._1 != t._2 ? ' → ' + #numbers.formatInteger(t._2, 1, 'DEFAULT') : ''))}">
+        </td>
+        <td th:with="t=${total.units.get(kind)}"
+            th:text="${t == null ? '-' : (#numbers.formatInteger(t._1, 1, 'DEFAULT') + (t._1 != t._2 ? ' → ' + #numbers.formatInteger(t._2, 1, 'DEFAULT') : ''))}">
+        </td>
+        <td th:with="t=${average.units.get(kind)}"
+            th:text="${t == null ? '-' : (#numbers.formatDecimal(t._1, 1, 'DEFAULT', 2, 'DEFAULT') + (t._1 != t._2 ? ' → ' + #numbers.formatDecimal(t._2, 1, 'DEFAULT', 2, 'DEFAULT') : ''))}">
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>
