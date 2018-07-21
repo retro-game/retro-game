@@ -470,8 +470,11 @@ class BodyServiceImpl implements BodyServiceInternal {
     List<Body> bodies = bodyRepository.findByUserForEmpire(user, galaxy, system, position, k);
 
     // Selected bodies.
+    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     List<EmpireBodyDto> empireBodies = bodies.stream()
         .map(body -> {
+          updateResources(body, now);
+
           int usedFields = getUsedFields(body);
           int maxFields = getMaxFields(body);
 
