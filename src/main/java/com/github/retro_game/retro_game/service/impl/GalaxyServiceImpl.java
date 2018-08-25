@@ -65,9 +65,9 @@ class GalaxyServiceImpl implements GalaxyService {
 
       boolean own = slot.getUserId() == userId;
 
-      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), slot.getPlanetName(),
-          Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(), slot.getMoonImage(),
-          activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), own);
+      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), slot.isOnVacation(),
+          slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(),
+          slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), own);
       ret.put(slot.getPosition(), s);
     }
     return ret;

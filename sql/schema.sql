@@ -26,7 +26,8 @@ create table users (
   num_probes integer not null,
   bodies_sort_order integer not null,
   bodies_sort_direction integer not null,
-  flags integer not null
+  flags integer not null,
+  vacation_until timestamptz
 );
 
 create unique index users_upper_name_idx on users (upper(name) text_pattern_ops);
@@ -566,6 +567,7 @@ create view galaxy as (
             p.position,
             u.id as user_id,
             u.name as user_name,
+            u.vacation_until is not null as on_vacation,
             p.id as planet_id,
             p.name as planet_name,
             p.type as planet_type,

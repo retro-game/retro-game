@@ -5,6 +5,7 @@ import org.springframework.lang.Nullable;
 public class GalaxySlotDto {
   private final long userId;
   private final String userName;
+  private final boolean onVacation;
   private final String planetName;
   private final BodyTypeDto planetType;
   private final int planetImage;
@@ -15,11 +16,12 @@ public class GalaxySlotDto {
   private final Long debrisCrystal;
   private final boolean own;
 
-  public GalaxySlotDto(long userId, String userName, String planetName, BodyTypeDto planetType, int planetImage,
-                       @Nullable String moonName, @Nullable Integer moonImage, int activity,
+  public GalaxySlotDto(long userId, String userName, boolean onVacation, String planetName, BodyTypeDto planetType,
+                       int planetImage, @Nullable String moonName, @Nullable Integer moonImage, int activity,
                        @Nullable Long debrisMetal, @Nullable Long debrisCrystal, boolean own) {
     this.userId = userId;
     this.userName = userName;
+    this.onVacation = onVacation;
     this.planetName = planetName;
     this.planetType = planetType;
     this.planetImage = planetImage;
@@ -37,6 +39,10 @@ public class GalaxySlotDto {
 
   public String getUserName() {
     return userName;
+  }
+
+  public boolean isOnVacation() {
+    return onVacation;
   }
 
   public String getPlanetName() {

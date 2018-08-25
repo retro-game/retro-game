@@ -53,6 +53,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private EventScheduler eventScheduler;
   private ReportServiceInternal reportServiceInternal;
   private UnitService unitService;
+  private UserServiceInternal userServiceInternal;
 
   FlightServiceImpl(@Value("${retro-game.astrophysics-based-colonization}") boolean astrophysicsBasedColonization,
                     @Value("${retro-game.max-planets}") int maxPlanets,
@@ -100,10 +101,21 @@ class FlightServiceImpl implements FlightServiceInternal {
     this.unitService = unitService;
   }
 
+  @Autowired
+  public void setUserServiceInternal(UserServiceInternal userServiceInternal) {
+    this.userServiceInternal = userServiceInternal;
+  }
+
   @Override
   @Transactional(readOnly = true)
   public boolean existsByStartOrTargetIn(Collection<Body> bodies) {
     return flightRepository.existsByStartBodyInOrTargetBodyIn(bodies, bodies);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public boolean existsByUser(User user) {
+    return flightRepository.existsByStartUserOrTargetUser(user, user);
   }
 
   @Override
@@ -460,6 +472,12 @@ class FlightServiceImpl implements FlightServiceInternal {
     }
 
     // Check target user.
+    if (targetBodyOptional.isPresent() && userServiceInternal.isOnVacation(targetBodyOptional.get().getUser())) {
+      logger.info("Sending fleet failed, target user is on vacation: userId={} bodyId={} targetCoordinates={}" +
+              " mission={}",
+          userId, body.getId(), coordinates, mission);
+      throw new TargetOnVacationException();
+    }
     switch (mission) {
       case ATTACK:
       case DESTROY:
@@ -759,6 +777,12 @@ class FlightServiceImpl implements FlightServiceInternal {
     Body targetBody = optionalTargetBody.get();
 
     User targetUser = targetBody.getUser();
+    if (userServiceInternal.isOnVacation(targetUser)) {
+      logger.info("Sending missiles failed, target user is on vacation: userId={} bodyId={} targetCoordinates={}" +
+              " numMissiles={}",
+          userId, body.getId(), targetCoordinates, numMissiles);
+      throw new TargetOnVacationException();
+    }
     if (targetUser.getId() == userId) {
       logger.info("Sending missiles failed, wrong target user: userId={} bodyId={} targetCoordinates={}" +
               " numMissiles={}",

@@ -73,6 +73,10 @@ public class User {
   @Column(name = "flags", nullable = false)
   private int flags;
 
+  @Column(name = "vacation_until")
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date vacationUntil;
+
   @OneToMany(mappedBy = "user")
   @MapKey(name = "id")
   @OrderBy("id")
@@ -265,6 +269,14 @@ public class User {
 
   public void setFlags(int flags) {
     this.flags = flags;
+  }
+
+  public Date getVacationUntil() {
+    return vacationUntil;
+  }
+
+  public void setVacationUntil(Date vacationUntil) {
+    this.vacationUntil = vacationUntil;
   }
 
   public SortedMap<Long, Body> getBodies() {

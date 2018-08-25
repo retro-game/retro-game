@@ -52,7 +52,7 @@
       </td>
     </tr>
   </table>
-  <table>
+  <table th:with="onVacation=${@userService.isOnVacation()}">
     <tr>
       <th colspan="3" th:text="#{buildings}">Buildings</th>
     </tr>
@@ -98,7 +98,7 @@
         <form th:if="${building.canConstructNow}" th:action="@{/buildings/construct}" method="post">
           <input name="body" type="hidden" th:value="${bodyId}">
           <input name="kind" type="hidden" th:value="${building.kind}">
-          <button th:text="#{construct}">Construct</button>
+          <button th:disabled="${onVacation}" th:text="#{construct}">Construct</button>
         </form>
       </td>
     </tr>

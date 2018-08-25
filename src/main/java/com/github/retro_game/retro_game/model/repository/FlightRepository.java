@@ -17,6 +17,8 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
   boolean existsByStartBodyInOrTargetBodyIn(Collection<Body> startBodies, Collection<Body> targetBodies);
 
+  boolean existsByStartUserOrTargetUser(User startUser, User targetUser);
+
   List<Flight> findByPartyOrderById(Party party);
 
   List<Flight> findByStartBody(Body body);

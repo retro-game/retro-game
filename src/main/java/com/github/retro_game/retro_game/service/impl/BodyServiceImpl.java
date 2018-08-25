@@ -693,7 +693,8 @@ class BodyServiceImpl implements BodyServiceInternal {
       return;
     }
 
-    if (body.getCoordinates().getKind() == CoordinatesKind.PLANET) {
+    if (body.getCoordinates().getKind() == CoordinatesKind.PLANET &&
+        !userServiceInternal.isOnVacation(body.getUser())) {
       Resources resources = body.getResources();
       ProductionDto production = getProduction(body);
       ResourcesDto capacity = getCapacity(body);

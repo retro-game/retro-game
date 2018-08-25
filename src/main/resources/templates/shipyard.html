@@ -30,7 +30,7 @@
       <td th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
     </tr>
   </table>
-  <table>
+  <table th:with="onVacation=${@userService.isOnVacation()}">
     <tr>
       <th colspan="3" th:text="#{shipyard}">Shipyard</th>
     </tr>
@@ -75,7 +75,7 @@
           <input name="kind" type="hidden" th:value="${unit.kind}">
           <input th:id="'count_' + ${unit.kind}" name="count" type="number" value="0" min="1"
                  th:max="${unit.maxBuildable}" required>
-          <button th:text="#{build}">Build</button>
+          <button th:disabled="${onVacation}" th:text="#{build}">Build</button>
         </form>
         <button th:if="${unit.maxBuildable >= 1}" data-set th:data-set-for="'count_' + ${unit.kind}"
                 th:data-set-value="${unit.maxBuildable}"

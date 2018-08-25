@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
+  boolean existsByKindInAndParamIn(Collection<EventKind> kinds, Collection<Long> params);
+
   List<Event> findByKindAndParamIn(EventKind kind, Collection<Long> params);
 
   Optional<Event> findFirstByKindAndParam(EventKind kind, long param);

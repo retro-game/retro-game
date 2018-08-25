@@ -134,6 +134,16 @@
       </tr>
     </table>
   </form>
+  <table>
+    <tr>
+      <th th:text="#{other}">Other</th>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/settings/vacation-mode(body=${bodyId})}" th:text="#{vacationMode}">Vacation mode</a>
+      </td>
+    </tr>
+  </table>
 </div>
 </body>
 </html>

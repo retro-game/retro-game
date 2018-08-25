@@ -23,6 +23,9 @@ public class GalaxySlot {
   @Column(name = "user_name", nullable = false, insertable = false, updatable = false)
   private String userName;
 
+  @Column(name = "on_vacation", nullable = false, insertable = false, updatable = false)
+  private boolean onVacation;
+
   // There must be at least one Id field, planetId should be unique.
   @Column(name = "planet_id", nullable = false, insertable = false, updatable = false)
   @Id
@@ -70,6 +73,10 @@ public class GalaxySlot {
 
   public String getUserName() {
     return userName;
+  }
+
+  public boolean isOnVacation() {
+    return onVacation;
   }
 
   public long getPlanetId() {

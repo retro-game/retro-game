@@ -7,7 +7,7 @@
 <body>
 <div layout:fragment="content">
   <div th:replace="galaxy-navigation :: galaxy-navigation"></div>
-  <table>
+  <table th:with="onVacation=${@userService.isOnVacation()}">
     <tr>
       <th width="30" th:text="#{slot}">Slot</th>
       <th width="30" th:text="#{planet}">Planet</th>
@@ -35,7 +35,7 @@
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
-                      (${systemWithinRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
+                      (${!onVacation && systemWithinRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
                     '</td>' +
                   '</tr>' +
                 '</table>'" width="30" height="30">
@@ -77,17 +77,19 @@
             <span th:text="${#numbers.formatInteger(slot.debrisCrystal, 1, 'DEFAULT')}"></span>
           </a>
         </td>
-        <td>
+        <td th:classappend="${slot.onVacation ? 'vacation' : ''}">
           <a th:href="@{/messages/send(body=${bodyId},recipient=${slot.userId})}" th:title="#{sendMessage}"
              th:text="${slot.userName}"></a>
+          <span th:if="${slot.onVacation}">(v)</span>
         </td>
         <td>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
-                  data-kind="PLANET" th:title="#{spyPlanet}" th:disabled="${slot.own}">
+                  data-kind="PLANET" th:title="#{spyPlanet}" th:disabled="${onVacation || slot.onVacation || slot.own}">
             P
           </button>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
-                  data-kind="MOON" th:title="#{spyMoon}" th:disabled="${slot.own || slot.moonName == null}">
+                  data-kind="MOON" th:title="#{spyMoon}"
+                  th:disabled="${onVacation || slot.onVacation || slot.own || slot.moonName == null}">
             M
           </button>
         </td>

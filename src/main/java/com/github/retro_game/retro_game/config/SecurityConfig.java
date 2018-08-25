@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,12 +31,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // @formatter:off
     http
       .authorizeRequests()
+        // Public
         .antMatchers(
             "/",
             "/combat-report",
             "/espionage-report",
             "/join",
             "/static/**").permitAll()
+        // Vacation mode
+        .antMatchers(HttpMethod.POST, "/body-settings/abandon").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/buildings/*").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/flights/*").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/jump-gate/jump").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/party/*").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.GET, "/phalanx").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/shipyard/build").access("!@userService.isOnVacation()")
+        .antMatchers(HttpMethod.POST, "/technologies/*").access("!@userService.isOnVacation()")
+        // Other
         .anyRequest().authenticated()
         .and()
       .csrf()
