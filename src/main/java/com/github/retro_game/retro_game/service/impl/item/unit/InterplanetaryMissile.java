@@ -5,11 +5,15 @@ import com.github.retro_game.retro_game.model.entity.Resources;
 import com.github.retro_game.retro_game.model.entity.TechnologyKind;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class InterplanetaryMissile extends UnitItem {
   private static final Map<BuildingKind, Integer> buildingsRequirements =
-      Collections.singletonMap(BuildingKind.MISSILE_SILO, 4);
+      Collections.unmodifiableMap(new EnumMap<BuildingKind, Integer>(BuildingKind.class) {{
+        put(BuildingKind.SHIPYARD, 1);
+        put(BuildingKind.MISSILE_SILO, 4);
+      }});
 
   private static final Map<TechnologyKind, Integer> technologiesRequirements =
       Collections.singletonMap(TechnologyKind.IMPULSE_DRIVE, 1);

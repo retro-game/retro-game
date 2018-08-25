@@ -4,11 +4,15 @@ import com.github.retro_game.retro_game.model.entity.BuildingKind;
 import com.github.retro_game.retro_game.model.entity.Resources;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class AntiBallisticMissile extends UnitItem {
   private static final Map<BuildingKind, Integer> buildingsRequirements =
-      Collections.singletonMap(BuildingKind.MISSILE_SILO, 2);
+      Collections.unmodifiableMap(new EnumMap<BuildingKind, Integer>(BuildingKind.class) {{
+        put(BuildingKind.SHIPYARD, 1);
+        put(BuildingKind.MISSILE_SILO, 2);
+      }});
 
   @Override
   public Map<BuildingKind, Integer> getBuildingsRequirements() {

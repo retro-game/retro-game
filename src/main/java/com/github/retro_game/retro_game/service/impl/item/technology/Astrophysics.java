@@ -14,7 +14,7 @@ public class Astrophysics extends TechnologyItem {
 
   private static final Map<TechnologyKind, Integer> technologiesRequirements =
       Collections.unmodifiableMap(new EnumMap<TechnologyKind, Integer>(TechnologyKind.class) {{
-        put(TechnologyKind.ENERGY_TECHNOLOGY, 4);
+        put(TechnologyKind.ESPIONAGE_TECHNOLOGY, 4);
         put(TechnologyKind.IMPULSE_DRIVE, 3);
       }});
 
