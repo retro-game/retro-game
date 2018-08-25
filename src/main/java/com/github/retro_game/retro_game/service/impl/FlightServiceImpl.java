@@ -1178,6 +1178,11 @@ class FlightServiceImpl implements FlightServiceInternal {
 
           UnitKind kind = entry.getKey();
           BodyUnit unit = entry.getValue();
+
+          if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
+            continue;
+          }
+
           boolean isDefense = UnitItem.getDefense().containsKey(kind);
 
           int remaining = (int) outcome.getNumRemainingUnits(numRounds - 1, kind.ordinal());
