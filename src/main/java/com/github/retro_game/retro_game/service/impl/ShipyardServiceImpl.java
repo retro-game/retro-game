@@ -329,6 +329,8 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     // Update resources, as the production may increase when we build solar satellites.
     bodyServiceInternal.updateResources(body, at);
 
+    List<BodyUnit> newUnits = new ArrayList<>();
+
     boolean first = true;
     for (ShipyardQueueEntry entry : queue) {
       UnitKind kind = entry.getKind();
@@ -364,7 +366,8 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
           unit = new BodyUnit();
           unit.setKey(key);
           unit.setCount(numBuilt);
-          bodyUnitRepository.save(unit);
+          units.put(kind, unit);
+          newUnits.add(unit);
         }
 
         int count = entry.getCount() - numBuilt;
@@ -385,6 +388,8 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       eventScheduler.schedule(newEvent);
       break;
     }
+
+    bodyUnitRepository.saveAll(newUnits);
   }
 
   private long getConstructionTime(UnitKind kind, Body body) {
