@@ -3,8 +3,10 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.form.CreateHomeworldForm;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.GalaxyService;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.validation.Valid;
 
 @Controller
+@Validated
 public class CreateHomeworldController {
   private final GalaxyService galaxyService;
   private final BodyService bodyService;
@@ -22,7 +25,9 @@ public class CreateHomeworldController {
   }
 
   @GetMapping("/create-homeworld")
-  public String createHomeworld(@RequestParam int galaxy, @RequestParam int system, Model model) {
+  public String createHomeworld(@Valid @Range(min = 1, max = 5) @RequestParam int galaxy,
+                                @Valid @Range(min = 1, max = 500) @RequestParam int system,
+                                Model model) {
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);
     model.addAttribute("slots", galaxyService.getSlots(galaxy, system));
