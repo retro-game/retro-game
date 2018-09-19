@@ -1,9 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.BodiesSortOrder;
-import com.github.retro_game.retro_game.model.entity.Body;
-import com.github.retro_game.retro_game.model.entity.EventKind;
-import com.github.retro_game.retro_game.model.entity.User;
+import com.github.retro_game.retro_game.model.entity.*;
 import com.github.retro_game.retro_game.model.repository.EventRepository;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
@@ -68,12 +65,20 @@ class UserServiceImpl implements UserServiceInternal {
   }
 
   @Override
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public void create(String email, String name, String password) {
+    // Make the first user an admin.
+    int roles = UserRole.USER;
+    if (userRepository.count() == 0) {
+      roles |= UserRole.ADMIN;
+    }
+
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     User user = new User();
     user.setName(name);
     user.setEmail(email);
     user.setPassword(passwordEncoder.encode(password));
+    user.setRoles(roles);
     user.setMessagesSeenAt(now);
     user.setCombatReportsSeenAt(now);
     user.setEspionageReportsSeenAt(now);

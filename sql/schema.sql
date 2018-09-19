@@ -15,6 +15,7 @@ create table users (
   name user_name not null,
   email text not null,
   password text not null,
+  roles int not null,
   messages_seen_at timestamptz not null,
   combat_reports_seen_at timestamptz not null,
   espionage_reports_seen_at timestamptz not null,

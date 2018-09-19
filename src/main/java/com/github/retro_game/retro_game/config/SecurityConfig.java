@@ -38,6 +38,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/espionage-report",
             "/join",
             "/static/**").permitAll()
+        // Admin
+        .antMatchers("/admin/**").hasRole("ADMIN")
         // Vacation mode
         .antMatchers(HttpMethod.POST, "/body-settings/abandon").access("!@userService.isOnVacation()")
         .antMatchers(HttpMethod.POST, "/buildings/*").access("!@userService.isOnVacation()")

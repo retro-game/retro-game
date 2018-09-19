@@ -31,6 +31,9 @@ public class User {
   @Column(name = "password", nullable = false)
   private String password;
 
+  @Column(name = "roles", nullable = false)
+  private int roles;
+
   @Column(name = "messages_seen_at", nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   private Date messagesSeenAt;
@@ -97,6 +100,11 @@ public class User {
       inverseJoinColumns = @JoinColumn(name = "party_id", referencedColumnName = "id"))
   @ManyToMany
   private List<Party> parties;
+
+  public boolean hasRole(int role) {
+    assert (role & (role - 1)) == 0;
+    return (roles & role) != 0;
+  }
 
   public boolean isNumberInputScrollingEnabled() {
     return (flags & NUMBER_INPUT_SCROLLING) != 0;
@@ -173,6 +181,14 @@ public class User {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public int getRoles() {
+    return roles;
+  }
+
+  public void setRoles(int roles) {
+    this.roles = roles;
   }
 
   public Date getMessagesSeenAt() {
