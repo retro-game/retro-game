@@ -631,7 +631,7 @@ class BodyServiceImpl implements BodyServiceInternal {
       comparator = comparator.reversed();
     }
 
-    if (!user.isStickyMoonsEnabled()) {
+    if (!user.hasFlag(UserFlag.STICKY_MOONS)) {
       bodies.sort(comparator);
       return;
     }

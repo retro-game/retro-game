@@ -11,12 +11,6 @@ import java.util.SortedMap;
 @Entity
 @Table(name = "users")
 public class User {
-  // Flags for the 'flags' field.
-  private final static int NUMBER_INPUT_SCROLLING = 1 << 0;
-  private final static int SHOW_NEW_MESSAGES_IN_OVERVIEW = 1 << 1;
-  private final static int SHOW_NEW_REPORTS_IN_OVERVIEW = 1 << 2;
-  private final static int STICKY_MOONS = 1 << 3;
-
   @Column(name = "id")
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -106,48 +100,9 @@ public class User {
     return (roles & role) != 0;
   }
 
-  public boolean isNumberInputScrollingEnabled() {
-    return (flags & NUMBER_INPUT_SCROLLING) != 0;
-  }
-
-  public void setNumberInputScrolling(boolean enabled) {
-    if (enabled)
-      flags |= NUMBER_INPUT_SCROLLING;
-    else
-      flags &= ~NUMBER_INPUT_SCROLLING;
-  }
-
-  public boolean isShowNewMessagesInOverviewEnabled() {
-    return (flags & SHOW_NEW_MESSAGES_IN_OVERVIEW) != 0;
-  }
-
-  public void setShowNewMessagesInOverview(boolean enabled) {
-    if (enabled)
-      flags |= SHOW_NEW_MESSAGES_IN_OVERVIEW;
-    else
-      flags &= ~SHOW_NEW_MESSAGES_IN_OVERVIEW;
-  }
-
-  public boolean isShowNewReportsInOverviewEnabled() {
-    return (flags & SHOW_NEW_REPORTS_IN_OVERVIEW) != 0;
-  }
-
-  public void setShowNewReportsInOverview(boolean enabled) {
-    if (enabled)
-      flags |= SHOW_NEW_REPORTS_IN_OVERVIEW;
-    else
-      flags &= ~SHOW_NEW_REPORTS_IN_OVERVIEW;
-  }
-
-  public boolean isStickyMoonsEnabled() {
-    return (flags & STICKY_MOONS) != 0;
-  }
-
-  public void setStickyMoons(boolean enabled) {
-    if (enabled)
-      flags |= STICKY_MOONS;
-    else
-      flags &= ~STICKY_MOONS;
+  public boolean hasFlag(int flag) {
+    assert (flag & (flag - 1)) == 0;
+    return (flags & flag) != 0;
   }
 
   public int getTechnologyLevel(TechnologyKind kind) {

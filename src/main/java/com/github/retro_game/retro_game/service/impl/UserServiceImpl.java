@@ -73,6 +73,8 @@ class UserServiceImpl implements UserServiceInternal {
       roles |= UserRole.ADMIN;
     }
 
+    int flags = UserFlag.NUMBER_INPUT_SCROLLING;
+
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     User user = new User();
     user.setName(name);
@@ -90,7 +92,7 @@ class UserServiceImpl implements UserServiceInternal {
     user.setBodiesSortOrder(BodiesSortOrder.EMERGENCE);
     user.setBodiesSortDirection(Sort.Direction.ASC);
     user.setNumProbes(1);
-    user.setNumberInputScrolling(true);
+    user.setFlags(flags);
     userRepository.save(user);
   }
 
@@ -127,8 +129,8 @@ class UserServiceImpl implements UserServiceInternal {
     User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
     return new UserSettingsDto(user.getLanguage(), user.getSkin(), user.getNumProbes(),
         Converter.convert(user.getBodiesSortOrder()), user.getBodiesSortDirection(),
-        user.isNumberInputScrollingEnabled(), user.isShowNewMessagesInOverviewEnabled(),
-        user.isShowNewReportsInOverviewEnabled(), user.isStickyMoonsEnabled());
+        user.hasFlag(UserFlag.NUMBER_INPUT_SCROLLING), user.hasFlag(UserFlag.SHOW_NEW_MESSAGES_IN_OVERVIEW),
+        user.hasFlag(UserFlag.SHOW_NEW_REPORTS_IN_OVERVIEW), user.hasFlag(UserFlag.STICKY_MOONS));
   }
 
   @Override
@@ -138,6 +140,16 @@ class UserServiceImpl implements UserServiceInternal {
   // Spring disallows it without using some hacks.
   @CacheEvict(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public void saveCurrentUserSettings(UserSettingsDto settings) {
+    int flags = 0;
+    if (settings.isNumberInputScrollingEnabled())
+      flags |= UserFlag.NUMBER_INPUT_SCROLLING;
+    if (settings.isShowNewMessagesInOverviewEnabled())
+      flags |= UserFlag.SHOW_NEW_MESSAGES_IN_OVERVIEW;
+    if (settings.isShowNewReportsInOverviewEnabled())
+      flags |= UserFlag.SHOW_NEW_REPORTS_IN_OVERVIEW;
+    if (settings.isStickyMoonsEnabled())
+      flags |= UserFlag.STICKY_MOONS;
+
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
     user.setLanguage(settings.getLanguage());
@@ -145,10 +157,7 @@ class UserServiceImpl implements UserServiceInternal {
     user.setNumProbes(settings.getNumProbes());
     user.setBodiesSortOrder(Converter.convert(settings.getBodiesSortOrder()));
     user.setBodiesSortDirection(settings.getBodiesSortDirection());
-    user.setNumberInputScrolling(settings.isNumberInputScrollingEnabled());
-    user.setShowNewMessagesInOverview(settings.isShowNewMessagesInOverviewEnabled());
-    user.setShowNewReportsInOverview(settings.isShowNewReportsInOverviewEnabled());
-    user.setStickyMoons(settings.isStickyMoonsEnabled());
+    user.setFlags(flags);
   }
 
   @Override
