@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{pranger}">Pranger</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th th:text="#{user}">User</th>
+      <th th:text="#{at}">At</th>
+      <th th:text="#{until}">Until</th>
+      <th th:text="#{reason}">Reason</th>
+    </tr>
+    <tr th:each="entry : ${pranger}">
+      <td>
+        <a th:href="@{/messages/send(body=${bodyId},recipient=${entry.userId})}" th:title="#{sendMessage}"
+           th:text="${entry.userName}"></a>
+      </td>
+      <td th:text="${#dates.format(entry.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${#dates.format(entry.until, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${entry.reason}"></td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

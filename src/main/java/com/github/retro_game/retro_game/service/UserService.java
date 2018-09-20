@@ -44,4 +44,13 @@ public interface UserService {
 
   @PreAuthorize("isAuthenticated()")
   void disableVacationMode();
+
+  @PreAuthorize("isAuthenticated()")
+  boolean isBanned();
+
+  @PreAuthorize("hasRole('ADMIN')")
+  void ban(String name, long durationDays, String reason);
+
+  @PreAuthorize("hasRole('ADMIN')")
+  void unban(String name);
 }

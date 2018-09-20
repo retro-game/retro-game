@@ -74,6 +74,9 @@ public class User {
   @Temporal(TemporalType.TIMESTAMP)
   private Date vacationUntil;
 
+  @Column(name = "forced_vacation", nullable = false)
+  private boolean forcedVacation;
+
   @OneToMany(mappedBy = "user")
   @MapKey(name = "id")
   @OrderBy("id")
@@ -248,6 +251,14 @@ public class User {
 
   public void setVacationUntil(Date vacationUntil) {
     this.vacationUntil = vacationUntil;
+  }
+
+  public boolean isForcedVacation() {
+    return forcedVacation;
+  }
+
+  public void setForcedVacation(boolean forcedVacation) {
+    this.forcedVacation = forcedVacation;
   }
 
   public SortedMap<Long, Body> getBodies() {

@@ -5,9 +5,7 @@ import com.github.retro_game.retro_game.model.repository.EventRepository;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.UserSettingsDto;
-import com.github.retro_game.retro_game.service.exception.CannotDisableVacationModeException;
-import com.github.retro_game.retro_game.service.exception.CannotEnableVacationModeException;
-import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,7 @@ class UserServiceImpl implements UserServiceInternal {
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
   private FlightServiceInternal flightServiceInternal;
+  private PrangerServiceInternal prangerServiceInternal;
 
   public UserServiceImpl(@Value("${retro-game.default-language}") String defaultLanguage,
                          @Value("${retro-game.default-skin}") String defaultSkin,
@@ -62,6 +61,11 @@ class UserServiceImpl implements UserServiceInternal {
   @Autowired
   public void setFlightServiceInternal(FlightServiceInternal flightServiceInternal) {
     this.flightServiceInternal = flightServiceInternal;
+  }
+
+  @Autowired
+  public void setPrangerServiceInternal(PrangerServiceInternal prangerServiceInternal) {
+    this.prangerServiceInternal = prangerServiceInternal;
   }
 
   @Override
@@ -93,6 +97,7 @@ class UserServiceImpl implements UserServiceInternal {
     user.setBodiesSortDirection(Sort.Direction.ASC);
     user.setNumProbes(1);
     user.setFlags(flags);
+    user.setForcedVacation(false);
     userRepository.save(user);
   }
 
@@ -232,7 +237,10 @@ class UserServiceImpl implements UserServiceInternal {
     Date until = Date.from(now.toInstant().plus(2, ChronoUnit.DAYS));
 
     logger.info("Enabling vacation mode: userId={} until='{}'", userId, until);
+    enableVacationMode(user, now, until);
+  }
 
+  private void enableVacationMode(User user, Date now, Date until) {
     updateActivitiesAndBodies(user, now);
     user.setVacationUntil(until);
   }
@@ -268,6 +276,7 @@ class UserServiceImpl implements UserServiceInternal {
     // Bodies must be updated before vacation until is set, otherwise resources will be calculated incorrectly.
     updateActivitiesAndBodies(user, now);
     user.setVacationUntil(null);
+    user.setForcedVacation(false);
   }
 
   private void updateActivitiesAndBodies(User user, Date at) {
@@ -282,5 +291,73 @@ class UserServiceImpl implements UserServiceInternal {
       Body body = entry.getValue();
       bodyServiceInternal.updateResources(body, at);
     }
+  }
+
+  @Override
+  public boolean isBanned() {
+    long userId = CustomUser.getCurrentUserId();
+    User user = userRepository.getOne(userId);
+    return isBanned(user);
+  }
+
+  private boolean isBanned(User user) {
+    Date until = user.getVacationUntil();
+    return user.isForcedVacation() && until != null && until.after(new Date());
+  }
+
+  @Override
+  @Transactional(isolation = Isolation.SERIALIZABLE)
+  public void ban(String name, long durationDays, String reason) {
+    long adminId = CustomUser.getCurrentUserId();
+    User admin = userRepository.getOne(adminId);
+
+    Optional<User> userOptional = userRepository.findByNameIgnoreCase(name);
+    if (!userOptional.isPresent()) {
+      logger.info("Banning user failed, user doesn't exist: adminId={}", adminId);
+      throw new UserDoesntExistException();
+    }
+    User user = userOptional.get();
+
+    if (isBanned(user)) {
+      logger.info("Banning user failed, user is already banned: adminId={} userId={}", adminId, user.getId());
+      throw new UserAlreadyBannedException();
+    }
+
+    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+    Date until = Date.from(now.toInstant().plus(durationDays, ChronoUnit.DAYS));
+
+    logger.info("Banning user: adminId={} userId={} durationDays={} until='{}' reason='{}'", adminId, user.getId(),
+        durationDays, until, reason);
+
+    enableVacationMode(user, now, until);
+    user.setForcedVacation(true);
+
+    prangerServiceInternal.createEntry(user, now, until, reason, admin);
+  }
+
+  @Override
+  @Transactional(isolation = Isolation.SERIALIZABLE)
+  public void unban(String name) {
+    long adminId = CustomUser.getCurrentUserId();
+
+    Optional<User> userOptional = userRepository.findByNameIgnoreCase(name);
+    if (!userOptional.isPresent()) {
+      logger.info("Unbanning user failed, user doesn't exist: adminId={}", adminId);
+      throw new UserDoesntExistException();
+    }
+    User user = userOptional.get();
+
+    if (!isBanned(user)) {
+      logger.info("Unbanning user failed, user is not banned: adminId={} userId={}", adminId, user.getId());
+      throw new UserNotBannedException();
+    }
+
+    logger.info("Unbanning user: adminId={} userId={}", adminId, user.getId());
+
+    prangerServiceInternal.deleteEntry(user, user.getVacationUntil());
+
+    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+    user.setVacationUntil(now);
+    user.setForcedVacation(false);
   }
 }

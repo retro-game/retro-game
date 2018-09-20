@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Menu</title>
+</head>
+<body>
+<div class="container">
+  <nav th:fragment="admin-menu" id="sidebar">
+    <h2 th:text="#{adminPanel}">Admin panel</h2>
+    <ul>
+      <li>
+        <a th:href="@{/admin/ban-management}" th:text="#{banManagement}">Ban management</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+</body>
+</html>

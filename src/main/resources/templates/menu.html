@@ -70,6 +70,9 @@
         <a th:href="@{/rapid-fire-table(body=${bodyId})}" th:text="#{rfTable}">RF Table</a>
       </li>
       <li>
+        <a th:href="@{/pranger(body=${bodyId})}" th:text="#{pranger}">Pranger</a>
+      </li>
+      <li>
         <a th:href="@{/settings(body=${bodyId})}" th:text="#{settings}">Settings</a>
       </li>
       <li sec:authorize="hasRole('ADMIN')">

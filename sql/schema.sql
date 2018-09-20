@@ -28,7 +28,8 @@ create table users (
   bodies_sort_order integer not null,
   bodies_sort_direction integer not null,
   flags integer not null,
-  vacation_until timestamptz
+  vacation_until timestamptz,
+  forced_vacation boolean not null
 );
 
 create unique index users_upper_name_idx on users (upper(name) text_pattern_ops);
@@ -519,6 +520,21 @@ create materialized view overall_ranking as (
 );
 
 create index on overall_ranking (rank);
+
+-- Pranger
+
+create table pranger (
+  id bigserial primary key,
+  user_id bigint references users not null,
+  at timestamptz not null,
+  until timestamptz not null,
+  reason text not null,
+  admin_id bigint references users not null,
+  unique (user_id, until)
+);
+
+create index pranger_at_idx
+          on pranger (at desc);
 
 -- Flight view
 
