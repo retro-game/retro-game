@@ -1,9 +1,7 @@
 package com.github.retro_game.retro_game.model.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "galaxy")
@@ -23,8 +21,12 @@ public class GalaxySlot {
   @Column(name = "user_name", nullable = false, insertable = false, updatable = false)
   private String userName;
 
-  @Column(name = "on_vacation", nullable = false, insertable = false, updatable = false)
-  private boolean onVacation;
+  @Column(name = "vacation_until", insertable = false, updatable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date vacationUntil;
+
+  @Column(name = "forced_vacation", nullable = false, insertable = false, updatable = false)
+  private boolean forcedVacation;
 
   // There must be at least one Id field, planetId should be unique.
   @Column(name = "planet_id", nullable = false, insertable = false, updatable = false)
@@ -75,8 +77,12 @@ public class GalaxySlot {
     return userName;
   }
 
-  public boolean isOnVacation() {
-    return onVacation;
+  public Date getVacationUntil() {
+    return vacationUntil;
+  }
+
+  public boolean isForcedVacation() {
+    return forcedVacation;
   }
 
   public long getPlanetId() {

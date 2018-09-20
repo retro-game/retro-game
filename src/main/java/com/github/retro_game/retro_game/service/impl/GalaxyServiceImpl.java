@@ -21,6 +21,7 @@ class GalaxyServiceImpl implements GalaxyService {
   private static final Logger logger = LoggerFactory.getLogger(GalaxyServiceImpl.class);
   private final GalaxySlotRepository galaxySlotRepository;
   private ActivityService activityService;
+  private UserServiceInternal userServiceInternal;
 
   public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository) {
     this.galaxySlotRepository = galaxySlotRepository;
@@ -29,6 +30,11 @@ class GalaxyServiceImpl implements GalaxyService {
   @Autowired
   public void setActivityService(ActivityService activityService) {
     this.activityService = activityService;
+  }
+
+  @Autowired
+  public void setUserServiceInternal(UserServiceInternal userServiceInternal) {
+    this.userServiceInternal = userServiceInternal;
   }
 
   @Override
@@ -52,6 +58,9 @@ class GalaxyServiceImpl implements GalaxyService {
 
     Map<Integer, GalaxySlotDto> ret = new HashMap<>();
     for (GalaxySlot slot : slots) {
+      boolean onVacation = slot.getVacationUntil() != null;
+      boolean banned = userServiceInternal.isBanned(slot.getVacationUntil(), slot.isForcedVacation());
+
       long activityAt = activities.getOrDefault(slot.getPlanetId(), 0L);
       if (slot.getMoonId() != null) {
         activityAt = Math.max(activityAt, activities.getOrDefault(slot.getMoonId(), 0L));
@@ -65,7 +74,7 @@ class GalaxyServiceImpl implements GalaxyService {
 
       boolean own = slot.getUserId() == userId;
 
-      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), slot.isOnVacation(),
+      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), onVacation, banned,
           slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(),
           slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), own);
       ret.put(slot.getPosition(), s);

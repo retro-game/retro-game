@@ -77,10 +77,13 @@
             <span th:text="${#numbers.formatInteger(slot.debrisCrystal, 1, 'DEFAULT')}"></span>
           </a>
         </td>
-        <td th:classappend="${slot.onVacation ? 'vacation' : ''}">
-          <a th:href="@{/messages/send(body=${bodyId},recipient=${slot.userId})}" th:title="#{sendMessage}"
-             th:text="${slot.userName}"></a>
-          <span th:if="${slot.onVacation}">(v)</span>
+        <td>
+          <a th:classappend="${slot.banned ? 'banned' : (slot.onVacation ? 'vacation' : '')}"
+             th:href="@{/messages/send(body=${bodyId},recipient=${slot.userId})}" th:title="#{sendMessage}">
+            <span th:text="${slot.userName}"></span>
+            <span th:if="${slot.banned}">(b)</span>
+            <span th:if="${!slot.banned && slot.onVacation}">(v)</span>
+          </a>
         </td>
         <td>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"

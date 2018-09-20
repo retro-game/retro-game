@@ -439,3 +439,8 @@ strong {
 .vacation {
   color: #6cf;
 }
+
+.banned {
+  color: #999;
+  text-decoration: line-through;
+}

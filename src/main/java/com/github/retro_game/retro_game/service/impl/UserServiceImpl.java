@@ -301,8 +301,12 @@ class UserServiceImpl implements UserServiceInternal {
   }
 
   private boolean isBanned(User user) {
-    Date until = user.getVacationUntil();
-    return user.isForcedVacation() && until != null && until.after(new Date());
+    return isBanned(user.getVacationUntil(), user.isForcedVacation());
+  }
+
+  @Override
+  public boolean isBanned(Date vacationUntil, boolean forcedVacation) {
+    return forcedVacation && vacationUntil != null && vacationUntil.after(new Date());
   }
 
   @Override
