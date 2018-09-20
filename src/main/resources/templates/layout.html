@@ -10,8 +10,8 @@
   <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Retro Game</title>
   <link th:href="@{/static/skins/{skin}/style.css?{v}(skin=${skin},v=${version})}" rel="stylesheet">
   <script th:src="@{/static/js/jquery-3.3.1.min.js}"></script>
-  <script th:src="@{/static/js/popper-1.14.3.min.js}"></script>
-  <script th:src="@{/static/js/tooltip-1.2.0.min.js}"></script>
+  <script th:src="@{/static/js/popper-1.14.4.min.js}"></script>
+  <script th:src="@{/static/js/tooltip-1.3.0.min.js}"></script>
   <script th:src="@{/static/js/retrogame.js?{v}(v=${version})}"></script>
 </head>
 <body th:data-production-speed="${@environment.getProperty('retro-game.production-speed')}"
