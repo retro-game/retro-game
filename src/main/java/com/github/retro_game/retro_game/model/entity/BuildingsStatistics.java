@@ -4,6 +4,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "defense_ranking")
-public class DefenseRanking extends Ranking {
+@Table(name = "buildings_statistics")
+public class BuildingsStatistics extends Statistics {
 }

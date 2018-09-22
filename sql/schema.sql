@@ -456,70 +456,29 @@ create table messages (
 create index messages_recipient_id_deleted_at_idx
           on messages (recipient_id, deleted, at desc);
 
--- Points
+-- Statistics
 
-create function create_points(kind text) returns void as $$
+create function create_statistics(kind text) returns void as $$
 begin
   execute '
-    create table ' || kind || '_points (
-      user_id int references users not null,
+    create table ' || kind || '_statistics (
+      user_id bigint references users not null,
       at timestamptz not null,
       points int not null,
+      rank int not null,
       primary key (user_id, at)
     )';
+  execute 'create index on ' || kind || '_statistics (at)';
 end
 $$ language plpgsql;
 
-select create_points('buildings');
-select create_points('technologies');
-select create_points('fleet');
-select create_points('defense');
+select create_statistics('overall');
+select create_statistics('buildings');
+select create_statistics('technologies');
+select create_statistics('fleet');
+select create_statistics('defense');
 
-drop function create_points(kind text);
-
--- Rankings
-
-create function create_ranking(kind text) returns void as $$
-begin
-  execute '
-    create materialized view ' || kind || '_ranking as (
-      select u.id as user_id,
-             u.name,
-             (rank() over (order by p.points desc)) as rank,
-             p.points
-        from users u
-        join ' || kind || '_points p
-          on p.user_id = u.id
-       where p.at = (select max(at) from ' || kind || '_points)
-    )';
-  execute 'create index on ' || kind || '_ranking (rank)';
-end
-$$ language plpgsql;
-
-select create_ranking('buildings');
-select create_ranking('technologies');
-select create_ranking('fleet');
-select create_ranking('defense');
-
-drop function create_ranking(kind text);
-
-create materialized view overall_ranking as (
-  select u.id as user_id,
-         u.name,
-         (rank() over (order by br.points + tr.points + fr.points + dr.points desc)) as rank,
-         br.points + tr.points + fr.points + dr.points as points
-    from users u
-    join buildings_ranking br
-      on br.user_id = u.id
-    join technologies_ranking tr
-      on tr.user_id = u.id
-    join fleet_ranking fr
-      on fr.user_id = u.id
-    join defense_ranking dr
-      on dr.user_id = u.id
-);
-
-create index on overall_ranking (rank);
+drop function create_statistics(kind text);
 
 -- Pranger
 

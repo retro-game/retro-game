@@ -8,23 +8,26 @@
 <div layout:fragment="content">
   <table>
     <tr>
-      <th colspan="5" th:text="#{ranking}">Ranking</th>
+      <th colspan="5">
+        <span th:text="#{ranking}">Ranking</span>
+        (<span th:text="${#dates.format(ranking.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>)
+      </th>
     </tr>
     <tr>
       <td>
         <a th:href="@{/ranking(body=${bodyId})}" th:text="#{overall}">Overall</a>
       </td>
       <td>
-        <a th:href="@{/ranking(body=${bodyId},kind='buildings')}" th:text="#{buildings}">Buildings</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='BUILDINGS')}" th:text="#{buildings}">Buildings</a>
       </td>
       <td>
-        <a th:href="@{/ranking(body=${bodyId},kind='technologies')}" th:text="#{technologies}">Technologies</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='TECHNOLOGIES')}" th:text="#{technologies}">Technologies</a>
       </td>
       <td>
-        <a th:href="@{/ranking(body=${bodyId},kind='fleet')}" th:text="#{fleet}">Fleet</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='FLEET')}" th:text="#{fleet}">Fleet</a>
       </td>
       <td>
-        <a th:href="@{/ranking(body=${bodyId},kind='defense')}" th:text="#{defense}">Defense</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='DEFENSE')}" th:text="#{defense}">Defense</a>
       </td>
     </tr>
   </table>
@@ -34,13 +37,13 @@
       <th th:text="#{name}">Name</th>
       <th th:text="#{points}">Points</th>
     </tr>
-    <tr th:each="r : ${ranking}">
-      <td th:text="${r.rank}"></td>
+    <tr th:each="e : ${ranking.entries}">
+      <td th:text="${e.rank}"></td>
       <td>
-        <a th:href="@{/messages/send(body=${bodyId},recipient=${r.userId})}" th:title="#{sendMessage}"
-           th:text="${r.name}"></a>
+        <a th:href="@{/messages/send(body=${bodyId},recipient=${e.userId})}" th:title="#{sendMessage}"
+           th:text="${e.userName}"></a>
       </td>
-      <td th:text="${#numbers.formatInteger(r.points, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(e.points, 1, 'DEFAULT')}"></td>
     </tr>
   </table>
 </div>

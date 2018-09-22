@@ -1,12 +1,12 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.model.entity.Ranking;
+import com.github.retro_game.retro_game.service.dto.RankingDto;
+import com.github.retro_game.retro_game.service.dto.RankingKindDto;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
-
-import java.util.List;
 
 public interface RankingService {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
-  List<? extends Ranking> findAll(long bodyId, String kind);
+  RankingDto getLatest(long bodyId, @Nullable RankingKindDto kind);
 }
