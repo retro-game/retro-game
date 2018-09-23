@@ -16,14 +16,16 @@ public class OverviewController {
   private final FlightService flightService;
   private final MessageService messageService;
   private final ReportService reportService;
+  private final StatisticsService statisticsService;
   private final UserService userService;
 
   public OverviewController(BodyService bodyService, FlightService flightService, MessageService messageService,
-                            ReportService reportService, UserService userService) {
+                            ReportService reportService, StatisticsService statisticsService, UserService userService) {
     this.bodyService = bodyService;
     this.flightService = flightService;
     this.messageService = messageService;
     this.reportService = reportService;
+    this.statisticsService = statisticsService;
     this.userService = userService;
   }
 
@@ -40,6 +42,7 @@ public class OverviewController {
     model.addAttribute("userName", userService.getCurrentUserName());
     model.addAttribute("flightEvents", flightService.getOverviewFlightEvents(bodyId));
     model.addAttribute("bodies", bodyService.getOverviewBodies(bodyId));
+    model.addAttribute("userStatistics", statisticsService.getUserStatistics(bodyId));
     return "overview";
   }
 }

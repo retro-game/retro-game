@@ -4,7 +4,7 @@ import com.github.retro_game.retro_game.model.entity.BuildingKind;
 import com.github.retro_game.retro_game.model.entity.Resources;
 import com.github.retro_game.retro_game.model.entity.TechnologyKind;
 import com.github.retro_game.retro_game.model.entity.UnitKind;
-import com.github.retro_game.retro_game.service.impl.cache.RankingCache;
+import com.github.retro_game.retro_game.service.impl.cache.StatisticsAndRankingCache;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
 import com.github.retro_game.retro_game.service.impl.item.technology.TechnologyItem;
 import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
@@ -22,16 +22,16 @@ import java.util.Map;
 class UpdateStatisticsAndRankingsTask {
   private static final Logger logger = LoggerFactory.getLogger(UpdateStatisticsAndRankingsTask.class);
   private final JdbcTemplate jdbcTemplate;
-  private final RankingCache rankingCache;
+  private final StatisticsAndRankingCache statisticsAndRankingCache;
   private final String updateBuildingsStatisticsSql;
   private final String updateTechnologiesStatisticsSql;
   private final String updateFleetStatisticsSql;
   private final String updateDefenseStatisticsSql;
   private final String updateOverallStatisticsSql;
 
-  public UpdateStatisticsAndRankingsTask(JdbcTemplate jdbcTemplate, RankingCache rankingCache) {
+  public UpdateStatisticsAndRankingsTask(JdbcTemplate jdbcTemplate, StatisticsAndRankingCache statisticsAndRankingCache) {
     this.jdbcTemplate = jdbcTemplate;
-    this.rankingCache = rankingCache;
+    this.statisticsAndRankingCache = statisticsAndRankingCache;
 
     // Buildings
     updateBuildingsStatisticsSql = "" +
@@ -182,7 +182,7 @@ class UpdateStatisticsAndRankingsTask {
     jdbcTemplate.update(updateOverallStatisticsSql, now, now);
     logger.info("Statistics updated");
 
-    rankingCache.update(Date.from(Instant.ofEpochSecond(now)));
+    statisticsAndRankingCache.update(Date.from(Instant.ofEpochSecond(now)));
     logger.info("Rankings updated");
   }
 }

@@ -134,6 +134,17 @@
            th:text="${c}">1-2-3-P</a>
       </td>
     </tr>
+    <tr>
+      <td th:text="#{points}">Points</td>
+      <td colspan="3" th:with="s=${userStatistics}" data-tooltip data-tooltip-html th:data-tooltip-title="
+            '<p>' + #{buildings} + ': <strong>' + ${#numbers.formatInteger(s.buildings.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.buildings.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+            '<p>' + #{technologies} + ': <strong>' + ${#numbers.formatInteger(s.technologies.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.technologies.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+            '<p>' + #{fleet} + ': <strong>' + ${#numbers.formatInteger(s.fleet.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.fleet.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+            '<p>' + #{defense} + ': <strong>' + ${#numbers.formatInteger(s.defense.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.defense.rank, 1, 'DEFAULT')} + ')</strong></p>'"
+          th:text="${#numbers.formatInteger(s.overall.points, 1, 'DEFAULT') + ' (' + #numbers.formatInteger(s.overall.rank, 1, 'DEFAULT') + ')'}">
+        123,456 (42)
+      </td>
+    </tr>
   </table>
 </div>
 </body>
