@@ -46,8 +46,19 @@
         <td th:text="${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
         <td th:text="#{${'transportKind.' + report.kind}}"></td>
         <td>
-          <a th:href="@{/messages/send(body=${bodyId},recipient=${report.partnerId})}" th:title="#{sendMessage}"
-             th:text="${report.partnerName}"></a>
+          <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                  '<table>' +
+                    '<tr>' +
+                      '<th>' + ${report.partnerName} + '</th>' +
+                    '</tr>' +
+                    '<tr>' +
+                      '<td>' +
+                        '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${report.partnerId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                        '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${report.partnerId})} + '\'>' + #{statistics} + '</a></p>' +
+                      '</td>' +
+                    '</tr>' +
+                  '</table>'"
+                th:text="${report.partnerName}"></span>
         </td>
         <td>
           <a th:with="c=${report.startCoordinates}"

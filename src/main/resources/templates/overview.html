@@ -57,7 +57,21 @@
               ) + '''>' + @formatterService.prefixedNumber(r.metal + r.crystal + r.deuterium) + '</mark>'},
             units='<mark>' + ${@formatterService.formatUnits(event.units)} + '</mark>',
             sendMessageLink=@{/messages/send(body=${bodyId},recipient=${event.startUserId})},
-            user='<a href=\'' + ${#strings.escapeXml(sendMessageLink)} + '\' title=\'' + #{sendMessage} + '\'>' + ${event.startUserName} + '</a>',
+            statisticsLink=@{/statistics/summary(body=${bodyId},user=${event.startUserId})},
+            user=${
+              '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(
+                '<table>' +
+                  '<tr>' +
+                    '<th><mark>' + event.startUserName + '</mark></th>' +
+                  '</tr>' +
+                  '<tr>' +
+                    '<td>' +
+                      '<p><a href=''' + sendMessageLink + '''>' + #messages.msg('sendMessage') + '</a></p>' +
+                      '<p><a href=''' + statisticsLink + '''>' + #messages.msg('statistics') + '</a></p>' +
+                    '</td>' +
+                  '</tr>' +
+                '</table>'
+              ) + '''>' + event.startUserName + '</mark>'},
             partyLink=@{/party(body=${bodyId},party=${event.partyId})},
             party='<a href=\'' + ${#strings.escapeXml(partyLink)} + '\'>#' + ${event.partyId} + '</a>',
             kind=${event.kind}">

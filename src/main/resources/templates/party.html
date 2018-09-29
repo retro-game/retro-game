@@ -13,8 +13,19 @@
     <tr>
       <td th:text="#{user}">User</td>
       <td>
-        <a th:href="@{/messages/send(body=${bodyId},recipient=${party.targetUserId})}" th:title="#{sendMessage}"
-           th:text="${party.targetUserName}"></a>
+        <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                '<table>' +
+                  '<tr>' +
+                    '<th>' + ${party.targetUserName} + '</th>' +
+                  '</tr>' +
+                  '<tr>' +
+                    '<td>' +
+                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${party.targetUserId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${party.targetUserId})} + '\'>' + #{statistics} + '</a></p>' +
+                    '</td>' +
+                  '</tr>' +
+                '</table>'"
+              th:text="${party.targetUserName}"></span>
       </td>
     </tr>
     <tr>
@@ -33,8 +44,19 @@
     </tr>
     <tr th:each="member : ${party.members}">
       <td>
-        <a th:href="@{/messages/send(body=${bodyId},recipient=${member.id})}" th:title="#{sendMessage}"
-           th:text="${member.name}"></a>
+        <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                '<table>' +
+                  '<tr>' +
+                    '<th>' + ${member.name} + '</th>' +
+                  '</tr>' +
+                  '<tr>' +
+                    '<td>' +
+                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${member.id})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${member.id})} + '\'>' + #{statistics} + '</a></p>' +
+                    '</td>' +
+                  '</tr>' +
+                '</table>'"
+              th:text="${member.name}"></span>
       </td>
     </tr>
   </table>

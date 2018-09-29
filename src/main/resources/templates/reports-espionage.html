@@ -49,8 +49,19 @@
       <tr th:with="c=${report.coordinates}">
         <td th:text="${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
         <td>
-          <a th:href="@{/messages/send(body=${bodyId},recipient=${report.enemyId})}" th:title="#{sendMessage}"
-             th:text="${report.enemyName}"></a>
+          <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                  '<table>' +
+                    '<tr>' +
+                      '<th>' + ${report.enemyName} + '</th>' +
+                    '</tr>' +
+                    '<tr>' +
+                      '<td>' +
+                        '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${report.enemyId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                        '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${report.enemyId})} + '\'>' + #{statistics} + '</a></p>' +
+                      '</td>' +
+                    '</tr>' +
+                  '</table>'"
+                th:text="${report.enemyName}"></span>
         </td>
         <td>
           <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"

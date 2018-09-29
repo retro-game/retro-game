@@ -40,8 +40,19 @@
     <tr th:each="e : ${ranking.entries}">
       <td th:text="${e.rank}"></td>
       <td>
-        <a th:href="@{/messages/send(body=${bodyId},recipient=${e.userId})}" th:title="#{sendMessage}"
-           th:text="${e.userName}"></a>
+        <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                '<table>' +
+                  '<tr>' +
+                    '<th>' + ${e.userName} + '</th>' +
+                  '</tr>' +
+                  '<tr>' +
+                    '<td>' +
+                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${e.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${e.userId})} + '\'>' + #{statistics} + '</a></p>' +
+                    '</td>' +
+                  '</tr>' +
+                '</table>'"
+              th:text="${e.userName}"></span>
       </td>
       <td th:text="${#numbers.formatInteger(e.points, 1, 'DEFAULT')}"></td>
     </tr>
