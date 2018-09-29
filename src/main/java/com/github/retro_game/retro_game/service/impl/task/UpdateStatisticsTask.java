@@ -4,7 +4,7 @@ import com.github.retro_game.retro_game.model.entity.BuildingKind;
 import com.github.retro_game.retro_game.model.entity.Resources;
 import com.github.retro_game.retro_game.model.entity.TechnologyKind;
 import com.github.retro_game.retro_game.model.entity.UnitKind;
-import com.github.retro_game.retro_game.service.impl.cache.StatisticsAndRankingCache;
+import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
 import com.github.retro_game.retro_game.service.impl.item.technology.TechnologyItem;
 import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
@@ -19,19 +19,19 @@ import java.time.Instant;
 import java.util.Map;
 
 @Component
-class UpdateStatisticsAndRankingsTask {
-  private static final Logger logger = LoggerFactory.getLogger(UpdateStatisticsAndRankingsTask.class);
+class UpdateStatisticsTask {
+  private static final Logger logger = LoggerFactory.getLogger(UpdateStatisticsTask.class);
   private final JdbcTemplate jdbcTemplate;
-  private final StatisticsAndRankingCache statisticsAndRankingCache;
+  private final StatisticsCache statisticsCache;
   private final String updateBuildingsStatisticsSql;
   private final String updateTechnologiesStatisticsSql;
   private final String updateFleetStatisticsSql;
   private final String updateDefenseStatisticsSql;
   private final String updateOverallStatisticsSql;
 
-  public UpdateStatisticsAndRankingsTask(JdbcTemplate jdbcTemplate, StatisticsAndRankingCache statisticsAndRankingCache) {
+  public UpdateStatisticsTask(JdbcTemplate jdbcTemplate, StatisticsCache statisticsCache) {
     this.jdbcTemplate = jdbcTemplate;
-    this.statisticsAndRankingCache = statisticsAndRankingCache;
+    this.statisticsCache = statisticsCache;
 
     // Buildings
     updateBuildingsStatisticsSql = "" +
@@ -182,7 +182,7 @@ class UpdateStatisticsAndRankingsTask {
     jdbcTemplate.update(updateOverallStatisticsSql, now, now);
     logger.info("Statistics updated");
 
-    statisticsAndRankingCache.update(Date.from(Instant.ofEpochSecond(now)));
+    statisticsCache.update(Date.from(Instant.ofEpochSecond(now)));
     logger.info("Rankings updated");
   }
 }

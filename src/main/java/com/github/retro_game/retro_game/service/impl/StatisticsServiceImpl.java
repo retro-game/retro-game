@@ -5,7 +5,7 @@ import com.github.retro_game.retro_game.model.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.StatisticsService;
 import com.github.retro_game.retro_game.service.dto.*;
-import com.github.retro_game.retro_game.service.impl.cache.StatisticsAndRankingCache;
+import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.springframework.stereotype.Service;
@@ -25,20 +25,25 @@ public class StatisticsServiceImpl implements StatisticsService {
   private final TechnologiesStatisticsRepository technologiesStatisticsRepository;
   private final FleetStatisticsRepository fleetStatisticsRepository;
   private final DefenseStatisticsRepository defenseStatisticsRepository;
-  private final StatisticsAndRankingCache statisticsAndRankingCache;
+  private final StatisticsCache statisticsCache;
 
   public StatisticsServiceImpl(OverallStatisticsRepository overallStatisticsRepository,
                                BuildingsStatisticsRepository buildingsStatisticsRepository,
                                TechnologiesStatisticsRepository technologiesStatisticsRepository,
                                FleetStatisticsRepository fleetStatisticsRepository,
                                DefenseStatisticsRepository defenseStatisticsRepository,
-                               StatisticsAndRankingCache statisticsAndRankingCache) {
+                               StatisticsCache statisticsCache) {
     this.overallStatisticsRepository = overallStatisticsRepository;
     this.buildingsStatisticsRepository = buildingsStatisticsRepository;
     this.technologiesStatisticsRepository = technologiesStatisticsRepository;
     this.fleetStatisticsRepository = fleetStatisticsRepository;
     this.defenseStatisticsRepository = defenseStatisticsRepository;
-    this.statisticsAndRankingCache = statisticsAndRankingCache;
+    this.statisticsCache = statisticsCache;
+  }
+
+  @Override
+  public RankingDto getLatestRanking(long bodyId, StatisticsKindDto kind) {
+    return statisticsCache.getLatestRanking(kind);
   }
 
   @Override
@@ -49,7 +54,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
   @Override
   public StatisticsSummaryDto getSummary(long bodyId, long userId) {
-    return statisticsAndRankingCache.getUserSummary(userId);
+    return statisticsCache.getUserSummary(userId);
   }
 
   @Override

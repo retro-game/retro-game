@@ -58,7 +58,7 @@
         <a th:href="@{/messages/send-spam(body=${bodyId})}" th:text="#{sendSpam}">Send Spam</a>
       </li>
       <li>
-        <a th:href="@{/ranking(body=${bodyId})}" th:text="#{ranking}">Ranking</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{ranking}">Ranking</a>
       </li>
       <li>
         <a th:href="@{/statistics/summary(body=${bodyId},user=${@userService.currentId})}"

@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class StatisticsAndRankingCache {
+public class StatisticsCache {
   private final BuildingsStatisticsRepository buildingsStatisticsRepository;
   private final DefenseStatisticsRepository defenseStatisticsRepository;
   private final FleetStatisticsRepository fleetStatisticsRepository;
@@ -46,12 +46,12 @@ public class StatisticsAndRankingCache {
   private Data data = new Data(Date.from(Instant.ofEpochSecond(0)), Collections.emptyMap(), Collections.emptyList(),
       Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
-  public StatisticsAndRankingCache(BuildingsStatisticsRepository buildingsStatisticsRepository,
-                                   DefenseStatisticsRepository defenseStatisticsRepository,
-                                   FleetStatisticsRepository fleetStatisticsRepository,
-                                   OverallStatisticsRepository overallStatisticsRepository,
-                                   TechnologiesStatisticsRepository technologiesStatisticsRepository,
-                                   UserRepository userRepository) {
+  public StatisticsCache(BuildingsStatisticsRepository buildingsStatisticsRepository,
+                         DefenseStatisticsRepository defenseStatisticsRepository,
+                         FleetStatisticsRepository fleetStatisticsRepository,
+                         OverallStatisticsRepository overallStatisticsRepository,
+                         TechnologiesStatisticsRepository technologiesStatisticsRepository,
+                         UserRepository userRepository) {
     this.buildingsStatisticsRepository = buildingsStatisticsRepository;
     this.defenseStatisticsRepository = defenseStatisticsRepository;
     this.fleetStatisticsRepository = fleetStatisticsRepository;
@@ -121,11 +121,8 @@ public class StatisticsAndRankingCache {
     return data.usersSummaries.get(userId);
   }
 
-  public RankingDto getLatestRanking(@Nullable StatisticsKindDto kind) {
+  public RankingDto getLatestRanking(StatisticsKindDto kind) {
     Data d = data;
-    if (kind == null) {
-      kind = StatisticsKindDto.OVERALL;
-    }
     List<RankingEntryDto> entries;
     switch (kind) {
       case OVERALL:

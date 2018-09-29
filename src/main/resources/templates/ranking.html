@@ -15,7 +15,7 @@
     </tr>
     <tr>
       <td>
-        <a th:href="@{/ranking(body=${bodyId})}" th:text="#{overall}">Overall</a>
+        <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{overall}">Overall</a>
       </td>
       <td>
         <a th:href="@{/ranking(body=${bodyId},kind='BUILDINGS')}" th:text="#{buildings}">Buildings</a>

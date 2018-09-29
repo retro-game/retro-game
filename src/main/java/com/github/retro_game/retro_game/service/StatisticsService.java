@@ -11,6 +11,10 @@ import java.util.List;
 public interface StatisticsService {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  RankingDto getLatestRanking(long bodyId, StatisticsKindDto kind);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   @Nullable
   StatisticsSummaryDto getCurrentUserSummary(long bodyId);
 
