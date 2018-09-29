@@ -92,6 +92,7 @@
                     '</tr>' +
                   '</table>'">
             <span th:text="${slot.userName}"></span>
+            (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
             <span th:if="${slot.banned}">(b)</span>
             <span th:if="${!slot.banned && slot.onVacation}">(v)</span>
           </span>

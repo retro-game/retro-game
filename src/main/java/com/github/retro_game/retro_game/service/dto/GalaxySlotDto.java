@@ -5,6 +5,7 @@ import org.springframework.lang.Nullable;
 public class GalaxySlotDto {
   private final long userId;
   private final String userName;
+  private final int rank;
   private final boolean onVacation;
   private final boolean banned;
   private final String planetName;
@@ -17,11 +18,12 @@ public class GalaxySlotDto {
   private final Long debrisCrystal;
   private final boolean own;
 
-  public GalaxySlotDto(long userId, String userName, boolean onVacation, boolean banned, String planetName,
+  public GalaxySlotDto(long userId, String userName, int rank, boolean onVacation, boolean banned, String planetName,
                        BodyTypeDto planetType, int planetImage, @Nullable String moonName, @Nullable Integer moonImage,
                        int activity, @Nullable Long debrisMetal, @Nullable Long debrisCrystal, boolean own) {
     this.userId = userId;
     this.userName = userName;
+    this.rank = rank;
     this.onVacation = onVacation;
     this.banned = banned;
     this.planetName = planetName;
@@ -41,6 +43,10 @@ public class GalaxySlotDto {
 
   public String getUserName() {
     return userName;
+  }
+
+  public int getRank() {
+    return rank;
   }
 
   public boolean isOnVacation() {

@@ -5,6 +5,8 @@ import com.github.retro_game.retro_game.model.repository.GalaxySlotRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.dto.GalaxySlotDto;
+import com.github.retro_game.retro_game.service.dto.StatisticsSummaryDto;
+import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,13 @@ import java.util.Map;
 class GalaxyServiceImpl implements GalaxyService {
   private static final Logger logger = LoggerFactory.getLogger(GalaxyServiceImpl.class);
   private final GalaxySlotRepository galaxySlotRepository;
+  private final StatisticsCache statisticsCache;
   private ActivityService activityService;
   private UserServiceInternal userServiceInternal;
 
-  public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository) {
+  public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository, StatisticsCache statisticsCache) {
     this.galaxySlotRepository = galaxySlotRepository;
+    this.statisticsCache = statisticsCache;
   }
 
   @Autowired
@@ -61,6 +65,9 @@ class GalaxyServiceImpl implements GalaxyService {
       boolean onVacation = slot.getVacationUntil() != null;
       boolean banned = userServiceInternal.isBanned(slot.getVacationUntil(), slot.isForcedVacation());
 
+      StatisticsSummaryDto summary = statisticsCache.getUserSummary(slot.getUserId());
+      int rank = summary == null ? 0 : summary.getOverall().getRank();
+
       long activityAt = activities.getOrDefault(slot.getPlanetId(), 0L);
       if (slot.getMoonId() != null) {
         activityAt = Math.max(activityAt, activities.getOrDefault(slot.getMoonId(), 0L));
@@ -74,7 +81,7 @@ class GalaxyServiceImpl implements GalaxyService {
 
       boolean own = slot.getUserId() == userId;
 
-      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), onVacation, banned,
+      GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), rank, onVacation, banned,
           slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(),
           slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), own);
       ret.put(slot.getPosition(), s);
