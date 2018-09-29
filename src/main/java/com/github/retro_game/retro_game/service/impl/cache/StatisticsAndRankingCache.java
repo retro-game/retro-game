@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
@@ -68,20 +67,23 @@ public class StatisticsAndRankingCache {
   }
 
   public void update(Date at) {
-    Map<Long, String> names = userRepository.findAll().stream().collect(Collectors.toMap(User::getId, User::getName));
-
     Map<Long, PointsAndRankPairDto> overallStatistics = fetchStatistics(overallStatisticsRepository, at);
     Map<Long, PointsAndRankPairDto> buildingsStatistics = fetchStatistics(buildingsStatisticsRepository, at);
     Map<Long, PointsAndRankPairDto> technologiesStatistics = fetchStatistics(technologiesStatisticsRepository, at);
     Map<Long, PointsAndRankPairDto> fleetStatistics = fetchStatistics(fleetStatisticsRepository, at);
     Map<Long, PointsAndRankPairDto> defenseStatistics = fetchStatistics(defenseStatisticsRepository, at);
 
-    Map<Long, StatisticsSummaryDto> usersStatistics = Collections.unmodifiableMap(names.keySet().stream()
+    Map<Long, StatisticsSummaryDto> usersSummaries = Collections.unmodifiableMap(overallStatistics.entrySet().stream()
         .collect(Collectors.toMap(
-            Function.identity(),
-            id -> new StatisticsSummaryDto(overallStatistics.get(id), buildingsStatistics.get(id),
-                technologiesStatistics.get(id), fleetStatistics.get(id), defenseStatistics.get(id))
+            Map.Entry::getKey,
+            e -> {
+              long id = e.getKey();
+              return new StatisticsSummaryDto(e.getValue(), buildingsStatistics.get(id), technologiesStatistics.get(id),
+                  fleetStatistics.get(id), defenseStatistics.get(id));
+            }
         )));
+
+    Map<Long, String> names = userRepository.findAll().stream().collect(Collectors.toMap(User::getId, User::getName));
 
     List<RankingEntryDto> overallRanking = createRanking(overallStatistics, names);
     List<RankingEntryDto> buildingsRanking = createRanking(buildingsStatistics, names);
@@ -89,8 +91,9 @@ public class StatisticsAndRankingCache {
     List<RankingEntryDto> fleetRanking = createRanking(fleetStatistics, names);
     List<RankingEntryDto> defenseRanking = createRanking(defenseStatistics, names);
 
-    data = new Data(at, usersStatistics, overallRanking, buildingsRanking, technologiesRanking, fleetRanking,
+    data = new Data(at, usersSummaries, overallRanking, buildingsRanking, technologiesRanking, fleetRanking,
         defenseRanking);
+
   }
 
   private <T extends Statistics> Map<Long, PointsAndRankPairDto> fetchStatistics(StatisticsRepositoryBase<T> repository,
@@ -103,11 +106,11 @@ public class StatisticsAndRankingCache {
   }
 
   private List<RankingEntryDto> createRanking(Map<Long, PointsAndRankPairDto> statistics, Map<Long, String> names) {
-    return Collections.unmodifiableList(names.entrySet().stream()
+    return Collections.unmodifiableList(statistics.entrySet().stream()
         .map(e -> {
           long id = e.getKey();
-          PointsAndRankPairDto pair = statistics.get(id);
-          return new RankingEntryDto(id, e.getValue(), pair.getPoints(), pair.getRank());
+          PointsAndRankPairDto pair = e.getValue();
+          return new RankingEntryDto(id, names.get(id), pair.getPoints(), pair.getRank());
         })
         .sorted(Comparator.comparing(RankingEntryDto::getRank))
         .collect(Collectors.toList()));
