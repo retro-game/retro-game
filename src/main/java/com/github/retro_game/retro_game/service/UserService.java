@@ -14,6 +14,9 @@ public interface UserService {
 
   boolean existsByNameIgnoreCase(String name);
 
+  @PreAuthorize("isAuthenticated()")
+  long getCurrentId();
+
   String getName(long userId);
 
   @PreAuthorize("isAuthenticated()")

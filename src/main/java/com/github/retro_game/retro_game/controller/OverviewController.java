@@ -42,7 +42,7 @@ public class OverviewController {
     model.addAttribute("userName", userService.getCurrentUserName());
     model.addAttribute("flightEvents", flightService.getOverviewFlightEvents(bodyId));
     model.addAttribute("bodies", bodyService.getOverviewBodies(bodyId));
-    model.addAttribute("userStatistics", statisticsService.getUserStatistics(bodyId));
+    model.addAttribute("summary", statisticsService.getCurrentUserSummary(bodyId));
     return "overview";
   }
 }

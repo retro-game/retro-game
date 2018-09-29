@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.service.RankingService;
-import com.github.retro_game.retro_game.service.dto.RankingKindDto;
+import com.github.retro_game.retro_game.service.dto.StatisticsKindDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ public class RankingController {
 
   @GetMapping("/ranking")
   public String ranking(@RequestParam(name = "body") long bodyId,
-                        @RequestParam(name = "kind", required = false) RankingKindDto kind,
+                        @RequestParam(name = "kind", required = false) StatisticsKindDto kind,
                         Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ranking", rankingService.getLatest(bodyId, kind));

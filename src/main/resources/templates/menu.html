@@ -61,6 +61,10 @@
         <a th:href="@{/ranking(body=${bodyId})}" th:text="#{ranking}">Ranking</a>
       </li>
       <li>
+        <a th:href="@{/statistics/summary(body=${bodyId},user=${@userService.currentId})}"
+           th:text="#{statistics}">Statistics</a>
+      </li>
+      <li>
         <a th:href="@{/technology-tree(body=${bodyId})}" th:text="#{techTree}">Tech Tree</a>
       </li>
       <li>

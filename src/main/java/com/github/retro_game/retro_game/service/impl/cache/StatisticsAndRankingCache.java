@@ -24,18 +24,18 @@ public class StatisticsAndRankingCache {
 
   private static class Data {
     private final Date updatedAt;
-    private final Map<Long, UserStatisticsDto> usersStatistics;
+    private final Map<Long, StatisticsSummaryDto> usersSummaries;
     private final List<RankingEntryDto> overallRanking;
     private final List<RankingEntryDto> buildingsRanking;
     private final List<RankingEntryDto> technologiesRanking;
     private final List<RankingEntryDto> fleetRanking;
     private final List<RankingEntryDto> defenseRanking;
 
-    private Data(Date updatedAt, Map<Long, UserStatisticsDto> usersStatistics, List<RankingEntryDto> overallRanking,
+    private Data(Date updatedAt, Map<Long, StatisticsSummaryDto> usersSummaries, List<RankingEntryDto> overallRanking,
                  List<RankingEntryDto> buildingsRanking, List<RankingEntryDto> technologiesRanking,
                  List<RankingEntryDto> fleetRanking, List<RankingEntryDto> defenseRanking) {
       this.updatedAt = updatedAt;
-      this.usersStatistics = usersStatistics;
+      this.usersSummaries = usersSummaries;
       this.overallRanking = overallRanking;
       this.buildingsRanking = buildingsRanking;
       this.technologiesRanking = technologiesRanking;
@@ -76,10 +76,10 @@ public class StatisticsAndRankingCache {
     Map<Long, PointsAndRankPairDto> fleetStatistics = fetchStatistics(fleetStatisticsRepository, at);
     Map<Long, PointsAndRankPairDto> defenseStatistics = fetchStatistics(defenseStatisticsRepository, at);
 
-    Map<Long, UserStatisticsDto> usersStatistics = Collections.unmodifiableMap(names.keySet().stream()
+    Map<Long, StatisticsSummaryDto> usersStatistics = Collections.unmodifiableMap(names.keySet().stream()
         .collect(Collectors.toMap(
             Function.identity(),
-            id -> new UserStatisticsDto(overallStatistics.get(id), buildingsStatistics.get(id),
+            id -> new StatisticsSummaryDto(overallStatistics.get(id), buildingsStatistics.get(id),
                 technologiesStatistics.get(id), fleetStatistics.get(id), defenseStatistics.get(id))
         )));
 
@@ -113,14 +113,15 @@ public class StatisticsAndRankingCache {
         .collect(Collectors.toList()));
   }
 
-  public UserStatisticsDto getUserStatistics(long userId) {
-    return data.usersStatistics.get(userId);
+  @Nullable
+  public StatisticsSummaryDto getUserSummary(long userId) {
+    return data.usersSummaries.get(userId);
   }
 
-  public RankingDto getLatestRanking(@Nullable RankingKindDto kind) {
+  public RankingDto getLatestRanking(@Nullable StatisticsKindDto kind) {
     Data d = data;
     if (kind == null) {
-      kind = RankingKindDto.OVERALL;
+      kind = StatisticsKindDto.OVERALL;
     }
     List<RankingEntryDto> entries;
     switch (kind) {

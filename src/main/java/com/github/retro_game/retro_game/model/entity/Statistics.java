@@ -1,10 +1,11 @@
 package com.github.retro_game.retro_game.model.entity;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
-@Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@MappedSuperclass
 public abstract class Statistics {
   @EmbeddedId
   private StatisticsKey key;

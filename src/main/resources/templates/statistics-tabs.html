@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Statistics - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table th:fragment="statistics-tabs">
+        <tr>
+          <th colspan="7" th:text="#{statistics}">Statistics</th>
+        </tr>
+        <tr>
+          <td>
+            <a th:href="@{/statistics/summary(body=${bodyId},user=${userId})}" th:text="#{summary}">Summary</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='OVERALL',period='LAST_WEEK')}"
+               th:text="#{overall}">Overall</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='BUILDINGS',period='LAST_WEEK')}"
+               th:text="#{buildings}">Buildings</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='TECHNOLOGIES',period='LAST_WEEK')}"
+               th:text="#{technologies}">Technologies</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='FLEET',period='LAST_WEEK')}"
+               th:text="#{fleet}">Fleet</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='DEFENSE',period='LAST_WEEK')}"
+               th:text="#{defense}">Defense</a>
+          </td>
+          <td>
+            <a th:href="@{/statistics/distribution-changes(body=${bodyId},user=${userId},period='LAST_WEEK')}"
+               th:text="#{distribution}">Distribution</a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

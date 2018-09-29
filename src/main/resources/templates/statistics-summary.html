@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{statistics}">Statistics</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:replace="statistics-tabs :: statistics-tabs">
+  </table>
+  <table>
+    <tr>
+      <th th:text="#{kind}">Kind</th>
+      <th th:text="#{points}">Points</th>
+      <th th:text="#{rank}">Rank</th>
+    </tr>
+    <tr th:if="${summary == null}">
+      <td colspan="3" th:text="#{noData}">No data</td>
+    </tr>
+    <th:block th:unless="${summary == null}">
+      <tr th:with="x=${summary.overall}">
+        <td th:text="#{overall}">Overall</td>
+        <td th:text="${#numbers.formatInteger(x.points, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(x.rank, 1, 'DEFAULT')}"></td>
+      </tr>
+      <tr th:with="x=${summary.buildings}">
+        <td th:text="#{buildings}">Buildings</td>
+        <td th:text="${#numbers.formatInteger(x.points, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(x.rank, 1, 'DEFAULT')}"></td>
+      </tr>
+      <tr th:with="x=${summary.technologies}">
+        <td th:text="#{technologies}">Technologies</td>
+        <td th:text="${#numbers.formatInteger(x.points, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(x.rank, 1, 'DEFAULT')}"></td>
+      </tr>
+      <tr th:with="x=${summary.fleet}">
+        <td th:text="#{fleet}">Fleet</td>
+        <td th:text="${#numbers.formatInteger(x.points, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(x.rank, 1, 'DEFAULT')}"></td>
+      </tr>
+      <tr th:with="x=${summary.defense}">
+        <td th:text="#{defense}">Defense</td>
+        <td th:text="${#numbers.formatInteger(x.points, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(x.rank, 1, 'DEFAULT')}"></td>
+      </tr>
+    </th:block>
+  </table>
+</div>
+</body>
+</html>

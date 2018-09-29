@@ -1,15 +1,15 @@
 package com.github.retro_game.retro_game.service.dto;
 
-public class UserStatisticsDto {
+public class StatisticsSummaryDto {
   private final PointsAndRankPairDto overall;
   private final PointsAndRankPairDto buildings;
   private final PointsAndRankPairDto technologies;
   private final PointsAndRankPairDto fleet;
   private final PointsAndRankPairDto defense;
 
-  public UserStatisticsDto(PointsAndRankPairDto overall, PointsAndRankPairDto buildings,
-                           PointsAndRankPairDto technologies, PointsAndRankPairDto fleet,
-                           PointsAndRankPairDto defense) {
+  public StatisticsSummaryDto(PointsAndRankPairDto overall, PointsAndRankPairDto buildings,
+                              PointsAndRankPairDto technologies, PointsAndRankPairDto fleet,
+                              PointsAndRankPairDto defense) {
     this.overall = overall;
     this.buildings = buildings;
     this.technologies = technologies;

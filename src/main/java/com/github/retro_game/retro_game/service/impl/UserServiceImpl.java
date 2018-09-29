@@ -119,6 +119,11 @@ class UserServiceImpl implements UserServiceInternal {
   }
 
   @Override
+  public long getCurrentId() {
+    return CustomUser.getCurrentUserId();
+  }
+
+  @Override
   public String getName(long userId) {
     return userRepository.findById(userId).orElseThrow(UserDoesntExistException::new).getName();
   }
