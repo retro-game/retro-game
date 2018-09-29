@@ -184,5 +184,15 @@ class UpdateStatisticsTask {
 
     statisticsCache.update(Date.from(Instant.ofEpochSecond(now)));
     logger.info("Rankings updated");
+
+    String[] prefixes = new String[]{"overall", "buildings", "technologies", "fleet", "defense"};
+    for (String prefix : prefixes) {
+      String sql = "" +
+          "delete from %s_statistics s" +
+          "      where (s.at < to_timestamp(?) - interval '1 week' and extract(hour from s.at) != 0)" +
+          "         or (s.at < to_timestamp(?) - interval '1 month' and extract(dow from s.at) != 0)";
+      jdbcTemplate.update(String.format(sql, prefix), now, now);
+    }
+    logger.info("Old statistics deleted");
   }
 }
