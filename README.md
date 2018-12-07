@@ -62,3 +62,7 @@ See [etc/nginx.conf](etc/nginx.conf) for a sample configuration for [nginx](http
 
 ### Add more skins (optional)
 You may want to add more skins, put them into _src/main/resources/public/static/skins_ directory and modify the config file appropriately.
+
+## Community
+
+[https://discord.gg/FJ6rK4V](https://discord.gg/FJ6rK4V)
