@@ -38,6 +38,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(FlightServiceImpl.class);
   private final boolean astrophysicsBasedColonization;
   private final int maxPlanets;
+  private final int fleetSpeed;
   private final BattleEngine battleEngine;
   private final BodyRepository bodyRepository;
   private final BodyUnitRepository bodyUnitRepository;
@@ -57,6 +58,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   FlightServiceImpl(@Value("${retro-game.astrophysics-based-colonization}") boolean astrophysicsBasedColonization,
                     @Value("${retro-game.max-planets}") int maxPlanets,
+                    @Value("${retro-game.fleet-speed}") int fleetSpeed,
                     BattleEngine battleEngine, BodyRepository bodyRepository, BodyUnitRepository bodyUnitRepository,
                     DebrisFieldRepository debrisFieldRepository, EventRepository eventRepository,
                     FlightRepository flightRepository, FlightUnitRepository flightUnitRepository,
@@ -64,6 +66,7 @@ class FlightServiceImpl implements FlightServiceInternal {
                     UserRepository userRepository) {
     this.astrophysicsBasedColonization = astrophysicsBasedColonization;
     this.maxPlanets = maxPlanets;
+    this.fleetSpeed = fleetSpeed;
     this.battleEngine = battleEngine;
     this.bodyRepository = bodyRepository;
     this.bodyUnitRepository = bodyUnitRepository;
@@ -709,7 +712,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private int calculateDuration(int distance, int factor, int maxSpeed) {
     assert factor >= 1 && factor <= 10;
     assert maxSpeed > 0;
-    return (int) Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10;
+    return ((int) Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed;
   }
 
   private double calculateConsumption(User user, int distance, int factor, int maxSpeed, Map<UnitKind, Integer> units) {
