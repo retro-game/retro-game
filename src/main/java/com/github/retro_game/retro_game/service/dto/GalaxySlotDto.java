@@ -16,11 +16,14 @@ public class GalaxySlotDto {
   private final int activity;
   private final Long debrisMetal;
   private final Long debrisCrystal;
+  private final Long allianceId;
+  private final String allianceTag;
   private final boolean own;
 
   public GalaxySlotDto(long userId, String userName, int rank, boolean onVacation, boolean banned, String planetName,
                        BodyTypeDto planetType, int planetImage, @Nullable String moonName, @Nullable Integer moonImage,
-                       int activity, @Nullable Long debrisMetal, @Nullable Long debrisCrystal, boolean own) {
+                       int activity, @Nullable Long debrisMetal, @Nullable Long debrisCrystal,
+                       @Nullable Long allianceId, @Nullable String allianceTag, boolean own) {
     this.userId = userId;
     this.userName = userName;
     this.rank = rank;
@@ -34,6 +37,8 @@ public class GalaxySlotDto {
     this.activity = activity;
     this.debrisMetal = debrisMetal;
     this.debrisCrystal = debrisCrystal;
+    this.allianceId = allianceId;
+    this.allianceTag = allianceTag;
     this.own = own;
   }
 
@@ -87,6 +92,14 @@ public class GalaxySlotDto {
 
   public Long getDebrisCrystal() {
     return debrisCrystal;
+  }
+
+  public Long getAllianceId() {
+    return allianceId;
+  }
+
+  public String getAllianceTag() {
+    return allianceTag;
   }
 
   public boolean isOwn() {

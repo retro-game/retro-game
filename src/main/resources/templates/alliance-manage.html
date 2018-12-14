@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{manage}">Manage</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th th:text="#{manage}">Manage</th>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/members(body=${bodyId},alliance=${allianceId})}" th:text="#{members}">Members</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/logo(body=${bodyId},alliance=${allianceId})}" th:text="#{logo}">logo</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/text(body=${bodyId},alliance=${allianceId},kind=${T(com.github.retro_game.retro_game.service.dto.AllianceTextKindDto).EXTERNAL})}"
+           th:text="#{'allianceText.EXTERNAL'}">External text</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/text(body=${bodyId},alliance=${allianceId},kind=${T(com.github.retro_game.retro_game.service.dto.AllianceTextKindDto).INTERNAL})}"
+           th:text="#{'allianceText.INTERNAL'}">Internal text</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/text(body=${bodyId},alliance=${allianceId},kind=${T(com.github.retro_game.retro_game.service.dto.AllianceTextKindDto).APPLICATION})}"
+           th:text="#{'allianceText.APPLICATION'}">Application text</a>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/alliance/manage/disband(body=${bodyId},alliance=${allianceId})}" th:text="#{disband}">Disband</a>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

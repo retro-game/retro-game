@@ -6,7 +6,9 @@ import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.dto.GalaxySlotDto;
 import com.github.retro_game.retro_game.service.dto.StatisticsSummaryDto;
+import com.github.retro_game.retro_game.service.impl.cache.AllianceTagCache;
 import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
+import com.github.retro_game.retro_game.service.impl.cache.UserAllianceCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +24,18 @@ import java.util.Map;
 class GalaxyServiceImpl implements GalaxyService {
   private static final Logger logger = LoggerFactory.getLogger(GalaxyServiceImpl.class);
   private final GalaxySlotRepository galaxySlotRepository;
+  private final AllianceTagCache allianceTagCache;
   private final StatisticsCache statisticsCache;
+  private final UserAllianceCache userAllianceCache;
   private ActivityService activityService;
   private UserServiceInternal userServiceInternal;
 
-  public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository, StatisticsCache statisticsCache) {
+  public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository, AllianceTagCache allianceTagCache,
+                           StatisticsCache statisticsCache, UserAllianceCache userAllianceCache) {
     this.galaxySlotRepository = galaxySlotRepository;
+    this.allianceTagCache = allianceTagCache;
     this.statisticsCache = statisticsCache;
+    this.userAllianceCache = userAllianceCache;
   }
 
   @Autowired
@@ -79,11 +86,14 @@ class GalaxyServiceImpl implements GalaxyService {
         activity = 60;
       }
 
+      Long allianceId = userAllianceCache.getUserAlliance(slot.getUserId());
+      String allianceTag = allianceId == null ? null : allianceTagCache.getTag(allianceId);
+
       boolean own = slot.getUserId() == userId;
 
       GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), rank, onVacation, banned,
           slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(),
-          slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), own);
+          slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), allianceId, allianceTag, own);
       ret.put(slot.getPosition(), s);
     }
     return ret;

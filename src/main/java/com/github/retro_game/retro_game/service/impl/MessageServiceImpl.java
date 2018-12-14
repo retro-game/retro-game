@@ -5,7 +5,6 @@ import com.github.retro_game.retro_game.model.entity.User;
 import com.github.retro_game.retro_game.model.repository.MessageRepository;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
-import com.github.retro_game.retro_game.service.MessageService;
 import com.github.retro_game.retro_game.service.dto.MessageDto;
 import com.github.retro_game.retro_game.service.exception.MessageDoesntExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedMessageAccessException;
@@ -28,7 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service("messageService")
-class MessageServiceImpl implements MessageService {
+class MessageServiceImpl implements MessageServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
@@ -96,16 +95,12 @@ class MessageServiceImpl implements MessageService {
 
   @Override
   @Transactional
+  // FIXME: it is not necessary to evict all entries.
   @CacheEvict(cacheNames = "numNewMessages", allEntries = true)
-  public void sendSpam(long bodyId, String message) {
+  public void sendToMultipleUsers(List<User> recipients, String message) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    logger.info("Sending spam: userId={}", userId);
-
-    message += "\n----- THIS MESSAGE WAS SENT TO EVERYONE!!11 -----";
-
-    List<User> recipients = userRepository.findAll();
     Date now = Date.from(Instant.now());
     ArrayList<Message> messages = new ArrayList<>(recipients.size());
     for (User recipient : recipients) {
@@ -118,6 +113,20 @@ class MessageServiceImpl implements MessageService {
       messages.add(msg);
     }
     messageRepository.saveAll(messages);
+  }
+
+  @Override
+  @Transactional
+  @CacheEvict(cacheNames = "numNewMessages", allEntries = true)
+  public void sendSpam(long bodyId, String message) {
+    long userId = CustomUser.getCurrentUserId();
+
+    logger.info("Sending spam: userId={}", userId);
+
+    message += "\n----- THIS MESSAGE WAS SENT TO EVERYONE!!11 -----";
+
+    List<User> recipients = userRepository.findAll();
+    sendToMultipleUsers(recipients, message);
   }
 
   @Override

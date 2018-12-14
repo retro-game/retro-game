@@ -11,10 +11,11 @@
     <tr>
       <th width="30" th:text="#{slot}">Slot</th>
       <th width="30" th:text="#{planet}">Planet</th>
-      <th width="130" th:text="#{planetName}">Planet name</th>
+      <th width="120" th:text="#{planetName}">Planet name</th>
       <th width="30" th:text="#{moon}">Moon</th>
-      <th width="200" th:text="#{debris}">Debris</th>
-      <th width="150" th:text="#{userName}">User name</th>
+      <th width="80" th:text="#{debris}">Debris</th>
+      <th width="120" th:text="#{userName}">User name</th>
+      <th width="80" th:text="#{alliance}">Alliance</th>
       <th width="30" th:text="#{actions}">Actions</th>
     </tr>
     <tr th:each="i : ${#numbers.sequence(1, 15)}" th:with="slot=${slots.get(i)}">
@@ -98,6 +99,10 @@
           </span>
         </td>
         <td>
+          <a th:if="${slot.allianceId != null}" th:href="@{/alliance/view(body=${bodyId},alliance=${slot.allianceId})}"
+             th:text="${slot.allianceTag}"></a>
+        </td>
+        <td>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
                   data-kind="PLANET" th:title="#{spyPlanet}" th:disabled="${onVacation || slot.onVacation || slot.own}">
             P
@@ -120,10 +125,11 @@
         <td></td>
         <td></td>
         <td></td>
+        <td></td>
       </th:block>
     </tr>
     <tr>
-      <th colspan="6">
+      <th colspan="7">
         <span th:text="#{time}">Time</span>:
         <span th:text="${#dates.format(time, 'yyyy-MM-dd HH:mm:ss')}">2006-06-06 03:00:00</span>
       </th>

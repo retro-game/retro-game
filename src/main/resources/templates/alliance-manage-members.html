@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{members}">Members</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th>#</th>
+      <th th:text="#{name}">Name</th>
+      <th th:text="#{joinedAt}">Joined at</th>
+      <th th:text="#{allianceRank}">Rank</th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <tr th:each="entry,iter : ${members}">
+      <td th:text="${iter.index + 1}"></td>
+      <td>
+        <span data-tooltip data-tooltip-html th:data-tooltip-title="
+                '<table>' +
+                  '<tr>' +
+                    '<th>' + ${entry.userName} + '</th>' +
+                  '</tr>' +
+                  '<tr>' +
+                    '<td>' +
+                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${entry.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${entry.userId})} + '\'>' + #{statistics} + '</a></p>' +
+                    '</td>' +
+                  '</tr>' +
+                '</table>'"
+              th:text="${entry.userName}"></span>
+      </td>
+      <td th:text="${#dates.format(entry.joinedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${entry.rank}"></td>
+      <td>
+        <form th:action="@{/alliance/manage/members/kick}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="alliance" type="hidden" th:value="${allianceId}">
+          <input name="user" type="hidden" th:value="${entry.userId}">
+          <button th:text="#{kick}">Kick</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

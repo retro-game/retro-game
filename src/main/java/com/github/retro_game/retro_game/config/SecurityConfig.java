@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.config;
 
+import com.github.retro_game.retro_game.security.CspHeaderWriter;
 import com.github.retro_game.retro_game.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -68,7 +69,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .successHandler(authenticationSuccessHandler)
         .and()
       .headers()
-        .contentSecurityPolicy("default-src 'none'; connect-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'").and()
+        .addHeaderWriter(new CspHeaderWriter())
         .frameOptions().deny()
         .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER);
     // @formatter:on
