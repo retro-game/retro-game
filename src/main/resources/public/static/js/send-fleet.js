@@ -1,5 +1,7 @@
 'use strict';
 
+var fleetSpeed = +$(document.body).attr('data-fleet-speed');
+
 $('#all-units').click(function () {
   $('[data-set-for^="unit_"][data-set-value!=""][data-set-value!="0"]').click();
   return false;
@@ -141,7 +143,7 @@ function update() {
 
   var duration = -1;
   if (maxSpeed > 0) {
-    duration = Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10;
+    duration = Math.floor((Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed);
   }
 
   var consumption = 0;

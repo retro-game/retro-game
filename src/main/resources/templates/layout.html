@@ -15,6 +15,7 @@
   <script th:src="@{/static/js/retrogame.js?{v}(v=${version})}"></script>
 </head>
 <body th:data-production-speed="${@environment.getProperty('retro-game.production-speed')}"
+      th:data-fleet-speed="${@environment.getProperty('retro-game.fleet-speed')}"
       th:data-metal-mine-base-production="${@environment.getProperty('retro-game.metal-mine-base-production')}"
       th:data-crystal-mine-base-production="${@environment.getProperty('retro-game.crystal-mine-base-production')}"
       th:data-deuterium-synthesizer-base-production="${@environment.getProperty('retro-game.deuterium-synthesizer-base-production')}"
