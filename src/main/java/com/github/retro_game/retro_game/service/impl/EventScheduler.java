@@ -20,6 +20,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 class EventScheduler implements Runnable {
+  private static final int WAIT_TIME_STEP_IN_MS = 10;
+  private static final int MAX_WAIT_TIME_IN_MS = 1000;
   private static final Logger logger = LoggerFactory.getLogger(EventScheduler.class);
   private final Lock lock = new ReentrantLock();
   private final Condition condition = lock.newCondition();
@@ -95,8 +97,8 @@ class EventScheduler implements Runnable {
 
   @Override
   public void run() {
-    int numRetries = 0;
-    while (numRetries < 16) {
+    int waitTime = 0;
+    while (true) {
       Event event;
       try {
         event = getNext();
@@ -122,12 +124,16 @@ class EventScheduler implements Runnable {
             logger.error("Wrong event kind");
             return;
         }
-        numRetries = 0;
+        waitTime = 0;
       } catch (DataAccessException e) {
-        logger.warn("Transaction failed: msg={}", e.getMessage());
-        numRetries++;
+        logger.warn("Transaction failed, waiting {}ms: msg={}", waitTime, e.getMessage());
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException ex) {
+          logger.warn("Waiting interrupted");
+        }
+        waitTime = Math.min(MAX_WAIT_TIME_IN_MS, waitTime + WAIT_TIME_STEP_IN_MS);
       }
     }
-    logger.error("A transaction failed too many times");
   }
 }
