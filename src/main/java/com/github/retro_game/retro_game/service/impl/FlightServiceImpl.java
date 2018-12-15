@@ -927,7 +927,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
     Flight flight = flightRepository.getOne(event.getParam());
     eventRepository.delete(event);
@@ -1494,6 +1494,11 @@ class FlightServiceImpl implements FlightServiceInternal {
       max = maxPlanets;
     }
 
+    // A phantom read is possible here, that is when the number of planets is counted. However, handling the
+    // colonization mission is already serialized by the scheduler. Moreover, colonization and creating homeworld are
+    // the only places where planets are inserted. Thus, concurrent counts by user won't happen (creating homeworld is
+    // at the very beginning and is required for colonization). Therefore, only the repeatable read isolation level
+    // is necessary here.
     if (bodyRepository.existsByCoordinates(coordinates) ||
         bodyRepository.countByUserAndCoordinatesKind(user, CoordinatesKind.PLANET) >= max) {
       logger.info("Colonization failed, target planet exists or max number of planets: flightId={} startUserId={}" +

@@ -258,7 +258,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public Map<BuildingKind, Tuple2<Integer, Integer>> getCurrentAndFutureLevels(Body body) {
     State state = new State(body, body.getBuildingQueue());
     return Arrays.stream(BuildingKind.values())
@@ -274,7 +273,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public Optional<OngoingBuildingDto> getOngoingBuilding(Body body) {
     SortedMap<Integer, BuildingQueueEntry> buildingQueue = body.getBuildingQueue();
     if (buildingQueue.isEmpty()) {
@@ -290,13 +288,12 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public Optional<Date> getOngoingBuildingFinishAt(Body body) {
     return eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, body.getId()).map(Event::getAt);
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void construct(long bodyId, BuildingKindDto kind) {
     BuildingKind k = Converter.convert(kind);
 
@@ -368,7 +365,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void destroy(long bodyId, BuildingKindDto kind) {
     BuildingKind k = Converter.convert(kind);
 
@@ -442,7 +439,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveDown(long bodyId, int sequenceNumber) {
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
@@ -549,7 +546,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveUp(long bodyId, int sequenceNumber) {
     Body body = bodyRepository.getOne(bodyId);
 
@@ -572,7 +569,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void cancel(long bodyId, int sequenceNumber) {
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
@@ -680,7 +677,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
     long bodyId = event.getParam();
     Body body = bodyRepository.getOne(bodyId);
@@ -827,7 +824,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void deleteBuildingsAndQueue(Body body) {
     Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, body.getId());
     event.ifPresent(eventRepository::delete);

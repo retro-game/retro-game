@@ -70,7 +70,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public int getLevel(long bodyId, TechnologyKindDto kind) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -206,7 +205,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void research(long bodyId, TechnologyKindDto kind) {
     TechnologyKind k = Converter.convert(kind);
 
@@ -286,7 +285,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveDown(long bodyId, int sequenceNumber) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -398,7 +397,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveUp(long bodyId, int sequenceNumber) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -422,7 +421,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void cancel(long bodyId, int sequenceNumber) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -536,7 +535,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
     long userId = event.getParam();
     User user = userRepository.getOne(userId);

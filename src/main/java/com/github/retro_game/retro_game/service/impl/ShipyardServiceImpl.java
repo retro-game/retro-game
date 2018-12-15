@@ -206,7 +206,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void build(long bodyId, UnitKindDto kind, int count) {
     UnitKind k = Converter.convert(kind);
 
@@ -309,7 +309,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
     long bodyId = event.getParam();
     Body body = bodyRepository.getOne(bodyId);
@@ -402,7 +402,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void deleteUnitsAndQueue(Body body) {
     Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.SHIPYARD_QUEUE, body.getId());
     event.ifPresent(eventRepository::delete);
