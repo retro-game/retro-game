@@ -206,6 +206,11 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
           if (nextRequiredEnergy > totalEnergy) {
             downMovable = cancelable = false;
           }
+
+          BuildingItem nextItem = BuildingItem.getAll().get(nextKind);
+          if (!nextItem.meetsTechnologiesRequirements(user)) {
+            downMovable = cancelable = false;
+          }
         }
 
         queue.add(new BuildingQueueEntryDto(Converter.convert(kind), entry.getKey(), levelFrom, levelTo,
@@ -506,6 +511,13 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         }
       }
 
+      BuildingItem secondItem = BuildingItem.getAll().get(secondKind);
+      if (!secondItem.meetsTechnologiesRequirements(body.getUser())) {
+        logger.warn("Moving down entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
+            bodyId, sequenceNumber);
+        throw new RequirementsNotMetException();
+      }
+
       Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
       if (!eventOptional.isPresent()) {
         logger.error("Moving down entry in building queue failed, the event is not present: bodyId={}" +
@@ -641,6 +653,13 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
                 bodyId, sequenceNumber);
             throw new NotEnoughEnergyException();
           }
+        }
+
+        BuildingItem item = BuildingItem.getAll().get(kind);
+        if (!item.meetsTechnologiesRequirements(body.getUser())) {
+          logger.warn("Cancelling entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
+              bodyId, sequenceNumber);
+          throw new RequirementsNotMetException();
         }
 
         long requiredTime = action == BuildingQueueAction.CONSTRUCT ? getConstructionTime(cost, state.buildings) :
