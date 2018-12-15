@@ -2,15 +2,18 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.model.entity.Message;
 import com.github.retro_game.retro_game.model.entity.User;
+import com.github.retro_game.retro_game.model.entity.UserRole;
 import com.github.retro_game.retro_game.model.repository.MessageRepository;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.MessageDto;
+import com.github.retro_game.retro_game.service.exception.CannotBroadcastMessageException;
 import com.github.retro_game.retro_game.service.exception.MessageDoesntExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedMessageAccessException;
 import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
@@ -29,10 +32,13 @@ import java.util.stream.Collectors;
 @Service("messageService")
 class MessageServiceImpl implements MessageServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
+  private final boolean allowNormalUserToBroadcastMessage;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
 
-  public MessageServiceImpl(MessageRepository messageRepository, UserRepository userRepository) {
+  public MessageServiceImpl(@Value("${retro-game.allow-normal-user-to-broadcast-message}") boolean allowNormalUserToBroadcastMessage,
+                            MessageRepository messageRepository, UserRepository userRepository) {
+    this.allowNormalUserToBroadcastMessage = allowNormalUserToBroadcastMessage;
     this.messageRepository = messageRepository;
     this.userRepository = userRepository;
   }
@@ -120,6 +126,12 @@ class MessageServiceImpl implements MessageServiceInternal {
   @CacheEvict(cacheNames = "numNewMessages", allEntries = true)
   public void sendSpam(long bodyId, String message) {
     long userId = CustomUser.getCurrentUserId();
+    User user = userRepository.getOne(userId);
+
+    if (!allowNormalUserToBroadcastMessage && !user.hasRole(UserRole.ADMIN)) {
+      logger.warn("Broadcasting message failed, normal user is not allowed: userId={}", userId);
+      throw new CannotBroadcastMessageException();
+    }
 
     logger.info("Sending spam: userId={}", userId);
 
