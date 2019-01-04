@@ -103,6 +103,16 @@
         </td>
       </tr>
     </th:block>
+    <th:block th:if="${alliance.leaveLinkVisible}">
+      <tr>
+        <th colspan="2" th:text="#{leaveAlliance}">Leave alliance</th>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <a th:href="@{/alliance/leave(body=${bodyId},alliance=${alliance.id})}" th:text="#{leave}">Leave</a>
+        </td>
+      </tr>
+    </th:block>
   </table>
 </div>
 </body>

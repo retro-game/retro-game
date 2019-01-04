@@ -93,6 +93,22 @@ public class AllianceController {
     return "redirect:/alliance?body=" + bodyId;
   }
 
+  @GetMapping("/alliance/leave")
+  public String leave(@RequestParam(name = "body") long bodyId,
+                      @RequestParam(name = "alliance") long allianceId,
+                      Model model) {
+    model.addAttribute("bodyId", bodyId);
+    model.addAttribute("allianceId", allianceId);
+    return "alliance-leave";
+  }
+
+  @PostMapping("/alliance/leave")
+  public String doLeave(@RequestParam(name = "body") long bodyId,
+                        @RequestParam(name = "alliance") long allianceId) {
+    allianceService.leave(bodyId, allianceId);
+    return "redirect:/alliance?body=" + bodyId;
+  }
+
   // Applications.
 
   @GetMapping("/alliance/apply")

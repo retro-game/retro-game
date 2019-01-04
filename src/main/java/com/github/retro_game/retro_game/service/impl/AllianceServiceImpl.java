@@ -216,6 +216,7 @@ class AllianceServiceImpl implements AllianceService {
     boolean own = member != null;
     boolean applyLinkVisible = !own && alliance.isRecruitmentOpen();
     boolean internalTextVisible = canSeeInternalText(user, member);
+    boolean leaveLinkVisible = own && (ownerId == null || user.getId() != ownerId);
 
     int privileges = getPrivileges(user, alliance, member);
     boolean applicationsLinkVisible = hasPrivilege(privileges, AlliancePrivilege.SHOW_APPLICATIONS);
@@ -234,7 +235,7 @@ class AllianceServiceImpl implements AllianceService {
     return new AllianceDto(alliance.getId(), ownerId, ownerName, alliance.getTag(), alliance.getName(),
         alliance.isRecruitmentOpen(), alliance.getLogo(), alliance.getExternalText(), alliance.getInternalText(),
         numMembers, numApplications, applyLinkVisible, internalTextVisible, applicationsLinkVisible,
-        memberListLinkVisible, circularMessageLinkVisible, manageLinkVisible);
+        memberListLinkVisible, circularMessageLinkVisible, manageLinkVisible, leaveLinkVisible);
   }
 
   @Override
@@ -331,6 +332,36 @@ class AllianceServiceImpl implements AllianceService {
         .collect(Collectors.toList());
 
     messageServiceInternal.sendToMultipleUsers(recipients, msg);
+  }
+
+  @Override
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
+  public void leave(long bodyId, long allianceId) {
+    UserAndAllianceAndMemberTuple tuple = getUserAndAllianceAndMember(allianceId);
+    long userId = tuple.user.getId();
+
+    if (tuple.alliance.getOwner().getId() == userId) {
+      logger.warn("Leaving alliance failed, the owner cannot leave: userId={} allianceId={}", userId, allianceId);
+      throw new OwnerCannotLeaveException();
+    }
+
+    AllianceMember member = tuple.member;
+    if (member == null) {
+      logger.warn("Leaving alliance failed, user is not a member of the alliance: userId={} allianceId={}",
+          userId, allianceId);
+      throw new UserIsNotAMemberException();
+    }
+
+    logger.info("Leaving alliance successful: userId={} allianceId={}", userId, allianceId);
+    allianceMemberRepository.delete(member);
+
+    // Update cache.
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+      @Override
+      public void afterCommit() {
+        userAllianceCache.removeUserAlliance(userId);
+      }
+    });
   }
 
   @Override

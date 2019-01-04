@@ -29,12 +29,13 @@ public class AllianceDto {
   private final boolean memberListLinkVisible;
   private final boolean circularMessageLinkVisible;
   private final boolean manageLinkVisible;
+  private final boolean leaveLinkVisible;
 
   public AllianceDto(long id, @Nullable Long ownerId, @Nullable String ownerName, String tag, String name,
                      boolean recruitmentOpen, @Nullable String logo, String externalText, String internalText,
                      int numMembers, int numApplications, boolean applyLinkVisible, boolean internalTextVisible,
                      boolean applicationsLinkVisible, boolean memberListLinkVisible, boolean circularMessageLinkVisible,
-                     boolean manageLinkVisible) {
+                     boolean manageLinkVisible, boolean leaveLinkVisible) {
     this.id = id;
     this.ownerId = ownerId;
     this.ownerName = ownerName;
@@ -52,6 +53,7 @@ public class AllianceDto {
     this.memberListLinkVisible = memberListLinkVisible;
     this.circularMessageLinkVisible = circularMessageLinkVisible;
     this.manageLinkVisible = manageLinkVisible;
+    this.leaveLinkVisible = leaveLinkVisible;
   }
 
   public long getId() {
@@ -123,5 +125,9 @@ public class AllianceDto {
 
   public boolean isManageLinkVisible() {
     return manageLinkVisible;
+  }
+
+  public boolean isLeaveLinkVisible() {
+    return leaveLinkVisible;
   }
 }
