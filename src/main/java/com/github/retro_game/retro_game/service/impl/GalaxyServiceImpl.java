@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.model.repository.GalaxySlotRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.dto.GalaxySlotDto;
+import com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto;
 import com.github.retro_game.retro_game.service.dto.StatisticsSummaryDto;
 import com.github.retro_game.retro_game.service.impl.cache.AllianceTagCache;
 import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
@@ -28,6 +29,7 @@ class GalaxyServiceImpl implements GalaxyService {
   private final StatisticsCache statisticsCache;
   private final UserAllianceCache userAllianceCache;
   private ActivityService activityService;
+  private NoobProtectionService noobProtectionService;
   private UserServiceInternal userServiceInternal;
 
   public GalaxyServiceImpl(GalaxySlotRepository galaxySlotRepository, AllianceTagCache allianceTagCache,
@@ -41,6 +43,11 @@ class GalaxyServiceImpl implements GalaxyService {
   @Autowired
   public void setActivityService(ActivityService activityService) {
     this.activityService = activityService;
+  }
+
+  @Autowired
+  public void setNoobProtectionService(NoobProtectionService noobProtectionService) {
+    this.noobProtectionService = noobProtectionService;
   }
 
   @Autowired
@@ -71,6 +78,7 @@ class GalaxyServiceImpl implements GalaxyService {
     for (GalaxySlot slot : slots) {
       boolean onVacation = slot.getVacationUntil() != null;
       boolean banned = userServiceInternal.isBanned(slot.getVacationUntil(), slot.isForcedVacation());
+      NoobProtectionRankDto noobProtectionRank = noobProtectionService.getOtherPlayerRank(userId, slot.getUserId());
 
       StatisticsSummaryDto summary = statisticsCache.getUserSummary(slot.getUserId());
       int rank = summary == null ? 0 : summary.getOverall().getRank();
@@ -92,8 +100,9 @@ class GalaxyServiceImpl implements GalaxyService {
       boolean own = slot.getUserId() == userId;
 
       GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), rank, onVacation, banned,
-          slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(), slot.getMoonName(),
-          slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), allianceId, allianceTag, own);
+          noobProtectionRank, slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(),
+          slot.getMoonName(), slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), allianceId,
+          allianceTag, own);
       ret.put(slot.getPosition(), s);
     }
     return ret;

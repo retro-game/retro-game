@@ -444,3 +444,11 @@ strong {
   color: #999;
   text-decoration: line-through;
 }
+
+.noob {
+  color: #0f0;
+}
+
+.strong {
+  color: #f00;
+}

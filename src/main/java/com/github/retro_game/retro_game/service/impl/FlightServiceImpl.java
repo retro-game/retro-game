@@ -52,6 +52,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
+  private NoobProtectionService noobProtectionService;
   private ReportServiceInternal reportServiceInternal;
   private UnitService unitService;
   private UserServiceInternal userServiceInternal;
@@ -92,6 +93,11 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Autowired
   void setEventScheduler(EventScheduler eventScheduler) {
     this.eventScheduler = eventScheduler;
+  }
+
+  @Autowired
+  public void setNoobProtectionService(NoobProtectionService noobProtectionService) {
+    this.noobProtectionService = noobProtectionService;
   }
 
   @Autowired
@@ -493,6 +499,13 @@ class FlightServiceImpl implements FlightServiceInternal {
               userId, body.getId(), targetUserId, targetBodyOptional.get().getId(), mission);
           throw new WrongTargetUserException();
         }
+        NoobProtectionRankDto noobProtectionRank = noobProtectionService.getOtherPlayerRank(userId, targetUserId);
+        if (noobProtectionRank != NoobProtectionRankDto.EQUAL) {
+          logger.info("Sending fleet failed, wrong target user: userId={} bodyId={} targetUserId={} targetBodyId={}" +
+                  " mission={}",
+              userId, body.getId(), targetUserId, targetBodyOptional.get().getId(), mission);
+          throw new WrongTargetUserException();
+        }
         break;
       }
       case DEPLOYMENT: {
@@ -778,26 +791,37 @@ class FlightServiceImpl implements FlightServiceInternal {
       throw new BodyDoesntExistException();
     }
     Body targetBody = optionalTargetBody.get();
+    long targetBodyId = targetBody.getId();
 
     User targetUser = targetBody.getUser();
+    long targetUserId = targetUser.getId();
     if (userServiceInternal.isOnVacation(targetUser)) {
-      logger.info("Sending missiles failed, target user is on vacation: userId={} bodyId={} targetCoordinates={}" +
-              " numMissiles={}",
-          userId, body.getId(), targetCoordinates, numMissiles);
+      logger.info("Sending missiles failed, target user is on vacation: userId={} bodyId={} targetUserId={}" +
+              " targetBodyId={} targetCoordinates={} numMissiles={}",
+          userId, bodyId, targetUserId, targetBodyId, targetCoordinates, numMissiles);
       throw new TargetOnVacationException();
     }
-    if (targetUser.getId() == userId) {
-      logger.info("Sending missiles failed, wrong target user: userId={} bodyId={} targetCoordinates={}" +
-              " numMissiles={}",
-          userId, bodyId, targetCoordinates, numMissiles);
+
+    if (targetUserId == userId) {
+      logger.info("Sending missiles failed, wrong target user: userId={} bodyId={} targetUserId={}" +
+              "targetBodyId={} targetCoordinates={} numMissiles={}",
+          userId, bodyId, targetUserId, targetBodyId, targetCoordinates, numMissiles);
       throw new WrongTargetUserException();
+    }
+
+    NoobProtectionRankDto noobProtectionRank = noobProtectionService.getOtherPlayerRank(userId, targetUserId);
+    if (noobProtectionRank != NoobProtectionRankDto.EQUAL) {
+      logger.info("Sending missiles failed, noob protection: userId={} bodyId={} targetUserId={} targetBodyId={}" +
+              " targetCoordinates={} numMissiles={} rank={}",
+          userId, bodyId, targetUserId, targetBodyId, targetCoordinates, numMissiles, noobProtectionRank);
+      throw new NoobProtectionException();
     }
 
     BodyUnit ipm = body.getUnits().get(UnitKind.INTERPLANETARY_MISSILE);
     if (ipm == null || ipm.getCount() < numMissiles) {
-      logger.info("Sending missiles failed, not enough missiles: userId={} bodyId={} targetCoordinates={}" +
-              " numMissiles={}",
-          userId, bodyId, targetCoordinates, numMissiles);
+      logger.info("Sending missiles failed, not enough missiles: userId={} bodyId={} targetUserId={} targetBodyId={}" +
+              " targetCoordinates={} numMissiles={}",
+          userId, bodyId, targetUserId, targetBodyId, targetCoordinates, numMissiles);
       throw new NotEnoughUnitsException();
     }
     int count = ipm.getCount() - numMissiles;

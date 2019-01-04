@@ -79,7 +79,10 @@
           </a>
         </td>
         <td>
-          <span th:classappend="${slot.banned ? 'banned' : (slot.onVacation ? 'vacation' : '')}"
+          <span th:classappend="${slot.banned ? 'banned' :
+                                  (slot.onVacation ? 'vacation' :
+                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB ? 'noob' :
+                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG ? 'strong' : '')))}"
                 data-tooltip data-tooltip-html th:data-tooltip-title="
                   '<table>' +
                     '<tr>' +
@@ -96,6 +99,14 @@
             (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
             <span th:if="${slot.banned}">(b)</span>
             <span th:if="${!slot.banned && slot.onVacation}">(v)</span>
+            <span th:if="${!slot.banned && !slot.onVacation &&
+                           slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB}">
+              (n)
+            </span>
+            <span th:if="${!slot.banned && !slot.onVacation &&
+                           slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG}">
+              (s)
+            </span>
           </span>
         </td>
         <td>
@@ -104,12 +115,15 @@
         </td>
         <td>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
-                  data-kind="PLANET" th:title="#{spyPlanet}" th:disabled="${onVacation || slot.onVacation || slot.own}">
+                  data-kind="PLANET" th:title="#{spyPlanet}"
+                  th:disabled="${onVacation || slot.onVacation || slot.own ||
+                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL}">
             P
           </button>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
                   data-kind="MOON" th:title="#{spyMoon}"
-                  th:disabled="${onVacation || slot.onVacation || slot.own || slot.moonName == null}">
+                  th:disabled="${onVacation || slot.onVacation || slot.own || slot.moonName == null ||
+                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL}">
             M
           </button>
         </td>

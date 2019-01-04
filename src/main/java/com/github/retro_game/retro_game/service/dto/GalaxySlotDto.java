@@ -8,6 +8,7 @@ public class GalaxySlotDto {
   private final int rank;
   private final boolean onVacation;
   private final boolean banned;
+  private final NoobProtectionRankDto noobProtectionRank;
   private final String planetName;
   private final BodyTypeDto planetType;
   private final int planetImage;
@@ -20,15 +21,17 @@ public class GalaxySlotDto {
   private final String allianceTag;
   private final boolean own;
 
-  public GalaxySlotDto(long userId, String userName, int rank, boolean onVacation, boolean banned, String planetName,
-                       BodyTypeDto planetType, int planetImage, @Nullable String moonName, @Nullable Integer moonImage,
-                       int activity, @Nullable Long debrisMetal, @Nullable Long debrisCrystal,
-                       @Nullable Long allianceId, @Nullable String allianceTag, boolean own) {
+  public GalaxySlotDto(long userId, String userName, int rank, boolean onVacation, boolean banned,
+                       NoobProtectionRankDto noobProtectionRank, String planetName, BodyTypeDto planetType,
+                       int planetImage, @Nullable String moonName, @Nullable Integer moonImage, int activity,
+                       @Nullable Long debrisMetal, @Nullable Long debrisCrystal, @Nullable Long allianceId,
+                       @Nullable String allianceTag, boolean own) {
     this.userId = userId;
     this.userName = userName;
     this.rank = rank;
     this.onVacation = onVacation;
     this.banned = banned;
+    this.noobProtectionRank = noobProtectionRank;
     this.planetName = planetName;
     this.planetType = planetType;
     this.planetImage = planetImage;
@@ -60,6 +63,10 @@ public class GalaxySlotDto {
 
   public boolean isBanned() {
     return banned;
+  }
+
+  public NoobProtectionRankDto getNoobProtectionRank() {
+    return noobProtectionRank;
   }
 
   public String getPlanetName() {
