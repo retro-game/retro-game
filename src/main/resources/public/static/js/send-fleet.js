@@ -143,7 +143,7 @@ function update() {
 
   var duration = -1;
   if (maxSpeed > 0) {
-    duration = Math.floor((Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed);
+    duration = Math.max(1, Math.floor((Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed));
   }
 
   var consumption = 0;

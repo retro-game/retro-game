@@ -725,7 +725,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private int calculateDuration(int distance, int factor, int maxSpeed) {
     assert factor >= 1 && factor <= 10;
     assert maxSpeed > 0;
-    return ((int) Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed;
+    return Math.max(1, ((int) Math.round(35000.0 / factor * Math.sqrt(10.0 * distance / maxSpeed)) + 10) / fleetSpeed);
   }
 
   private double calculateConsumption(User user, int distance, int factor, int maxSpeed, Map<UnitKind, Integer> units) {
