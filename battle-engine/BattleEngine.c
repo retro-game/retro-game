@@ -588,19 +588,13 @@ void fire(struct party *restrict attackers_party,
 void update_units(struct combatant *combatants, struct party *party,
                   size_t round) {
   struct unit *units = party->units;
-  size_t num_alive = party->num_alive;
-  size_t i = 0;
-  while (i < num_alive) {
+  size_t num_alive = 0;
+  for (size_t i = 0; i < party->num_alive; i++) {
     struct unit *unit = &units[i];
     if (unit->hull != 0.0f) {
-      i++;
+      units[num_alive++] = *unit;
       struct combatant *combatant = &combatants[unit->combatant_id];
       combatant->stats[round * num_kinds + unit->kind].num_remaining_units++;
-    } else {
-      num_alive--;
-      struct unit tmp = *unit;
-      *unit = units[num_alive];
-      units[num_alive] = tmp;
     }
   }
   party->num_alive = num_alive;
