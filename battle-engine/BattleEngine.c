@@ -518,7 +518,7 @@ void fire(struct party *restrict attackers_party,
     const struct unit *shooter = &shooters[i];
     uint8_t shooter_kind = shooter->kind;
     const struct unit_characteristics *shooter_characteristics =
-        &units_characteristics[shooter->kind];
+        &units_characteristics[shooter_kind];
     struct combatant *attacker = &attackers[shooter->combatant_id];
     struct unit_group_stats *shooter_stats =
         &attacker->stats[round * num_kinds + shooter_kind];
@@ -578,7 +578,7 @@ void fire(struct party *restrict attackers_party,
         target->hull = hull;
       }
 
-      rapid_fire = (uint32_t)shooter_characteristics->rapid_fire[target->kind];
+      rapid_fire = (uint32_t)shooter_characteristics->rapid_fire[target_kind];
     } while (rapid_fire != 0 && (r = RANDOM_NEXT(r)) % rapid_fire != 0);
   }
 
