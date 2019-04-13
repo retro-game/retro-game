@@ -23,7 +23,7 @@
                   '</tr>' +
                   '<tr>' +
                     '<td>' +
-                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${entry.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${entry.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
                       '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${entry.userId})} + '\'>' + #{statistics} + '</a></p>' +
                     '</td>' +
                   '</tr>' +

@@ -90,7 +90,7 @@
                     '</tr>' +
                     '<tr>' +
                       '<td>' +
-                        '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${slot.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                        '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${slot.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
                         '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${slot.userId})} + '\'>' + #{statistics} + '</a></p>' +
                       '</td>' +
                     '</tr>' +

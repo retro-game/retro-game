@@ -503,19 +503,22 @@ create trigger reports_update_target_user_name_trigger
   when (OLD.name != NEW.name)
   execute procedure reports_update_target_user_name();
 
--- Messages
+-- Private messages
 
-create table messages (
+create table private_messages (
   id bigserial primary key,
-  recipient_id bigint references users on delete cascade,
-  deleted boolean not null,
-  at timestamptz not null,
   sender_id bigint references users on delete set null,
+  recipient_id bigint references users on delete set null,
+  deleted_by_sender boolean not null,
+  deleted_by_recipient boolean not null,
+  at timestamptz not null,
   message text not null
 );
 
-create index messages_recipient_id_deleted_at_idx
-          on messages (recipient_id, deleted, at desc);
+create index private_messages_sender_id_deleted_by_sender_at_idx
+          on private_messages (sender_id, deleted_by_sender, at desc);
+create index private_messages_recipient_id_deleted_by_recipient_at_idx
+          on private_messages (recipient_id, deleted_by_recipient, at desc);
 
 -- Statistics
 

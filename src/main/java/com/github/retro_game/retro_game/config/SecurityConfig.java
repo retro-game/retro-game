@@ -56,7 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .csrf()
         .ignoringAntMatchers(
             "/flights/send-probes",
-            "/messages/delete",
+            "/messages/private/delete",
+            "/messages/private/delete-all",
             "/reports/combat/delete",
             "/reports/espionage/delete",
             "/reports/harvest/delete",

@@ -37,7 +37,6 @@ class AllianceServiceImpl implements AllianceService {
   private final UserRepository userRepository;
   private final AllianceTagCache allianceTagCache;
   private final UserAllianceCache userAllianceCache;
-  private MessageServiceInternal messageServiceInternal;
   private UserServiceInternal userServiceInternal;
 
   public AllianceServiceImpl(AllianceRepository allianceRepository,
@@ -50,11 +49,6 @@ class AllianceServiceImpl implements AllianceService {
     this.userRepository = userRepository;
     this.allianceTagCache = allianceTagCache;
     this.userAllianceCache = userAllianceCache;
-  }
-
-  @Autowired
-  public void setMessageServiceInternal(MessageServiceInternal messageServiceInternal) {
-    this.messageServiceInternal = messageServiceInternal;
   }
 
   @Autowired
@@ -331,7 +325,8 @@ class AllianceServiceImpl implements AllianceService {
         .map(AllianceMember::getUser)
         .collect(Collectors.toList());
 
-    messageServiceInternal.sendToMultipleUsers(recipients, msg);
+    //messageServiceInternal.sendToMultipleUsers(recipients, msg);
+    throw new UnsupportedOperationException();
   }
 
   @Override

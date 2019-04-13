@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.controller.form;
 
-public class DeleteMessageResponse {
+public class DeletePrivateMessageResponse {
   private boolean success;
 
   public boolean isSuccess() {

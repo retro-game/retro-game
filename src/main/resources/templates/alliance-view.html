@@ -37,7 +37,7 @@
                   '</tr>' +
                   '<tr>' +
                     '<td>' +
-                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${alliance.ownerId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${alliance.ownerId})} + '\'>' + #{sendMessage} + '</a></p>' +
                       '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${alliance.ownerId})} + '\'>' + #{statistics} + '</a></p>' +
                     '</td>' +
                   '</tr>' +
