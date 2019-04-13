@@ -520,6 +520,18 @@ create index private_messages_sender_id_deleted_by_sender_at_idx
 create index private_messages_recipient_id_deleted_by_recipient_at_idx
           on private_messages (recipient_id, deleted_by_recipient, at desc);
 
+-- Broadcast messages
+
+create table broadcast_messages (
+  id bigserial primary key,
+  sender_id bigint references users on delete set null,
+  at timestamptz not null,
+  message text not null
+);
+
+create index broadcast_messages_at_idx
+          on broadcast_messages (at desc);
+
 -- Statistics
 
 create function create_statistics(kind text) returns void as $$

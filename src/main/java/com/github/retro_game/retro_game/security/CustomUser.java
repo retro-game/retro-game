@@ -28,6 +28,11 @@ public class CustomUser extends org.springframework.security.core.userdetails.Us
     return authorities;
   }
 
+  public static boolean isCurrentUserAdmin() {
+    return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+        .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
+  }
+
   public static long getCurrentUserId() {
     return ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
   }

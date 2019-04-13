@@ -57,9 +57,6 @@
            th:with="numNewMessages=${@messageService.getNumNewMessages(bodyId)}"
            th:text="#{messages} + ${numNewMessages > 0 ? ' (' + numNewMessages + ')' : ''}"></a>
       </li>
-      <li sec:authorize="${@environment.getProperty('retro-game.allow-normal-user-to-broadcast-message') || hasRole('ADMIN')}">
-        <a th:href="@{/messages/send-spam(body=${bodyId})}" th:text="#{sendSpam}">Send Spam</a>
-      </li>
       <li>
         <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{ranking}">Ranking</a>
       </li>
