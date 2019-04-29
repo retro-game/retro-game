@@ -31,7 +31,7 @@
         →
         <span th:text="${entry.levelTo}">2</span>
       </td>
-      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:data-timer="${entry.finishAt.time / 1000}"></td>
       <td th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
       <td class="queue-entry-actions">
         <form th:action="@{/buildings/move-up}" method="post">

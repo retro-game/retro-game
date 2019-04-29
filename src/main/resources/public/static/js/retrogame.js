@@ -54,7 +54,11 @@ $(function () {
         var timer = timers[i];
         var t = +$(timer).attr('data-timer');
         var diff = t - now;
-        timer.innerHTML = (diff > 0 ? prettyTime(diff) : '-') + '<br><span class="date">' + prettyDate(t) + '</span>';
+        if (diff <= 0) {
+            document.location.reload();
+            return;
+        }
+        timer.innerHTML = prettyTime(diff) + '<br><span class="date">' + prettyDate(t) + '</span>';
       }
     };
     updateTimers();
