@@ -47,7 +47,7 @@ class NoobProtectionServiceImpl implements NoobProtectionService {
 
     if (selfPoints > noobProtectionMultiplier * otherPoints)
       return NoobProtectionRankDto.NOOB;
-    if (selfPoints < noobProtectionMultiplier * otherPoints)
+    if (selfPoints * noobProtectionMultiplier < otherPoints)
       return NoobProtectionRankDto.STRONG;
     return NoobProtectionRankDto.EQUAL;
   }
