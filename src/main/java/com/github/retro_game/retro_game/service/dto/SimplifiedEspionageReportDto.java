@@ -17,11 +17,13 @@ public class SimplifiedEspionageReportDto {
   private final String token;
   private final int neededSmallCargoes;
   private final int neededLargeCargoes;
+  private final int neededEspionageProbes;
 
   public SimplifiedEspionageReportDto(long id, Date at, @Nullable Long enemyId, String enemyName,
                                       CoordinatesDto coordinates, int activity, ResourcesDto resources,
                                       @Nullable Long fleet, @Nullable Long defense, String token,
-                                      int neededSmallCargoes, int neededLargeCargoes) {
+                                      int neededSmallCargoes, int neededLargeCargoes,
+                                      int neededEspionageProbes) {
     this.id = id;
     this.at = at;
     this.enemyId = enemyId;
@@ -34,6 +36,7 @@ public class SimplifiedEspionageReportDto {
     this.token = token;
     this.neededSmallCargoes = neededSmallCargoes;
     this.neededLargeCargoes = neededLargeCargoes;
+    this.neededEspionageProbes = neededEspionageProbes;
   }
 
   public long getId() {
@@ -82,5 +85,9 @@ public class SimplifiedEspionageReportDto {
 
   public int getNeededLargeCargoes() {
     return neededLargeCargoes;
+  }
+
+  public int getNeededEspionageProbes() {
+    return neededEspionageProbes;
   }
 }
