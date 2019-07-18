@@ -654,12 +654,12 @@ class FlightServiceImpl implements FlightServiceInternal {
     ArrayList<FlightUnit> flightUnits = new ArrayList<>();
     for (Map.Entry<UnitKind, Integer> entry : units.entrySet()) {
       UnitKind kind = entry.getKey();
-      int count = entry.getValue();
       BodyUnit bodyUnit = bodyUnits.get(kind);
-      if (bodyUnit == null || bodyUnit.getCount() < count) {
+      if (bodyUnit == null) {
         logger.info("Sending fleet failed, not enough units: userId={} bodyId={}", userId, body.getId());
         throw new NotEnoughUnitsException();
       }
+      int count = Math.min(entry.getValue(), bodyUnit.getCount());
       if (bodyUnit.getCount() == count) {
         bodyUnitRepository.delete(bodyUnit);
       } else {
