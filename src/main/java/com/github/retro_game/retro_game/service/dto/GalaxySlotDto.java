@@ -20,12 +20,14 @@ public class GalaxySlotDto {
   private final Long allianceId;
   private final String allianceTag;
   private final boolean own;
+  private final boolean shortInactive;
+  private final boolean longInactive;
 
   public GalaxySlotDto(long userId, String userName, int rank, boolean onVacation, boolean banned,
                        NoobProtectionRankDto noobProtectionRank, String planetName, BodyTypeDto planetType,
                        int planetImage, @Nullable String moonName, @Nullable Integer moonImage, int activity,
                        @Nullable Long debrisMetal, @Nullable Long debrisCrystal, @Nullable Long allianceId,
-                       @Nullable String allianceTag, boolean own) {
+                       @Nullable String allianceTag, boolean own, boolean shortInactive, boolean longInactive) {
     this.userId = userId;
     this.userName = userName;
     this.rank = rank;
@@ -43,6 +45,8 @@ public class GalaxySlotDto {
     this.allianceId = allianceId;
     this.allianceTag = allianceTag;
     this.own = own;
+    this.shortInactive = shortInactive;
+    this.longInactive = longInactive;
   }
 
   public long getUserId() {
@@ -111,5 +115,15 @@ public class GalaxySlotDto {
 
   public boolean isOwn() {
     return own;
+  }
+
+  public boolean isShortInactive()
+  {
+    return shortInactive;
+  }
+
+  public boolean isLongInactive()
+  {
+    return longInactive;
   }
 }

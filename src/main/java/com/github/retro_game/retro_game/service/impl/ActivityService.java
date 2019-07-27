@@ -1,5 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.service.dto.ActiveStateDto;
+
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -17,4 +19,8 @@ interface ActivityService {
   Long getBodyActivity(long bodyId);
 
   Map<Long, Long> getBodiesActivities(List<Long> bodiesIds);
+
+  ActiveStateDto activeState(long userId);
+
+  boolean isInactive(long userId);
 }

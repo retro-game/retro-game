@@ -2,8 +2,11 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.model.entity.User;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
+import com.github.retro_game.retro_game.service.dto.ActiveStateDto;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import javax.annotation.Resource;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,12 +26,19 @@ class ActivityServiceImpl implements ActivityService {
   private final static String userPrefix = "activity_user";
   private final static Logger logger = LoggerFactory.getLogger(ActivityServiceImpl.class);
   private final UserRepository userRepository;
+  private final int numberOfDaysForShortInactive;
+  private final int numberOfDaysForLongInactive;
 
   @Resource(name = "redisTemplate")
   private ValueOperations<String, String> valueOperations;
 
-  public ActivityServiceImpl(UserRepository userRepository) {
+  public ActivityServiceImpl(UserRepository userRepository,
+                             @Value("${retro-game.short-inactive-number-of-days}") int numberOfDaysForShortInactive,
+                             @Value("${retro-game.long-inactive-number-of-days}") int numberOfDaysForLongInactive)
+  {
     this.userRepository = userRepository;
+    this.numberOfDaysForShortInactive = numberOfDaysForShortInactive;
+    this.numberOfDaysForLongInactive = numberOfDaysForLongInactive;
   }
 
   @Override
@@ -113,5 +124,38 @@ class ActivityServiceImpl implements ActivityService {
       }
     }
     return ret;
+  }
+
+  @Override
+  public ActiveStateDto activeState(long userId)
+  {
+    long numberOfInactiveDays = this.numberOfInactiveDays(userId);
+    if (numberOfInactiveDays >= numberOfDaysForLongInactive)
+      return ActiveStateDto.INACTIVE_LONG;
+    if (numberOfInactiveDays >= numberOfDaysForShortInactive)
+      return ActiveStateDto.INACTIVE_SHORT;
+
+    return ActiveStateDto.ACTIVE;
+  }
+
+  @Override
+  public boolean isInactive(long userId)
+  {
+    ActiveStateDto activeState = this.activeState(userId);
+    return activeState == ActiveStateDto.INACTIVE_LONG || activeState == ActiveStateDto.INACTIVE_SHORT;
+  }
+
+  private long numberOfInactiveDays(long userId)
+  {
+    String key = String.format("%s_%d", userPrefix, userId);
+    String lastActivity = valueOperations.get(key);
+
+    if (lastActivity == null)
+      return -1;
+
+    LocalDateTime lastActivityDate = LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.valueOf(lastActivity)), ZoneId.systemDefault());
+    LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+
+    return lastActivityDate.until(now, ChronoUnit.DAYS);
   }
 }
