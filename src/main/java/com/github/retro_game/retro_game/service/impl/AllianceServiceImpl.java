@@ -6,7 +6,6 @@ import com.github.retro_game.retro_game.model.repository.AllianceMemberRepositor
 import com.github.retro_game.retro_game.model.repository.AllianceRepository;
 import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
-import com.github.retro_game.retro_game.service.AllianceService;
 import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.cache.AllianceTagCache;
@@ -29,7 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-class AllianceServiceImpl implements AllianceService {
+class AllianceServiceImpl implements AllianceServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(AllianceServiceImpl.class);
   private final AllianceRepository allianceRepository;
   private final AllianceApplicationRepository allianceApplicationRepository;
@@ -130,7 +129,7 @@ class AllianceServiceImpl implements AllianceService {
     });
   }
 
-  private static int getPrivileges(User user, Alliance alliance, AllianceMember member) {
+  static int getPrivileges(User user, Alliance alliance, AllianceMember member) {
     // Admins and owners have every privilege.
     if (user.hasRole(UserRole.ADMIN) || user.getId() == alliance.getOwner().getId())
       return ~0;
@@ -155,7 +154,7 @@ class AllianceServiceImpl implements AllianceService {
     return privileges;
   }
 
-  private static boolean hasPrivilege(int privileges, AlliancePrivilege privilege) {
+  static boolean hasPrivilege(int privileges, AlliancePrivilege privilege) {
     return (privileges & (1 << privilege.ordinal())) != 0;
   }
 
@@ -171,19 +170,7 @@ class AllianceServiceImpl implements AllianceService {
     return allianceMemberRepository.findById(key).orElse(null);
   }
 
-  private static class UserAndAllianceAndMemberTuple {
-    private final User user;
-    private final Alliance alliance;
-    private final AllianceMember member;
-
-    private UserAndAllianceAndMemberTuple(User user, Alliance alliance, AllianceMember member) {
-      this.user = user;
-      this.alliance = alliance;
-      this.member = member;
-    }
-  }
-
-  private UserAndAllianceAndMemberTuple getUserAndAllianceAndMember(long allianceId) {
+  public UserAndAllianceAndMemberTuple getUserAndAllianceAndMember(long allianceId) {
     long userId = CustomUser.getCurrentUserId();
 
     Optional<Alliance> optionalAlliance = allianceRepository.findById(allianceId);
@@ -304,29 +291,6 @@ class AllianceServiceImpl implements AllianceService {
         })
         .sorted(Comparator.comparing(AllianceMemberDto::getJoinedAt))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  public void sendCircularMessage(long bodyId, long allianceId, String message) {
-    UserAndAllianceAndMemberTuple tuple = getUserAndAllianceAndMember(allianceId);
-
-    int privileges = getPrivileges(tuple.user, tuple.alliance, tuple.member);
-    if (!hasPrivilege(privileges, AlliancePrivilege.WRITE_CIRCULAR_MESSAGE)) {
-      logger.warn("Sending circular message failed, unauthorized access: userId={} allianceId={}", tuple.user.getId(),
-          allianceId);
-      throw new UnauthorizedAllianceAccessException();
-    }
-
-    logger.info("Sending circular message successful: userId={} allianceId={}", tuple.user.getId(), allianceId);
-
-    String msg = "--- ALLIANCE MESSAGE ---\n" + message;
-
-    List<User> recipients = tuple.alliance.getMembers().stream()
-        .map(AllianceMember::getUser)
-        .collect(Collectors.toList());
-
-    //messageServiceInternal.sendToMultipleUsers(recipients, msg);
-    throw new UnsupportedOperationException();
   }
 
   @Override

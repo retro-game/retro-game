@@ -26,3 +26,14 @@ create table broadcast_messages (
 
 create index broadcast_messages_at_idx
           on broadcast_messages (at desc);
+
+create table alliance_messages (
+  id bigserial primary key,
+  alliance_id bigint references alliances on delete cascade not null,
+  sender_id bigint references users on delete set null,
+  at timestamptz not null,
+  message text not null
+);
+
+create index alliance_messages_alliance_id_at_idx
+          on alliance_messages (alliance_id, at desc);
