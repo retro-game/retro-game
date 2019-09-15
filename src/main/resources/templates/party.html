@@ -20,7 +20,7 @@
                   '</tr>' +
                   '<tr>' +
                     '<td>' +
-                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${party.targetUserId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${party.targetUserId})} + '\'>' + #{sendMessage} + '</a></p>' +
                       '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${party.targetUserId})} + '\'>' + #{statistics} + '</a></p>' +
                     '</td>' +
                   '</tr>' +
@@ -51,7 +51,7 @@
                   '</tr>' +
                   '<tr>' +
                     '<td>' +
-                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${member.id})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${member.id})} + '\'>' + #{sendMessage} + '</a></p>' +
                       '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${member.id})} + '\'>' + #{statistics} + '</a></p>' +
                     '</td>' +
                   '</tr>' +

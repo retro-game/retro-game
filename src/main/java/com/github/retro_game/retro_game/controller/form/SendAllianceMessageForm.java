@@ -3,19 +3,28 @@ package com.github.retro_game.retro_game.controller.form;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-public class SendMessageForm {
-  private long recipient;
+public class SendAllianceMessageForm {
+  private long body;
+  private long alliance;
 
   @NotBlank
   @Size(max = 4095)
   private String message;
 
-  public long getRecipient() {
-    return recipient;
+  public long getBody() {
+    return body;
   }
 
-  public void setRecipient(long recipient) {
-    this.recipient = recipient;
+  public void setBody(long body) {
+    this.body = body;
+  }
+
+  public long getAlliance() {
+    return alliance;
+  }
+
+  public void setAlliance(long alliance) {
+    this.alliance = alliance;
   }
 
   public String getMessage() {

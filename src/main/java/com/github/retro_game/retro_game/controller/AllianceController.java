@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -74,23 +73,6 @@ public class AllianceController {
     List<AllianceMemberDto> members = allianceService.getMembers(bodyId, allianceId);
     model.addAttribute("members", members);
     return "alliance-members";
-  }
-
-  @GetMapping("/alliance/circular-message")
-  public String circularMessage(@RequestParam(name = "body") long bodyId,
-                                @RequestParam(name = "alliance") long allianceId,
-                                Model model) {
-    model.addAttribute("bodyId", bodyId);
-    model.addAttribute("allianceId", allianceId);
-    return "alliance-circular-message";
-  }
-
-  @PostMapping("/alliance/circular-message/send")
-  public String circularMessageSend(@RequestParam(name = "body") long bodyId,
-                                    @RequestParam(name = "alliance") long allianceId,
-                                    @RequestParam @Valid @NotBlank @Size(max = 4095) String message) {
-    allianceService.sendCircularMessage(bodyId, allianceId, message);
-    return "redirect:/alliance?body=" + bodyId;
   }
 
   @GetMapping("/alliance/leave")

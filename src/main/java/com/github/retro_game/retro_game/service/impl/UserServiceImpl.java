@@ -85,7 +85,9 @@ class UserServiceImpl implements UserServiceInternal {
     user.setEmail(email);
     user.setPassword(passwordEncoder.encode(password));
     user.setRoles(roles);
-    user.setMessagesSeenAt(now);
+    user.setPrivateReceivedMessagesSeenAt(now);
+    user.setAllianceMessagesSeenAt(now);
+    user.setBroadcastMessagesSeenAt(now);
     user.setCombatReportsSeenAt(now);
     user.setEspionageReportsSeenAt(now);
     user.setHarvestReportsSeenAt(now);

@@ -37,7 +37,7 @@
             target=${event.targetBodyName != null ? event.targetBodyName + ' ' : ''} + '<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
             mission=#{${'mission.' + event.mission}},
             units='<mark>' + ${@formatterService.formatUnits(event.units)} + '</mark>',
-            sendMessageLink=@{/messages/send(body=${bodyId},recipient=${event.startUserId})},
+            sendMessageLink=@{/messages/private/send(body=${bodyId},recipient=${event.startUserId})},
             statisticsLink=@{/statistics/summary(body=${bodyId},user=${event.startUserId})},
             user=${
               '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(

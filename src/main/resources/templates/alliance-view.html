@@ -37,7 +37,7 @@
                   '</tr>' +
                   '<tr>' +
                     '<td>' +
-                      '<p><a href=\'' + @{/messages/send(body=${bodyId},recipient=${alliance.ownerId})} + '\'>' + #{sendMessage} + '</a></p>' +
+                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${alliance.ownerId})} + '\'>' + #{sendMessage} + '</a></p>' +
                       '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${alliance.ownerId})} + '\'>' + #{statistics} + '</a></p>' +
                     '</td>' +
                   '</tr>' +
@@ -74,7 +74,7 @@
     <tr th:if="${alliance.circularMessageLinkVisible}">
       <td th:text="#{circularMessage}">Circular message</td>
       <td>
-        <a th:href="@{/alliance/circular-message(body=${bodyId},alliance=${alliance.id})}" th:text="#{send_}">send</a>
+        <a th:href="@{/messages/alliance/send(body=${bodyId},alliance=${alliance.id})}" th:text="#{send_}">send</a>
       </td>
     </tr>
     <tr th:if="${alliance.manageLinkVisible}">

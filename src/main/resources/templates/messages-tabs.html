@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Messages - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table th:fragment="messages-tabs">
+        <tr>
+          <th colspan="4" th:text="#{messages}">Messages</th>
+        </tr>
+        <tr>
+          <td width="25%">
+            <a th:href="@{/messages/private(body=${bodyId},kind=${T(com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto).RECEIVED})}"
+               th:text="#{privateReceived} + ${summary.numPrivateReceivedMessages > 0 ? ' (' + summary.numPrivateReceivedMessages + ')': ''}">
+              Private received
+            </a>
+          </td>
+          <td width="25%">
+            <a th:href="@{/messages/private(body=${bodyId},kind=${T(com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto).SENT})}"
+               th:text="#{privateSent}">
+              Private sent
+            </a>
+          </td>
+          <td width="25%">
+            <a th:href="@{/messages/alliance(body=${bodyId})}"
+               th:text="#{alliance} + ${summary.numAllianceMessages > 0 ? ' (' + summary.numAllianceMessages + ')': ''}">
+              Alliance
+            </a>
+          </td>
+          <td width="25%">
+            <a th:href="@{/messages/broadcast(body=${bodyId})}"
+               th:text="#{broadcast} + ${summary.numBroadcastMessages > 0 ? ' (' + summary.numBroadcastMessages + ')': ''}">
+              Broadcast
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

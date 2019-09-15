@@ -53,12 +53,8 @@
            th:text="#{reports} + ${summary.totalReports > 0 ? ' (' + summary.totalReports + ')' : ''}"></a>
       </li>
       <li>
-        <a th:href="@{/messages(body=${bodyId})}"
-           th:with="numNewMessages=${@messageService.getNumNewMessages(bodyId)}"
-           th:text="#{messages} + ${numNewMessages > 0 ? ' (' + numNewMessages + ')' : ''}"></a>
-      </li>
-      <li sec:authorize="${@environment.getProperty('retro-game.allow-normal-user-to-broadcast-message') || hasRole('ADMIN')}">
-        <a th:href="@{/messages/send-spam(body=${bodyId})}" th:text="#{sendSpam}">Send Spam</a>
+        <a th:href="@{/messages(body=${bodyId})}" th:with="summary=${@messageSummaryService.get(bodyId)}"
+           th:text="#{messages} + ${summary.totalMessages > 0 ? ' (' + summary.totalMessages + ')' : ''}"></a>
       </li>
       <li>
         <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{ranking}">Ranking</a>

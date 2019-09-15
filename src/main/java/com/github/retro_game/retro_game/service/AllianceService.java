@@ -30,10 +30,6 @@ public interface AllianceService {
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
-  void sendCircularMessage(long bodyId, long allianceId, String message);
-
-  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
-  @Activity(bodies = "#bodyId")
   void leave(long bodyId, long allianceId);
 
   // Applications.
