@@ -28,9 +28,17 @@ public class User {
   @Column(name = "roles", nullable = false)
   private int roles;
 
-  @Column(name = "messages_seen_at", nullable = false)
+  @Column(name = "private_received_messages_seen_at", nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
-  private Date messagesSeenAt;
+  private Date privateReceivedMessagesSeenAt;
+
+  @Column(name = "alliance_messages_seen_at", nullable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date allianceMessagesSeenAt;
+
+  @Column(name = "broadcast_messages_seen_at", nullable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date broadcastMessagesSeenAt;
 
   @Column(name = "combat_reports_seen_at", nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
@@ -149,12 +157,28 @@ public class User {
     this.roles = roles;
   }
 
-  public Date getMessagesSeenAt() {
-    return messagesSeenAt;
+  public Date getPrivateReceivedMessagesSeenAt() {
+    return privateReceivedMessagesSeenAt;
   }
 
-  public void setMessagesSeenAt(Date messagesSeenAt) {
-    this.messagesSeenAt = messagesSeenAt;
+  public void setPrivateReceivedMessagesSeenAt(Date privateReceivedMessagesSeenAt) {
+    this.privateReceivedMessagesSeenAt = privateReceivedMessagesSeenAt;
+  }
+
+  public Date getAllianceMessagesSeenAt() {
+    return allianceMessagesSeenAt;
+  }
+
+  public void setAllianceMessagesSeenAt(Date allianceMessagesSeenAt) {
+    this.allianceMessagesSeenAt = allianceMessagesSeenAt;
+  }
+
+  public Date getBroadcastMessagesSeenAt() {
+    return broadcastMessagesSeenAt;
+  }
+
+  public void setBroadcastMessagesSeenAt(Date broadcastMessagesSeenAt) {
+    this.broadcastMessagesSeenAt = broadcastMessagesSeenAt;
   }
 
   public Date getCombatReportsSeenAt() {

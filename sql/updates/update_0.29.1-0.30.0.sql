@@ -1,5 +1,19 @@
 -- @formatter:off
 
+alter table users drop column messages_seen_at;
+
+alter table users add column private_received_messages_seen_at timestamptz;
+alter table users add column alliance_messages_seen_at timestamptz;
+alter table users add column broadcast_messages_seen_at timestamptz;
+
+update users set private_received_messages_seen_at = now(),
+                 alliance_messages_seen_at = now(),
+                 broadcast_messages_seen_at = now();
+
+alter table users alter column private_received_messages_seen_at set not null;
+alter table users alter column alliance_messages_seen_at set not null;
+alter table users alter column broadcast_messages_seen_at set not null;
+
 drop table messages;
 
 create table private_messages (

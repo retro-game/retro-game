@@ -8,11 +8,13 @@ import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
 import com.github.retro_game.retro_game.service.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedAllianceAccessException;
+import com.github.retro_game.retro_game.service.impl.cache.MessagesSummaryCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
@@ -24,14 +26,16 @@ class AllianceMessageServiceImpl implements AllianceMessagesService {
   private final AllianceMemberRepository allianceMemberRepository;
   private final AllianceMessageRepository allianceMessageRepository;
   private final UserRepository userRepository;
+  private final MessagesSummaryCache messagesSummaryCache;
   private AllianceServiceInternal allianceServiceInternal;
 
   public AllianceMessageServiceImpl(AllianceMemberRepository allianceMemberRepository,
-                                    AllianceMessageRepository allianceMessageRepository,
-                                    UserRepository userRepository) {
+                                    AllianceMessageRepository allianceMessageRepository, UserRepository userRepository,
+                                    MessagesSummaryCache messagesSummaryCache) {
     this.allianceMemberRepository = allianceMemberRepository;
     this.allianceMessageRepository = allianceMessageRepository;
     this.userRepository = userRepository;
+    this.messagesSummaryCache = messagesSummaryCache;
   }
 
   @Autowired
@@ -61,12 +65,25 @@ class AllianceMessageServiceImpl implements AllianceMessagesService {
     m.setAt(Date.from(Instant.now()));
     m.setMessage(message);
     allianceMessageRepository.save(m);
+
+    // Evict message summaries for all members.
+    List<Long> memberIds = allianceMemberRepository.findMemberIdsByAlliance(alliance);
+    for (Long id : memberIds) {
+      messagesSummaryCache.remove(id);
+    }
   }
 
   @Override
+  @Transactional
   public List<AllianceMessageDto> getCurrentUserAllianceMessages(long bodyId, Pageable pageable) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
+
+    // Mark that the user has seen all alliance messages until now.
+    user.setAllianceMessagesSeenAt(Date.from(Instant.now()));
+
+    // Evict cache to regenerate summary.
+    messagesSummaryCache.remove(userId);
 
     Optional<AllianceMember> optionalMember = allianceMemberRepository.findByKey_User(user);
     if (!optionalMember.isPresent()) {

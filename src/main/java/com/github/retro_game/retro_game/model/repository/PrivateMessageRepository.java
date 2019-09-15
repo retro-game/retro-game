@@ -7,9 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 public interface PrivateMessageRepository extends CrudRepository<PrivateMessage, Long> {
+  long countByRecipientIdAndDeletedByRecipientIsFalseAndAtAfter(long recipientId, Date at);
+
   void deleteByRecipientIdAndDeletedBySenderIsTrue(long recipientId);
 
   void deleteBySenderIdAndDeletedByRecipientIsTrue(long senderId);

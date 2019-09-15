@@ -14,16 +14,17 @@ import java.util.Date;
 public class OverviewController {
   private final BodyService bodyService;
   private final FlightService flightService;
-  private final MessageService messageService;
+  private final MessagesSummaryService messagesSummaryService;
   private final ReportService reportService;
   private final StatisticsService statisticsService;
   private final UserService userService;
 
-  public OverviewController(BodyService bodyService, FlightService flightService, MessageService messageService,
-                            ReportService reportService, StatisticsService statisticsService, UserService userService) {
+  public OverviewController(BodyService bodyService, FlightService flightService,
+                            MessagesSummaryService messagesSummaryService, ReportService reportService,
+                            StatisticsService statisticsService, UserService userService) {
     this.bodyService = bodyService;
     this.flightService = flightService;
-    this.messageService = messageService;
+    this.messagesSummaryService = messagesSummaryService;
     this.reportService = reportService;
     this.statisticsService = statisticsService;
     this.userService = userService;
@@ -33,7 +34,7 @@ public class OverviewController {
   public String overview(@RequestParam(name = "body") long bodyId, Model model) {
     UserSettingsDto settings = userService.getCurrentUserSettings();
     model.addAttribute("numNewMessages", settings.isShowNewMessagesInOverviewEnabled() ?
-        messageService.getNumNewMessages(bodyId) : 0);
+        messagesSummaryService.get(bodyId).getTotalMessages() : 0);
     model.addAttribute("numNewReports", settings.isShowNewReportsInOverviewEnabled() ?
         reportService.getSummary(bodyId).getTotalReports() : 0);
 

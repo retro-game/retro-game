@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.controller.form.DeleteAllPrivateMessages
 import com.github.retro_game.retro_game.controller.form.DeletePrivateMessageForm;
 import com.github.retro_game.retro_game.controller.form.DeletePrivateMessageResponse;
 import com.github.retro_game.retro_game.controller.form.SendPrivateMessageForm;
+import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.PrivateMessageService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.dto.PrivateMessageDto;
@@ -24,10 +25,13 @@ import java.util.List;
 @Controller
 @Validated
 public class MessagesPrivateController {
+  private final MessagesSummaryService messagesSummaryService;
   private final PrivateMessageService privateMessageService;
   private final UserService userService;
 
-  public MessagesPrivateController(PrivateMessageService privateMessageService, UserService userService) {
+  public MessagesPrivateController(MessagesSummaryService messagesSummaryService,
+                                   PrivateMessageService privateMessageService, UserService userService) {
+    this.messagesSummaryService = messagesSummaryService;
     this.privateMessageService = privateMessageService;
     this.userService = userService;
   }
@@ -39,13 +43,14 @@ public class MessagesPrivateController {
                          @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
                          Model model) {
+    PageRequest pageRequest = PageRequest.of(page - 1, size);
+    List<PrivateMessageDto> messages = privateMessageService.getMessages(bodyId, kind, correspondentId, pageRequest);
+
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("summary", messagesSummaryService.get(bodyId));
     model.addAttribute("kind", kind);
     model.addAttribute("page", page);
     model.addAttribute("size", size);
-
-    PageRequest pageRequest = PageRequest.of(page - 1, size);
-    List<PrivateMessageDto> messages = privateMessageService.getMessages(bodyId, kind, correspondentId, pageRequest);
     model.addAttribute("messages", messages);
 
     return "messages-private";

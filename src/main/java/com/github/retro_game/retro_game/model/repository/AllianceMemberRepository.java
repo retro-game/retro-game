@@ -5,7 +5,9 @@ import com.github.retro_game.retro_game.model.entity.AllianceMember;
 import com.github.retro_game.retro_game.model.entity.AllianceMemberKey;
 import com.github.retro_game.retro_game.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AllianceMemberRepository extends JpaRepository<AllianceMember, AllianceMemberKey> {
@@ -16,4 +18,7 @@ public interface AllianceMemberRepository extends JpaRepository<AllianceMember, 
   boolean existsByKey_User(User user);
 
   Optional<AllianceMember> findByKey_User(User user);
+
+  @Query("select am.key.user.id from AllianceMember am where am.key.alliance = ?1")
+  List<Long> findMemberIdsByAlliance(Alliance alliance);
 }

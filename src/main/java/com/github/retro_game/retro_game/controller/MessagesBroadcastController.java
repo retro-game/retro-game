@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SendBroadcastMessageForm;
 import com.github.retro_game.retro_game.service.BroadcastMessageService;
+import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.dto.BroadcastMessageDto;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,12 @@ import java.util.List;
 @Validated
 public class MessagesBroadcastController {
   private final BroadcastMessageService broadcastMessageService;
+  private final MessagesSummaryService messagesSummaryService;
 
-  public MessagesBroadcastController(BroadcastMessageService broadcastMessageService) {
+  public MessagesBroadcastController(BroadcastMessageService broadcastMessageService,
+                                     MessagesSummaryService messagesSummaryService) {
     this.broadcastMessageService = broadcastMessageService;
+    this.messagesSummaryService = messagesSummaryService;
   }
 
   @GetMapping("/messages/broadcast")
@@ -30,12 +34,13 @@ public class MessagesBroadcastController {
                          @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
                          Model model) {
-    model.addAttribute("bodyId", bodyId);
-    model.addAttribute("page", page);
-    model.addAttribute("size", size);
-
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<BroadcastMessageDto> messages = broadcastMessageService.getMessages(bodyId, pageRequest);
+
+    model.addAttribute("bodyId", bodyId);
+    model.addAttribute("summary", messagesSummaryService.get(bodyId));
+    model.addAttribute("page", page);
+    model.addAttribute("size", size);
     model.addAttribute("messages", messages);
 
     return "messages-broadcast";

@@ -11,6 +11,7 @@ import com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
 import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
+import com.github.retro_game.retro_game.service.impl.cache.MessagesSummaryCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -26,10 +27,13 @@ class PrivateMessagesServiceImpl implements PrivateMessageService {
   private static final Logger logger = LoggerFactory.getLogger(PrivateMessagesServiceImpl.class);
   private final PrivateMessageRepository privateMessageRepository;
   private final UserRepository userRepository;
+  private final MessagesSummaryCache messagesSummaryCache;
 
-  public PrivateMessagesServiceImpl(PrivateMessageRepository privateMessageRepository, UserRepository userRepository) {
+  public PrivateMessagesServiceImpl(PrivateMessageRepository privateMessageRepository, UserRepository userRepository,
+                                    MessagesSummaryCache messagesSummaryCache) {
     this.privateMessageRepository = privateMessageRepository;
     this.userRepository = userRepository;
+    this.messagesSummaryCache = messagesSummaryCache;
   }
 
   @Override
@@ -52,15 +56,27 @@ class PrivateMessagesServiceImpl implements PrivateMessageService {
     m.setAt(Date.from(Instant.now()));
     m.setMessage(message);
     privateMessageRepository.save(m);
+
+    // Evict message summary for the recipient.
+    messagesSummaryCache.remove(recipientId);
   }
 
   @Override
+  @Transactional
   public List<PrivateMessageDto> getMessages(long bodyId, PrivateMessageKindDto kind, Long correspondentId,
                                              Pageable pageable) {
     long userId = CustomUser.getCurrentUserId();
 
     List<PrivateMessage> messages;
     if (kind == PrivateMessageKindDto.RECEIVED) {
+      // Mark that the user has seen all private received messages until now.
+      User user = userRepository.getOne(userId);
+      user.setPrivateReceivedMessagesSeenAt(Date.from(Instant.now()));
+
+      // Evict cache to regenerate summary (now the number of private received messages should be 0).
+      messagesSummaryCache.remove(userId);
+
+      // Fetch messages.
       if (correspondentId == null) {
         messages = privateMessageRepository.getByRecipientIdAndDeletedByRecipientIsFalseOrderByAtDesc(userId, pageable);
       } else {
@@ -69,6 +85,8 @@ class PrivateMessagesServiceImpl implements PrivateMessageService {
       }
     } else {
       assert kind == PrivateMessageKindDto.SENT;
+
+      // Fetch messages.
       if (correspondentId == null) {
         messages = privateMessageRepository.getBySenderIdAndDeletedBySenderIsFalseOrderByAtDesc(userId, pageable);
       } else {

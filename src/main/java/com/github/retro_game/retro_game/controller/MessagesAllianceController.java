@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SendAllianceMessageForm;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
+import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.dto.AllianceMessageDto;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,12 @@ import java.util.List;
 @Validated
 public class MessagesAllianceController {
   private final AllianceMessagesService allianceMessagesService;
+  private final MessagesSummaryService messagesSummaryService;
 
-  public MessagesAllianceController(AllianceMessagesService allianceMessagesService) {
+  public MessagesAllianceController(AllianceMessagesService allianceMessagesService,
+                                    MessagesSummaryService messagesSummaryService) {
     this.allianceMessagesService = allianceMessagesService;
+    this.messagesSummaryService = messagesSummaryService;
   }
 
   @GetMapping("/messages/alliance")
@@ -30,12 +34,13 @@ public class MessagesAllianceController {
                          @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
                          Model model) {
-    model.addAttribute("bodyId", bodyId);
-    model.addAttribute("page", page);
-    model.addAttribute("size", size);
-
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<AllianceMessageDto> messages = allianceMessagesService.getCurrentUserAllianceMessages(bodyId, pageRequest);
+
+    model.addAttribute("bodyId", bodyId);
+    model.addAttribute("summary", messagesSummaryService.get(bodyId));
+    model.addAttribute("page", page);
+    model.addAttribute("size", size);
     model.addAttribute("messages", messages);
 
     return "messages-alliance";
