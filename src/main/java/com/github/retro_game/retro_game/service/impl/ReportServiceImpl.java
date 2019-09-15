@@ -675,11 +675,13 @@ class ReportServiceImpl implements ReportServiceInternal {
           neededCapacity / UnitItem.getFleet().get(UnitKind.SMALL_CARGO).getCapacity());
       int neededLargeCargoes = (int) Math.ceil(
           neededCapacity / UnitItem.getFleet().get(UnitKind.LARGE_CARGO).getCapacity());
+      int neededEspionageProbes = (int) Math.ceil(
+          neededCapacity / UnitItem.getFleet().get(UnitKind.ESPIONAGE_PROBE).getCapacity());
 
       simplifiedReports.add(new SimplifiedEspionageReportDto(report.getId(), report.getAt(), report.getEnemyId(),
           report.getEnemyName(), Converter.convert(report.getCoordinates()), report.getActivity(),
           Converter.convert(resources), report.getFleet(), report.getDefense(), token, neededSmallCargoes,
-          neededLargeCargoes));
+          neededLargeCargoes, neededEspionageProbes));
     }
     return simplifiedReports;
   }

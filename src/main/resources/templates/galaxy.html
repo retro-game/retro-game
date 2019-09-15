@@ -82,7 +82,9 @@
           <span th:classappend="${slot.banned ? 'banned' :
                                   (slot.onVacation ? 'vacation' :
                                   (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB ? 'noob' :
-                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG ? 'strong' : '')))}"
+                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG ? 'strong' : 
+                                  (slot.longInactive ? 'long-inactive' :
+                                  (slot.shortInactive ? 'short-inactive' : '')))))}"
                 data-tooltip data-tooltip-html th:data-tooltip-title="
                   '<table>' +
                     '<tr>' +
@@ -97,15 +99,15 @@
                   '</table>'">
             <span th:text="${slot.userName}"></span>
             (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
-            <span th:if="${slot.banned}">(b)</span>
-            <span th:if="${!slot.banned && slot.onVacation}">(v)</span>
-            <span th:if="${!slot.banned && !slot.onVacation &&
-                           slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB}">
-              (n)
-            </span>
-            <span th:if="${!slot.banned && !slot.onVacation &&
-                           slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG}">
-              (s)
+            <span th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
+              (
+              <span th:if="${slot.banned}" class="banned">b</span>
+              <span th:if="${slot.onVacation}" class="vacation">v</span>
+              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB}" class="noob">n</span>
+              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG}" class="strong">s</span>
+              <span th:if="${slot.shortInactive}" class="short-inactive">i</span>
+              <span th:if="${slot.longInactive}" class="long-inactive">I</span>
+              )
             </span>
           </span>
         </td>

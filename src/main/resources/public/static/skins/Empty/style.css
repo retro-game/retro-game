@@ -446,7 +446,6 @@ strong {
 }
 
 .banned {
-  color: #999;
   text-decoration: line-through;
 }
 
@@ -456,4 +455,12 @@ strong {
 
 .strong {
   color: #f00;
+}
+
+.short-inactive {
+  color: #FFB266;
+}
+
+.long-inactive {
+  color: #A0A0A0;
 }

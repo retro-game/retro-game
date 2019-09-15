@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.service.impl;
 import com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto;
 import com.github.retro_game.retro_game.service.dto.StatisticsSummaryDto;
 import com.github.retro_game.retro_game.service.impl.cache.StatisticsCache;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ class NoobProtectionServiceImpl implements NoobProtectionService {
   private final int noobProtectionMaxPoints;
   private final int noobProtectionMultiplier;
   private final StatisticsCache statisticsCache;
+  private ActivityService activityService;
 
   public NoobProtectionServiceImpl(@Value("${retro-game.noob-protection-enabled}") boolean noobProtectionEnabled,
                                    @Value("${retro-game.noob-protection-max-points}") int noobProtectionMaxPoints,
@@ -23,9 +25,17 @@ class NoobProtectionServiceImpl implements NoobProtectionService {
     this.statisticsCache = statisticsCache;
   }
 
+  @Autowired
+  public void setActivityService(ActivityService activityService) {
+    this.activityService = activityService;
+  }
+
   @Override
   public NoobProtectionRankDto getOtherPlayerRank(long selfId, long otherId) {
     if (!noobProtectionEnabled)
+      return NoobProtectionRankDto.EQUAL;
+
+    if (activityService.isInactive(otherId))
       return NoobProtectionRankDto.EQUAL;
 
     // If the other player is new (has no statistics), then the player is always noob.
@@ -47,7 +57,7 @@ class NoobProtectionServiceImpl implements NoobProtectionService {
 
     if (selfPoints > noobProtectionMultiplier * otherPoints)
       return NoobProtectionRankDto.NOOB;
-    if (selfPoints < noobProtectionMultiplier * otherPoints)
+    if (selfPoints * noobProtectionMultiplier < otherPoints)
       return NoobProtectionRankDto.STRONG;
     return NoobProtectionRankDto.EQUAL;
   }
