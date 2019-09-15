@@ -2,7 +2,7 @@
 An OGame clone in retro style
 
 ## Requirements
-* JDK 8 (OpenJDK works fine)
+* JDK 11 (OpenJDK works fine)
 * Maven >= 3
 * PostgreSQL >= 9.3
 * Redis
