@@ -13,65 +13,75 @@
       <td th:text="#{noReports}">No reports</td>
     </tr>
   </table>
-  <table th:each="report : ${reports}">
+  <table th:unless="${#lists.isEmpty(reports)}">
     <tr>
-      <th th:text="#{otherReportTitleFormat(#{${'otherReportKind.' + report.kind}}, ${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')})}"></th>
+      <th class="space-between">
+        <span th:text="#{otherReports}">Other reports</span>
+        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="other" href="#" th:text="#{deleteAll}">
+          Delete all
+        </a>
+      </th>
     </tr>
-    <tr>
-      <td th:switch="${report.kind}" th:with="
-          sc=${report.startCoordinates},
-          tc=${report.targetCoordinates},
-          startLink=@{/galaxy(body=${bodyId},galaxy=${sc.galaxy},system=${sc.system},position=${sc.position},kind=${sc.kind})},
-          targetLink=@{/galaxy(body=${bodyId},galaxy=${tc.galaxy},system=${tc.system},position=${tc.position},kind=${tc.kind})},
-          start='<a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${sc} + ']</a>',
-          target='<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
-          r=${report.resources},
-          withResources=${r != null && (r.metal > 0 || r.crystal > 0 || r.deuterium > 0)},
-          metal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.metal, 1, 'DEFAULT')} + '</strong>' : '',
-          crystal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')} + '</strong>' : '',
-          deuterium=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')} + '</strong>' : ''">
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).COLONIZATION}">
-          <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
-          <div th:if="${report.param == null}" th:text="#{otherReportFailedColonization}" th:remove="tag"></div>
-          <th:block th:unless="${report.param == null}">
-            <div
-                th:utext="#{otherReportSuccessfulColonizationFormat(${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'})}"
-                th:remove="tag"></div>
+    <th:block th:each="report : ${reports}">
+      <tr>
+        <th th:text="#{otherReportTitleFormat(#{${'otherReportKind.' + report.kind}}, ${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')})}"></th>
+      </tr>
+      <tr>
+        <td th:switch="${report.kind}" th:with="
+            sc=${report.startCoordinates},
+            tc=${report.targetCoordinates},
+            startLink=@{/galaxy(body=${bodyId},galaxy=${sc.galaxy},system=${sc.system},position=${sc.position},kind=${sc.kind})},
+            targetLink=@{/galaxy(body=${bodyId},galaxy=${tc.galaxy},system=${tc.system},position=${tc.position},kind=${tc.kind})},
+            start='<a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${sc} + ']</a>',
+            target='<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
+            r=${report.resources},
+            withResources=${r != null && (r.metal > 0 || r.crystal > 0 || r.deuterium > 0)},
+            metal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.metal, 1, 'DEFAULT')} + '</strong>' : '',
+            crystal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')} + '</strong>' : '',
+            deuterium=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')} + '</strong>' : ''">
+          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).COLONIZATION}">
+            <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div th:if="${report.param == null}" th:text="#{otherReportFailedColonization}" th:remove="tag"></div>
+            <th:block th:unless="${report.param == null}">
+              <div
+                  th:utext="#{otherReportSuccessfulColonizationFormat(${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'})}"
+                  th:remove="tag"></div>
+              <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
+                   th:remove="tag"></div>
+            </th:block>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).DEPLOYMENT}">
+            <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
             <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
                  th:remove="tag"></div>
           </th:block>
-        </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).DEPLOYMENT}">
-          <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
-          <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
-               th:remove="tag"></div>
-        </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
-          <div th:utext="#{otherReportEspionageFormat(${start}, ${target})}" th:remove="tag"></div>
-          <div
-              th:utext="#{otherReportEspionageCounterChanceFormat(${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'})}"
-              th:remove="tag"></div>
-        </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).RETURN}">
-          <div th:utext="#{otherReportReturnFormat(${start}, ${target})}" th:remove="tag"></div>
-          <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
-               th:remove="tag"></div>
-        </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).MISSILE_ATTACK}">
-          <div
-              th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${#numbers.formatInteger(report.param, 1, 'DEFAULT')})}"
-              th:remove="tag"></div>
-        </th:block>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button data-delete-report th:data-body="${bodyId}" data-kind="other" th:data-id="${report.id}"
-                th:text="#{delete}">
-          Delete
-        </button>
-      </td>
-    </tr>
+          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
+            <div th:utext="#{otherReportEspionageFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div
+                th:utext="#{otherReportEspionageCounterChanceFormat(${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'})}"
+                th:remove="tag"></div>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).RETURN}">
+            <div th:utext="#{otherReportReturnFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
+                 th:remove="tag"></div>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).MISSILE_ATTACK}">
+            <div
+                th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${#numbers.formatInteger(report.param, 1, 'DEFAULT')})}"
+                th:remove="tag"></div>
+          </th:block>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button data-delete-report th:data-body="${bodyId}" data-kind="other" th:data-id="${report.id}"
+                  th:text="#{delete}">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </th:block>
   </table>
   <div th:replace="reports-pagination :: reports-pagination('other')"></div>
   <script th:src="@{/static/js/reports.js?{v}(v=${version})}"></script>

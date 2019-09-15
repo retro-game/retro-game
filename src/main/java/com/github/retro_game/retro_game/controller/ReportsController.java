@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.form.DeleteAllReportsForm;
 import com.github.retro_game.retro_game.controller.form.DeleteReportForm;
 import com.github.retro_game.retro_game.controller.form.DeleteReportResponse;
 import com.github.retro_game.retro_game.service.ReportService;
@@ -147,6 +148,15 @@ public class ReportsController {
     return response;
   }
 
+  @PostMapping("/reports/combat/delete-all")
+  @ResponseBody
+  public DeleteReportResponse reportsCombatDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+    reportService.deleteAllSimplifiedCombatReports(form.getBody());
+    var response = new DeleteReportResponse();
+    response.setSuccess(true);
+    return response;
+  }
+
   @GetMapping("/reports/espionage")
   public String reportsEspionage(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") EspionageReportSortOrderDto order,
@@ -178,6 +188,15 @@ public class ReportsController {
     } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
+    return response;
+  }
+
+  @PostMapping("/reports/espionage/delete-all")
+  @ResponseBody
+  public DeleteReportResponse reportsEspionageDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+    reportService.deleteAllEspionageReports(form.getBody());
+    var response = new DeleteReportResponse();
+    response.setSuccess(true);
     return response;
   }
 
@@ -213,6 +232,15 @@ public class ReportsController {
     return response;
   }
 
+  @PostMapping("/reports/harvest/delete-all")
+  @ResponseBody
+  public DeleteReportResponse reportsHarvestDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+    reportService.deleteAllHarvestReports(form.getBody());
+    var response = new DeleteReportResponse();
+    response.setSuccess(true);
+    return response;
+  }
+
   @GetMapping("/reports/transport")
   public String reportsTransport(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") TransportReportSortOrderDto order,
@@ -245,6 +273,15 @@ public class ReportsController {
     return response;
   }
 
+  @PostMapping("/reports/transport/delete-all")
+  @ResponseBody
+  public DeleteReportResponse reportsTransportDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+    reportService.deleteAllTransportReports(form.getBody());
+    var response = new DeleteReportResponse();
+    response.setSuccess(true);
+    return response;
+  }
+
   @GetMapping("/reports/other")
   public String reportsOther(@RequestParam(name = "body") long bodyId,
                              @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
@@ -270,6 +307,15 @@ public class ReportsController {
     } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
+    return response;
+  }
+
+  @PostMapping("/reports/other/delete-all")
+  @ResponseBody
+  public DeleteReportResponse reportsOtherDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+    reportService.deleteAllOtherReports(form.getBody());
+    var response = new DeleteReportResponse();
+    response.setSuccess(true);
     return response;
   }
 }

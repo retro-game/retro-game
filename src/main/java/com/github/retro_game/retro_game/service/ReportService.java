@@ -27,12 +27,20 @@ public interface ReportService {
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  void deleteAllSimplifiedCombatReports(long bodyId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   List<SimplifiedEspionageReportDto> getSimplifiedEspionageReports(long bodyId, EspionageReportSortOrderDto sortOrder,
                                                                    Sort.Direction direction, Pageable pageable);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
   void deleteEspionageReport(long bodyId, long reportId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
+  void deleteAllEspionageReports(long bodyId);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
@@ -45,6 +53,10 @@ public interface ReportService {
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  void deleteAllHarvestReports(long bodyId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   List<TransportReportDto> getTransportReports(long bodyId, TransportReportSortOrderDto sortOrder,
                                                Sort.Direction direction, Pageable pageable);
 
@@ -54,9 +66,17 @@ public interface ReportService {
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
+  void deleteAllTransportReports(long bodyId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
   List<OtherReportDto> getOtherReports(long bodyId, Pageable pageable);
 
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
   @Activity(bodies = "#bodyId")
   void deleteOtherReport(long bodyId, long reportId);
+
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS_BODY')")
+  @Activity(bodies = "#bodyId")
+  void deleteAllOtherReports(long bodyId);
 }

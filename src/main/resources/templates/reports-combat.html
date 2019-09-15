@@ -15,6 +15,14 @@
   </table>
   <table th:unless="${#lists.isEmpty(reports)}">
     <tr>
+      <th colspan="9" th:text="#{combatReports}">Combat reports</th>
+      <th>
+        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="combat" href="#" th:text="#{deleteAll}">
+          Delete all
+        </a>
+      </th>
+    </tr>
+    <tr>
       <th>
         <a th:href="@{/reports/combat(body=${bodyId},order='AT',direction=${order == 'AT' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
            th:text="#{at}">At</a>

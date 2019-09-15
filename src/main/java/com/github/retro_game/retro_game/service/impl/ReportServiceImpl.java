@@ -482,6 +482,14 @@ class ReportServiceImpl implements ReportServiceInternal {
   }
 
   @Override
+  @Transactional
+  public void deleteAllSimplifiedCombatReports(long bodyId) {
+    long userId = CustomUser.getCurrentUserId();
+    simplifiedCombatReportRepository.markAllAsDeletedByUserId(userId);
+    logger.info("Deleting all simplified combat reports: userId={}", userId);
+  }
+
+  @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   @CacheEvict(cacheNames = "reportsSummaries", key = "#flight.startUser.id")
   public void createEspionageReport(Flight flight, List<Flight> holdingFlights, double counterChance) {
@@ -707,6 +715,14 @@ class ReportServiceImpl implements ReportServiceInternal {
     report.setDeleted(true);
   }
 
+  @Override
+  @Transactional
+  public void deleteAllEspionageReports(long bodyId) {
+    long userId = CustomUser.getCurrentUserId();
+    espionageReportRepository.markAllAsDeletedByUserId(userId);
+    logger.info("Deleting all espionage reports: userId={}", userId);
+  }
+
   private long calculateUnitsCost(Map<UnitKind, Integer> units) {
     long sum = 0;
     for (Map.Entry<UnitKind, Integer> entry : units.entrySet()) {
@@ -791,6 +807,14 @@ class ReportServiceImpl implements ReportServiceInternal {
   }
 
   @Override
+  @Transactional
+  public void deleteAllHarvestReports(long bodyId) {
+    long userId = CustomUser.getCurrentUserId();
+    harvestReportRepository.markAllAsDeletedByUserId(userId);
+    logger.info("Deleting all harvest reports: userId={}", userId);
+  }
+
+  @Override
   @CacheEvict(cacheNames = "reportsSummaries", key = "#user.id")
   public void createTransportReport(Flight flight, User user, User partner, Resources resources) {
     TransportKind kind;
@@ -847,6 +871,14 @@ class ReportServiceImpl implements ReportServiceInternal {
 
     logger.info("Deleting transport report: userId={} reportId={}", userId, reportId);
     report.setDeleted(true);
+  }
+
+  @Override
+  @Transactional
+  public void deleteAllTransportReports(long bodyId) {
+    long userId = CustomUser.getCurrentUserId();
+    transportReportRepository.markAllAsDeletedByUserId(userId);
+    logger.info("Deleting all transport reports: userId={}", userId);
   }
 
   @Override
@@ -953,6 +985,14 @@ class ReportServiceImpl implements ReportServiceInternal {
 
     logger.info("Deleting other report: userId={} reportId={}", userId, reportId);
     report.setDeleted(true);
+  }
+
+  @Override
+  @Transactional
+  public void deleteAllOtherReports(long bodyId) {
+    long userId = CustomUser.getCurrentUserId();
+    otherReportRepository.markAllAsDeletedByUserId(userId);
+    logger.info("Deleting all other reports: userId={}", userId);
   }
 
   private byte[] generateRandomToken() {

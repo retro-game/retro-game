@@ -59,10 +59,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/messages/private/delete",
             "/messages/private/delete-all",
             "/reports/combat/delete",
+            "/reports/combat/delete-all",
             "/reports/espionage/delete",
+            "/reports/espionage/delete-all",
             "/reports/harvest/delete",
+            "/reports/harvest/delete-all",
             "/reports/transport/delete",
-            "/reports/other/delete")
+            "/reports/transport/delete-all",
+            "/reports/other/delete",
+            "/reports/other/delete-all")
         .and()
       .formLogin()
         .loginPage("/")
