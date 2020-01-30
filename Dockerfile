@@ -18,7 +18,7 @@ RUN \
   make && \
   cd .. && \
   # Build the game.
-  mvn package
+  mvn -B package
 
 FROM alpine:3.11
 WORKDIR /retro-game
