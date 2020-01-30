@@ -49,3 +49,12 @@ jobs:
       run: cmake -S battle-engine -B build -G "Unix Makefiles"
     - name: Build
       run: make -C build
+
+  build-docker-image:
+    name: Build docker image
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Build
+      run: docker build .
