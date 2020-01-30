@@ -1,6 +1,8 @@
 # Retro Game
 An OGame clone in retro style
 
+[![CI](https://github.com/retro-game/retro-game/workflows/CI/badge.svg)](https://github.com/retro-game/retro-game/actions)
+
 ## Requirements
 * JDK 11 (OpenJDK works fine)
 * Maven >= 3
