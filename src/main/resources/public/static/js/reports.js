@@ -1,28 +1,10 @@
 'use strict';
 
 $('#delete-all').click(function () {
-  const ok = confirm('Do you want to delete all reports?');
-  if (ok) {
-    const elem = $(this);
-    const body = +elem.attr('data-body');
-    const kind = elem.attr('data-kind');
-    $.ajax({
-      type: 'post',
-      url: '/reports/' + kind + '/delete-all',
-      contentType: 'application/json',
-      data: JSON.stringify({body}),
-      success: function (data) {
-        if (data.success) {
-          location.reload();
-        } else {
-          alert('Deleting all reports failed');
-        }
-      },
-      error: function () {
-        alert('Deleting all reports failed');
-      }
-    });
-  }
+  const elem = $(this);
+  const ok = confirm(elem.attr('data-msg'));
+  if (ok)
+    elem.parent('form').submit();
   return false;
 });
 

@@ -17,9 +17,7 @@
     <tr>
       <th colspan="7" th:text="#{espionageReports}">Espionage reports</th>
       <th>
-        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="espionage" href="#" th:text="#{deleteAll}">
-          Delete all
-        </a>
+        <form th:replace="reports-delete-all-form :: reports-delete-all-form('espionage')"></form>
       </th>
     </tr>
     <tr>

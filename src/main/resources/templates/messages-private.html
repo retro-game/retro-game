@@ -11,9 +11,11 @@
     <tr>
       <th class="space-between">
         <span th:text="#{privateMessages}">Private messages</span>
-        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="${kind}" href="#" th:text="#{deleteAll}">
-          Delete all
-        </a>
+        <form th:action="@{/messages/private/delete-all}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="kind" type="hidden" th:value="${kind}">
+          <a id="delete-all" href="#" th:data-msg="#{deleteAllMessagesConfirm}" th:text="#{deleteAll}">Delete all</a>
+        </form>
       </th>
     </tr>
     <tr th:if="${#lists.isEmpty(messages)}">

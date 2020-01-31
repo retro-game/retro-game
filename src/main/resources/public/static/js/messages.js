@@ -1,28 +1,10 @@
 'use strict';
 
 $('#delete-all').click(function () {
-  const ok = confirm('Do you want to delete all messages?');
-  if (ok) {
-    const elem = $(this);
-    const body = +elem.attr('data-body');
-    const kind = elem.attr('data-kind');
-    $.ajax({
-      type: 'post',
-      url: '/messages/private/delete-all',
-      contentType: 'application/json',
-      data: JSON.stringify({body, kind}),
-      success: function (data) {
-        if (data.success) {
-          location.reload();
-        } else {
-          alert('Deleting all messages failed');
-        }
-      },
-      error: function () {
-        alert('Deleting all messages failed');
-      }
-    });
-  }
+  const elem = $(this);
+  const ok = confirm(elem.attr('data-msg'));
+  if (ok)
+    elem.parent('form').submit();
   return false;
 });
 

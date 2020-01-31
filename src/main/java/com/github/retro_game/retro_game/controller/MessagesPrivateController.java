@@ -90,11 +90,8 @@ public class MessagesPrivateController {
   }
 
   @PostMapping("/messages/private/delete-all")
-  @ResponseBody
-  public DeletePrivateMessageResponse deleteAll(@RequestBody @Valid DeleteAllPrivateMessagesForm form) {
+  public String deleteAll(@Valid DeleteAllPrivateMessagesForm form) {
     privateMessageService.deleteAll(form.getBody(), form.getKind());
-    DeletePrivateMessageResponse response = new DeletePrivateMessageResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/messages/private?body=" + form.getBody() + "&kind=" + form.getKind();
   }
 }

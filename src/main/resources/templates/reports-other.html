@@ -17,9 +17,7 @@
     <tr>
       <th class="space-between">
         <span th:text="#{otherReports}">Other reports</span>
-        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="other" href="#" th:text="#{deleteAll}">
-          Delete all
-        </a>
+        <form th:replace="reports-delete-all-form :: reports-delete-all-form('other')"></form>
       </th>
     </tr>
     <th:block th:each="report : ${reports}">

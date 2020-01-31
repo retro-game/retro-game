@@ -149,12 +149,9 @@ public class ReportsController {
   }
 
   @PostMapping("/reports/combat/delete-all")
-  @ResponseBody
-  public DeleteReportResponse reportsCombatDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+  public String reportsCombatDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllSimplifiedCombatReports(form.getBody());
-    var response = new DeleteReportResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/reports/combat?body=" + form.getBody();
   }
 
   @GetMapping("/reports/espionage")
@@ -192,12 +189,9 @@ public class ReportsController {
   }
 
   @PostMapping("/reports/espionage/delete-all")
-  @ResponseBody
-  public DeleteReportResponse reportsEspionageDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+  public String reportsEspionageDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllEspionageReports(form.getBody());
-    var response = new DeleteReportResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/reports/espionage?body=" + form.getBody();
   }
 
   @GetMapping("/reports/harvest")
@@ -233,12 +227,9 @@ public class ReportsController {
   }
 
   @PostMapping("/reports/harvest/delete-all")
-  @ResponseBody
-  public DeleteReportResponse reportsHarvestDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+  public String reportsHarvestDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllHarvestReports(form.getBody());
-    var response = new DeleteReportResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/reports/harvest?body=" + form.getBody();
   }
 
   @GetMapping("/reports/transport")
@@ -274,12 +265,9 @@ public class ReportsController {
   }
 
   @PostMapping("/reports/transport/delete-all")
-  @ResponseBody
-  public DeleteReportResponse reportsTransportDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+  public String reportsTransportDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllTransportReports(form.getBody());
-    var response = new DeleteReportResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/reports/transport?body=" + form.getBody();
   }
 
   @GetMapping("/reports/other")
@@ -311,11 +299,8 @@ public class ReportsController {
   }
 
   @PostMapping("/reports/other/delete-all")
-  @ResponseBody
-  public DeleteReportResponse reportsOtherDeleteAll(@RequestBody @Valid DeleteAllReportsForm form) {
+  public String reportsOtherDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllOtherReports(form.getBody());
-    var response = new DeleteReportResponse();
-    response.setSuccess(true);
-    return response;
+    return "redirect:/reports/other?body=" + form.getBody();
   }
 }

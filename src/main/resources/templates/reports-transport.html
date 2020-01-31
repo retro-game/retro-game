@@ -17,9 +17,7 @@
     <tr>
       <th colspan="6" th:text="#{transportReports}">Transport reports</th>
       <th>
-        <a id="delete-all" th:data-body="${bodyId}" th:data-kind="transport" href="#" th:text="#{deleteAll}">
-          Delete all
-        </a>
+        <form th:replace="reports-delete-all-form :: reports-delete-all-form('transport')"></form>
       </th>
     </tr>
     <tr>
