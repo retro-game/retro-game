@@ -11,7 +11,7 @@ import com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
 import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
-import com.github.retro_game.retro_game.service.impl.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;

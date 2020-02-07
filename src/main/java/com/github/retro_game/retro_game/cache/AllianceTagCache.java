@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.cache;
+package com.github.retro_game.retro_game.cache;
 
 import com.github.retro_game.retro_game.model.entity.Alliance;
 import com.github.retro_game.retro_game.model.repository.AllianceRepository;

@@ -8,7 +8,7 @@ import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.BroadcastMessageService;
 import com.github.retro_game.retro_game.service.dto.BroadcastMessageDto;
 import com.github.retro_game.retro_game.service.exception.CannotBroadcastMessageException;
-import com.github.retro_game.retro_game.service.impl.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

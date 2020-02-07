@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.cache;
+package com.github.retro_game.retro_game.cache;
 
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;

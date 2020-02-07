@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.cache;
+package com.github.retro_game.retro_game.cache;
 
 public class MessagesSummary {
   private final int numPrivateReceivedMessages;

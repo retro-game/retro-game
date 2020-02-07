@@ -8,8 +8,8 @@ import com.github.retro_game.retro_game.model.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.dto.MessagesSummaryDto;
-import com.github.retro_game.retro_game.service.impl.cache.MessagesSummary;
-import com.github.retro_game.retro_game.service.impl.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.cache.MessagesSummary;
+import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
 import org.springframework.stereotype.Service;
 
 @Service("messageSummaryService")
