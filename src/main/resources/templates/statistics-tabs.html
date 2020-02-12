@@ -14,30 +14,30 @@
           <th colspan="7" th:text="#{statistics}">Statistics</th>
         </tr>
         <tr>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/summary(body=${bodyId},user=${userId})}" th:text="#{summary}">Summary</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='OVERALL',period='LAST_WEEK')}"
                th:text="#{overall}">Overall</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='BUILDINGS',period='LAST_WEEK')}"
                th:text="#{buildings}">Buildings</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='TECHNOLOGIES',period='LAST_WEEK')}"
                th:text="#{technologies}">Technologies</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='FLEET',period='LAST_WEEK')}"
                th:text="#{fleet}">Fleet</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distinct-changes(body=${bodyId},user=${userId},kind='DEFENSE',period='LAST_WEEK')}"
                th:text="#{defense}">Defense</a>
           </td>
-          <td>
+          <td width="14.28%">
             <a th:href="@{/statistics/distribution-changes(body=${bodyId},user=${userId},period='LAST_WEEK')}"
                th:text="#{distribution}">Distribution</a>
           </td>
