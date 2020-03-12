@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.battleengine;
+package com.github.retro_game.retro_game.battleengine;
 
 public class BattleOutcome {
   private final int numRounds;

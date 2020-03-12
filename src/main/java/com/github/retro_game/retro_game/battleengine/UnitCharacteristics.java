@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.battleengine;
+package com.github.retro_game.retro_game.battleengine;
 
 class UnitCharacteristics {
   private final float weapons;

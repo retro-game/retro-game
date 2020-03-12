@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.battleengine.BattleOutcome;
+import com.github.retro_game.retro_game.battleengine.Combatant;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.service.ReportService;
-import com.github.retro_game.retro_game.service.impl.battleengine.BattleOutcome;
-import com.github.retro_game.retro_game.service.impl.battleengine.Combatant;
 
 import java.util.Date;
 import java.util.List;

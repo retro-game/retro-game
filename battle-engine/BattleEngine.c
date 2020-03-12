@@ -6,8 +6,7 @@
 
 #include <jni.h>
 
-#define BATTLE_ENGINE_PREFIX                                                   \
-  "com/github/retro_game/retro_game/service/impl/battleengine"
+#define BATTLE_ENGINE_PREFIX "com/github/retro_game/retro_game/battleengine"
 
 #define BATTLE_OUTCOME_CLASS BATTLE_ENGINE_PREFIX "/BattleOutcome"
 #define COMBATANT_CLASS BATTLE_ENGINE_PREFIX "/Combatant"
@@ -150,7 +149,7 @@ static struct unit_characteristics *units_characteristics;
 static size_t num_kinds;
 
 JNIEXPORT jboolean JNICALL
-Java_com_github_retro_1game_retro_1game_service_impl_battleengine_BattleEngine_init(
+Java_com_github_retro_1game_retro_1game_battleengine_BattleEngine_init(
     JNIEnv *env, jobject battle_engine, jobjectArray characteristics_array) {
   (void)battle_engine;
   struct jni jni;
@@ -159,7 +158,7 @@ Java_com_github_retro_1game_retro_1game_service_impl_battleengine_BattleEngine_i
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_github_retro_1game_retro_1game_service_impl_battleengine_BattleEngine_fight(
+Java_com_github_retro_1game_retro_1game_battleengine_BattleEngine_fight(
     JNIEnv *env, jobject battle_engine, jobjectArray attackers_array,
     jobjectArray defenders_array, jint seed) {
   (void)battle_engine;

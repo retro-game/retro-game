@@ -1,14 +1,14 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.battleengine.BattleEngine;
+import com.github.retro_game.retro_game.battleengine.BattleOutcome;
+import com.github.retro_game.retro_game.battleengine.Combatant;
+import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.exception.*;
-import com.github.retro_game.retro_game.service.impl.battleengine.BattleEngine;
-import com.github.retro_game.retro_game.service.impl.battleengine.BattleOutcome;
-import com.github.retro_game.retro_game.service.impl.battleengine.Combatant;
-import com.github.retro_game.retro_game.service.impl.battleengine.CombatantOutcome;
 import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
