@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl.task;
+package com.github.retro_game.retro_game.cron;
 
 import com.github.retro_game.retro_game.repository.PrivateMessageRepository;
 import org.slf4j.Logger;
