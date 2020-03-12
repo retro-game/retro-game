@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.service.dto.CoordinatesDto;
+import com.github.retro_game.retro_game.dto.CoordinatesDto;
 
 import java.util.function.Function;
 

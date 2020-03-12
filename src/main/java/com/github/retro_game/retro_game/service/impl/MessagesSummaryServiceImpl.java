@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.cache.MessagesSummary;
 import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.dto.MessagesSummaryDto;
 import com.github.retro_game.retro_game.entity.User;
 import com.github.retro_game.retro_game.repository.AllianceMessageRepository;
 import com.github.retro_game.retro_game.repository.BroadcastMessageRepository;
@@ -9,7 +10,6 @@ import com.github.retro_game.retro_game.repository.PrivateMessageRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
-import com.github.retro_game.retro_game.service.dto.MessagesSummaryDto;
 import org.springframework.stereotype.Service;
 
 @Service("messageSummaryService")

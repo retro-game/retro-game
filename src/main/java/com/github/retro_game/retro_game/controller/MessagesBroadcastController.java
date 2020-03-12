@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SendBroadcastMessageForm;
+import com.github.retro_game.retro_game.dto.BroadcastMessageDto;
 import com.github.retro_game.retro_game.service.BroadcastMessageService;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
-import com.github.retro_game.retro_game.service.dto.BroadcastMessageDto;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;

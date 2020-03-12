@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.cache;
 
+import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.Statistics;
 import com.github.retro_game.retro_game.entity.User;
 import com.github.retro_game.retro_game.repository.*;
-import com.github.retro_game.retro_game.service.dto.*;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 

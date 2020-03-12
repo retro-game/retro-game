@@ -20,12 +20,12 @@
           <input name="position" type="number" th:value="${position != null ? position : ''}" min="1" max="15" required>
           <select name="kind">
             <option value="PLANET"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET}"
                     th:text="#{planet}">
               Planet
             </option>
             <option value="MOON"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON}"
                     th:text="#{moon}">
               Moon
             </option>

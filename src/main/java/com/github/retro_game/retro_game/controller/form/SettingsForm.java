@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.controller.form;
 
-import com.github.retro_game.retro_game.service.dto.BodiesSortOrderDto;
+import com.github.retro_game.retro_game.dto.BodiesSortOrderDto;
 import org.springframework.data.domain.Sort;
 import reactor.util.annotation.NonNull;
 

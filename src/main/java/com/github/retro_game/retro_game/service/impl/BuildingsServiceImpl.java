@@ -1,14 +1,14 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.BuildingDto;
+import com.github.retro_game.retro_game.dto.BuildingKindDto;
+import com.github.retro_game.retro_game.dto.BuildingQueueEntryDto;
+import com.github.retro_game.retro_game.dto.BuildingsAndQueuePairDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.BuildingQueueEntryRepository;
 import com.github.retro_game.retro_game.repository.BuildingRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
-import com.github.retro_game.retro_game.service.dto.BuildingDto;
-import com.github.retro_game.retro_game.service.dto.BuildingKindDto;
-import com.github.retro_game.retro_game.service.dto.BuildingQueueEntryDto;
-import com.github.retro_game.retro_game.service.dto.BuildingsAndQueuePairDto;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
 import io.vavr.Tuple;

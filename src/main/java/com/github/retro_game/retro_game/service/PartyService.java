@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.PartyDto;
-import com.github.retro_game.retro_game.service.dto.PartyTargetDto;
+import com.github.retro_game.retro_game.dto.PartyDto;
+import com.github.retro_game.retro_game.dto.PartyTargetDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;

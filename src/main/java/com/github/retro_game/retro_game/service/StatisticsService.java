@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.*;
+import com.github.retro_game.retro_game.dto.*;
 import io.vavr.Tuple2;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;

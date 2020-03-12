@@ -1,11 +1,11 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SetProductionFactorsForm;
+import com.github.retro_game.retro_game.dto.ProductionDto;
+import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
+import com.github.retro_game.retro_game.dto.ProductionItemsDto;
+import com.github.retro_game.retro_game.dto.ResourcesDto;
 import com.github.retro_game.retro_game.service.BodyService;
-import com.github.retro_game.retro_game.service.dto.ProductionDto;
-import com.github.retro_game.retro_game.service.dto.ProductionFactorsDto;
-import com.github.retro_game.retro_game.service.dto.ProductionItemsDto;
-import com.github.retro_game.retro_game.service.dto.ResourcesDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

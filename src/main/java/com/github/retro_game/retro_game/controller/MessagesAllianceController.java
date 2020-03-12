@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SendAllianceMessageForm;
+import com.github.retro_game.retro_game.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
-import com.github.retro_game.retro_game.service.dto.AllianceMessageDto;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;

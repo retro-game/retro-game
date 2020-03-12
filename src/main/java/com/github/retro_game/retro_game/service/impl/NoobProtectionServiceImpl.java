@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.cache.StatisticsCache;
-import com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto;
-import com.github.retro_game.retro_game.service.dto.StatisticsSummaryDto;
+import com.github.retro_game.retro_game.dto.NoobProtectionRankDto;
+import com.github.retro_game.retro_game.dto.StatisticsSummaryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

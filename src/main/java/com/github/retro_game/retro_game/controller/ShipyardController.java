@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.BuildUnitsForm;
+import com.github.retro_game.retro_game.dto.UnitTypeDto;
 import com.github.retro_game.retro_game.service.ShipyardService;
-import com.github.retro_game.retro_game.service.dto.UnitTypeDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

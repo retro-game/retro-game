@@ -1,13 +1,13 @@
 package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.AllianceMemberRepository;
 import com.github.retro_game.retro_game.repository.AllianceMessageRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
-import com.github.retro_game.retro_game.service.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedAllianceAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

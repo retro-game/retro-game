@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.dto.PrangerEntryDto;
 import com.github.retro_game.retro_game.service.PrangerService;
-import com.github.retro_game.retro_game.service.dto.PrangerEntryDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

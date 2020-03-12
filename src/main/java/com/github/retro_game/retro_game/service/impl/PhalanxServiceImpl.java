@@ -1,10 +1,10 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.PhalanxFlightEventDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.PhalanxService;
-import com.github.retro_game.retro_game.service.dto.PhalanxFlightEventDto;
 import com.github.retro_game.retro_game.service.exception.BodyDoesntExistException;
 import com.github.retro_game.retro_game.service.exception.NotEnoughDeuteriumException;
 import com.github.retro_game.retro_game.service.exception.TargetOutOfRangeException;

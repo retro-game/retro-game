@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.controller.form;
 
-import com.github.retro_game.retro_game.service.dto.CoordinatesKindDto;
-import com.github.retro_game.retro_game.service.dto.MissionDto;
-import com.github.retro_game.retro_game.service.dto.UnitKindDto;
+import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
+import com.github.retro_game.retro_game.dto.MissionDto;
+import com.github.retro_game.retro_game.dto.UnitKindDto;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Min;

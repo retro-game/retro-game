@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller.form;
 
-import com.github.retro_game.retro_game.service.dto.UnitKindDto;
-import com.github.retro_game.retro_game.service.dto.UnitTypeDto;
+import com.github.retro_game.retro_game.dto.UnitKindDto;
+import com.github.retro_game.retro_game.dto.UnitTypeDto;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;

@@ -24,12 +24,12 @@
           <select id="kind" name="kind">
             <option></option>
             <option value="PLANET"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET}"
                     th:text="#{planet}">
               Planet
             </option>
             <option value="MOON"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON}"
                     th:text="#{moon}">
               Moon
             </option>
@@ -207,7 +207,7 @@
       <tr>
         <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{buildings}">Buildings</th>
       </tr>
-      <tr th:each="kind : ${T(com.github.retro_game.retro_game.service.dto.BuildingKindDto).values()}">
+      <tr th:each="kind : ${T(com.github.retro_game.retro_game.dto.BuildingKindDto).values()}">
         <td>
           <a th:href="@{/details/building(body=${bodyId},kind=${kind})}" th:text="#{${'items.' + kind + '.name'}}"></a>
         </td>
@@ -224,7 +224,7 @@
       <tr>
         <th th:colspan="${3 + #lists.size(bodies)}" th:text="#{units}">Units</th>
       </tr>
-      <tr th:each="kind : ${T(com.github.retro_game.retro_game.service.dto.UnitKindDto).values()}">
+      <tr th:each="kind : ${T(com.github.retro_game.retro_game.dto.UnitKindDto).values()}">
         <td>
           <a th:href="@{/details/unit(body=${bodyId},kind=${kind})}" th:text="#{${'items.' + kind + '.name'}}"></a>
         </td>

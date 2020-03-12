@@ -23,11 +23,11 @@
     </tr>
     <th:block th:each="message : ${messages}">
       <tr>
-        <th th:if="${kind == T(com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto).RECEIVED}"
+        <th th:if="${kind == T(com.github.retro_game.retro_game.dto.PrivateMessageKindDto).RECEIVED}"
             th:text="#{messageFromAtFormat(${message.senderName != null ? message.senderName : '[deleted]'},${#dates.format(message.at, 'yyyy-MM-dd HH:mm:ss')})}">
           Message from Gaius at 2006-06-06 03:00:00
         </th>
-        <th th:if="${kind == T(com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto).SENT}"
+        <th th:if="${kind == T(com.github.retro_game.retro_game.dto.PrivateMessageKindDto).SENT}"
             th:text="#{messageToAtFormat(${message.recipientName != null ? message.recipientName : '[deleted]'},${#dates.format(message.at, 'yyyy-MM-dd HH:mm:ss')})}">
           Message to Gaius at 2006-06-06 03:00:00
         </th>
@@ -39,7 +39,7 @@
         </td>
       </tr>
       <tr>
-        <td th:with="correspondentId=${kind == T(com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto).RECEIVED ? message.senderId : message.recipientId}">
+        <td th:with="correspondentId=${kind == T(com.github.retro_game.retro_game.dto.PrivateMessageKindDto).RECEIVED ? message.senderId : message.recipientId}">
           <a th:if="${correspondentId != null}" class="btn"
              th:href="@{/messages/private/send(body=${bodyId},recipient=${correspondentId})}" th:text="#{reply}">
             Reply

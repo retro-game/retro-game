@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.service.TechnologyService;
-import com.github.retro_game.retro_game.service.dto.TechnologyKindDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;

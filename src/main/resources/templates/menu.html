@@ -31,11 +31,11 @@
         <a th:href="@{/technologies(body=${bodyId})}" th:text="#{technologies}">Technologies</a>
       </li>
       <li>
-        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.service.dto.UnitTypeDto).FLEET})}"
+        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).FLEET})}"
            th:text="#{shipyard}">Shipyard</a>
       </li>
       <li>
-        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.service.dto.UnitTypeDto).DEFENSE})}"
+        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).DEFENSE})}"
            th:text="#{defense}">Defense</a>
       </li>
       <li>

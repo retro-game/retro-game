@@ -1,13 +1,13 @@
 package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.dto.BroadcastMessageDto;
 import com.github.retro_game.retro_game.entity.BroadcastMessage;
 import com.github.retro_game.retro_game.entity.User;
 import com.github.retro_game.retro_game.repository.BroadcastMessageRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.BroadcastMessageService;
-import com.github.retro_game.retro_game.service.dto.BroadcastMessageDto;
 import com.github.retro_game.retro_game.service.exception.CannotBroadcastMessageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

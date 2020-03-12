@@ -37,7 +37,7 @@
             metal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.metal, 1, 'DEFAULT')} + '</strong>' : '',
             crystal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')} + '</strong>' : '',
             deuterium=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')} + '</strong>' : ''">
-          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).COLONIZATION}">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).COLONIZATION}">
             <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
             <div th:if="${report.param == null}" th:text="#{otherReportFailedColonization}" th:remove="tag"></div>
             <th:block th:unless="${report.param == null}">
@@ -48,23 +48,23 @@
                    th:remove="tag"></div>
             </th:block>
           </th:block>
-          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).DEPLOYMENT}">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).DEPLOYMENT}">
             <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
             <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
                  th:remove="tag"></div>
           </th:block>
-          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
             <div th:utext="#{otherReportEspionageFormat(${start}, ${target})}" th:remove="tag"></div>
             <div
                 th:utext="#{otherReportEspionageCounterChanceFormat(${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'})}"
                 th:remove="tag"></div>
           </th:block>
-          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).RETURN}">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).RETURN}">
             <div th:utext="#{otherReportReturnFormat(${start}, ${target})}" th:remove="tag"></div>
             <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
                  th:remove="tag"></div>
           </th:block>
-          <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.OtherReportKindDto).MISSILE_ATTACK}">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).MISSILE_ATTACK}">
             <div
                 th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${#numbers.formatInteger(report.param, 1, 'DEFAULT')})}"
                 th:remove="tag"></div>

@@ -2,8 +2,8 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.SettingsForm;
 import com.github.retro_game.retro_game.controller.validator.SettingsFormValidator;
+import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.UserService;
-import com.github.retro_game.retro_game.service.dto.UserSettingsDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

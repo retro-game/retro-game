@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.PrivateMessageDto;
-import com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto;
+import com.github.retro_game.retro_game.dto.PrivateMessageDto;
+import com.github.retro_game.retro_game.dto.PrivateMessageKindDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;

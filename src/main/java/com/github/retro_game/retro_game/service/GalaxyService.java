@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.GalaxySlotDto;
+import com.github.retro_game.retro_game.dto.GalaxySlotDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;

@@ -1,10 +1,10 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.dto.PointsAndRankPairDto;
+import com.github.retro_game.retro_game.dto.StatisticsDistributionDto;
+import com.github.retro_game.retro_game.dto.StatisticsKindDto;
+import com.github.retro_game.retro_game.dto.StatisticsPeriodDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
-import com.github.retro_game.retro_game.service.dto.PointsAndRankPairDto;
-import com.github.retro_game.retro_game.service.dto.StatisticsDistributionDto;
-import com.github.retro_game.retro_game.service.dto.StatisticsKindDto;
-import com.github.retro_game.retro_game.service.dto.StatisticsPeriodDto;
 import io.vavr.Tuple2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

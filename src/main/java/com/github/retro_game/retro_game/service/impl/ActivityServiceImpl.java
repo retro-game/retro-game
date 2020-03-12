@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.ActiveStateDto;
 import com.github.retro_game.retro_game.entity.User;
 import com.github.retro_game.retro_game.repository.UserRepository;
-import com.github.retro_game.retro_game.service.dto.ActiveStateDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

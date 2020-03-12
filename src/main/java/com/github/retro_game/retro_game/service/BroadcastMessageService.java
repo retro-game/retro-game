@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.BroadcastMessageDto;
+import com.github.retro_game.retro_game.dto.BroadcastMessageDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 

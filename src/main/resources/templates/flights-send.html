@@ -58,31 +58,31 @@
         <td th:text="#{mission}">Mission</td>
         <td>
           <input id="attack" name="mission" type="radio" value="ATTACK"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).ATTACK}" required>
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).ATTACK}" required>
           <label for="attack" th:text="#{mission.ATTACK}">Attack</label>
           <input id="colonization" name="mission" type="radio" value="COLONIZATION"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).COLONIZATION}"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).COLONIZATION}"
                  required>
           <label for="colonization" th:text="#{mission.COLONIZATION}">Colonization</label>
           <input id="deployment" name="mission" type="radio" value="DEPLOYMENT"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).DEPLOYMENT}"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).DEPLOYMENT}"
                  required>
           <label for="deployment" th:text="#{mission.DEPLOYMENT}">Deployment</label>
           <input id="destroy" name="mission" type="radio" value="DESTROY"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).DESTROY}" required>
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).DESTROY}" required>
           <label for="destroy" th:text="#{mission.DESTROY}">Destroy</label>
           <input id="espionage" name="mission" type="radio" value="ESPIONAGE"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).ESPIONAGE}"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).ESPIONAGE}"
                  required>
           <label for="espionage" th:text="#{mission.ESPIONAGE}">Espionage</label>
           <input id="harvest" name="mission" type="radio" value="HARVEST"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).HARVEST}" required>
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).HARVEST}" required>
           <label for="harvest" th:text="#{mission.HARVEST}">Harvest</label>
           <input id="hold" name="mission" type="radio" value="HOLD"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).HOLD}" required>
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).HOLD}" required>
           <label for="hold" th:text="#{mission.HOLD}">Hold</label>
           <input id="transport" name="mission" type="radio" value="TRANSPORT"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.service.dto.MissionDto).TRANSPORT}"
+                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).TRANSPORT}"
                  required>
           <label for="transport" th:text="#{mission.TRANSPORT}">Transport</label>
         </td>
@@ -96,17 +96,17 @@
           <input name="position" type="number" th:value="${position}" min="1" max="15" required>
           <select name="kind">
             <option value="PLANET"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET}"
                     th:text="#{planet}">
               Planet
             </option>
             <option value="MOON"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON}"
                     th:text="#{moon}">
               Moon
             </option>
             <option value="DEBRIS_FIELD"
-                    th:selected="${kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).DEBRIS_FIELD}"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).DEBRIS_FIELD}"
                     th:text="#{debrisField}">
               Debris field
             </option>

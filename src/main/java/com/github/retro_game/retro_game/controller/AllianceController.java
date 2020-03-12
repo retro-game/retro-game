@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.AllianceService;
-import com.github.retro_game.retro_game.service.dto.*;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

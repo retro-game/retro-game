@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.BuildingKindDto;
-import com.github.retro_game.retro_game.service.dto.BuildingsAndQueuePairDto;
+import com.github.retro_game.retro_game.dto.BuildingKindDto;
+import com.github.retro_game.retro_game.dto.BuildingsAndQueuePairDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface BuildingsService {

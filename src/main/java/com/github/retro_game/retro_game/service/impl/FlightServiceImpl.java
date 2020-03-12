@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
-import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.battleengine.BattleEngine;
 import com.github.retro_game.retro_game.service.impl.battleengine.BattleOutcome;

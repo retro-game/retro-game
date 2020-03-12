@@ -22,7 +22,7 @@
       </td>
       <td class="item-info">
         <p th:text="#{${'items.' + kind + '.description'}}"></p>
-        <p th:if="${kind == T(com.github.retro_game.retro_game.service.dto.BuildingKindDto).JUMP_GATE && details.currentLevel > 0}">
+        <p th:if="${kind == T(com.github.retro_game.retro_game.dto.BuildingKindDto).JUMP_GATE && details.currentLevel > 0}">
           <a th:href="@{/jump-gate(body=${bodyId})}">
             <strong th:text="#{goToJumpGate}">Go to Jump Gate</strong>
           </a>

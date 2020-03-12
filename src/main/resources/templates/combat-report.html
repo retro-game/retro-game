@@ -29,7 +29,7 @@
       </th:block>
       <hr>
       <p th:switch="${report.result}">
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.BattleResultDto).ATTACKERS_WIN}"
+        <th:block th:case="${T(com.github.retro_game.retro_game.dto.BattleResultDto).ATTACKERS_WIN}"
                   th:utext="#{combatReportAttackersWinFormat(
                     ${'<strong>' + #numbers.formatInteger(report.plunder.metal, 1, 'DEFAULT') + '</strong>'},
                     ${'<strong>' + #numbers.formatInteger(report.plunder.crystal, 1, 'DEFAULT') + '</strong>'},
@@ -39,11 +39,11 @@
           <strong>666</strong> crystal and
           <strong>0</strong> deuterium.
         </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.BattleResultDto).DEFENDERS_WIN}"
+        <th:block th:case="${T(com.github.retro_game.retro_game.dto.BattleResultDto).DEFENDERS_WIN}"
                   th:text="#{combatReportDefendersWin}">
           The defenders won the battle.
         </th:block>
-        <th:block th:case="${T(com.github.retro_game.retro_game.service.dto.BattleResultDto).DRAW}"
+        <th:block th:case="${T(com.github.retro_game.retro_game.dto.BattleResultDto).DRAW}"
                   th:text="#{combatReportDraw}">
           The battle ended in a draw.
         </th:block>

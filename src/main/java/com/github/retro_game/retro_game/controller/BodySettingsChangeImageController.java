@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.dto.BodyTypeAndImagePairDto;
+import com.github.retro_game.retro_game.dto.BodyTypeDto;
+import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
-import com.github.retro_game.retro_game.service.dto.BodyTypeAndImagePairDto;
-import com.github.retro_game.retro_game.service.dto.BodyTypeDto;
-import com.github.retro_game.retro_game.service.dto.CoordinatesKindDto;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

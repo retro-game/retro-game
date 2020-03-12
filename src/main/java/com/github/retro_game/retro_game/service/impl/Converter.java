@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
-import com.github.retro_game.retro_game.service.dto.*;
 
 import java.util.EnumMap;
 import java.util.Map;

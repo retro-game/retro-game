@@ -112,7 +112,7 @@
           <a th:if="${report.combatReportId != null}" class="btn"
              th:href="@{/combat-report(id=${report.combatReportId},token=${report.token})}">F</a>
           <a th:unless="${report.combatReportId != null}" class="btn disabled" data-tooltip
-             th:data-tooltip-title="#{${report.combatReportId != null ? 'openFullReport' : (report.result == T(com.github.retro_game.retro_game.service.dto.CombatResultDto).WIN ? 'noBattle' : 'lostContact')}}"
+             th:data-tooltip-title="#{${report.combatReportId != null ? 'openFullReport' : (report.result == T(com.github.retro_game.retro_game.dto.CombatResultDto).WIN ? 'noBattle' : 'lostContact')}}"
              href="#">F</a>
           <button data-delete-report th:data-body="${bodyId}" data-kind="combat" th:data-id="${report.id}"
                   th:title="#{delete}">

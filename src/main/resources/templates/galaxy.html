@@ -21,7 +21,7 @@
     <tr th:each="i : ${#numbers.sequence(1, 15)}" th:with="slot=${slots.get(i)}">
       <th:block th:if="${slot}">
         <td th:text="${i}"></td>
-        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).PLANET ? 'highlight' : ''}">
+        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET ? 'highlight' : ''}">
           <img
               th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
               data-tooltip data-tooltip-html th:data-tooltip-title="
@@ -49,7 +49,7 @@
           </th:block>
         </td>
         <td th:if="${slot.moonName}"
-            th:class="${position == i && kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).MOON ? 'highlight' : ''}">
+            th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON ? 'highlight' : ''}">
           <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})}"
                data-tooltip data-tooltip-html th:data-tooltip-title="
                 '<table>' +
@@ -69,7 +69,7 @@
                 '</table>'" width="25" height="25">
         </td>
         <td th:unless="${slot.moonName}"></td>
-        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.service.dto.CoordinatesKindDto).DEBRIS_FIELD ? 'highlight' : ''}">
+        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).DEBRIS_FIELD ? 'highlight' : ''}">
           <a th:if="${slot.debrisMetal >= 0 || slot.debrisCrystal >= 0}"
              th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='DEBRIS_FIELD',mission='HARVEST')}"
              th:title="#{sendFleet}">
@@ -81,8 +81,8 @@
         <td>
           <span th:classappend="${slot.banned ? 'banned' :
                                   (slot.onVacation ? 'vacation' :
-                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB ? 'noob' :
-                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG ? 'strong' : 
+                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB ? 'noob' :
+                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG ? 'strong' :
                                   (slot.longInactive ? 'long-inactive' :
                                   (slot.shortInactive ? 'short-inactive' : '')))))}"
                 data-tooltip data-tooltip-html th:data-tooltip-title="
@@ -99,12 +99,12 @@
                   '</table>'">
             <span th:text="${slot.userName}"></span>
             (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
-            <span th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
+            <span th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
               (
               <span th:if="${slot.banned}" class="banned">b</span>
               <span th:if="${slot.onVacation}" class="vacation">v</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).NOOB}" class="noob">n</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).STRONG}" class="strong">s</span>
+              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB}" class="noob">n</span>
+              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG}" class="strong">s</span>
               <span th:if="${slot.shortInactive}" class="short-inactive">i</span>
               <span th:if="${slot.longInactive}" class="long-inactive">I</span>
               )
@@ -119,13 +119,13 @@
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
                   data-kind="PLANET" th:title="#{spyPlanet}"
                   th:disabled="${onVacation || slot.onVacation || slot.own ||
-                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL}">
+                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL}">
             P
           </button>
           <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
                   data-kind="MOON" th:title="#{spyMoon}"
                   th:disabled="${onVacation || slot.onVacation || slot.own || slot.moonName == null ||
-                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.service.dto.NoobProtectionRankDto).EQUAL}">
+                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL}">
             M
           </button>
         </td>

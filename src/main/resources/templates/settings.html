@@ -22,15 +22,15 @@
         <td>
           <select id="bodiesSortOrder" name="bodiesSortOrder">
             <option value="EMERGENCE" th:text="#{emergence}"
-                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.service.dto.BodiesSortOrderDto).EMERGENCE}">
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).EMERGENCE}">
               Emergence
             </option>
             <option value="COORDINATES" th:text="#{coordinates}"
-                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.service.dto.BodiesSortOrderDto).COORDINATES}">
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).COORDINATES}">
               Coordinates
             </option>
             <option value="NAME" th:text="#{name}"
-                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.service.dto.BodiesSortOrderDto).NAME}">
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).NAME}">
               Name
             </option>
           </select>

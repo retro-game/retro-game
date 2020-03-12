@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.service.FormatterService;
 import com.github.retro_game.retro_game.service.UserService;
-import com.github.retro_game.retro_game.service.dto.UnitKindDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;

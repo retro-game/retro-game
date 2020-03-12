@@ -1,10 +1,10 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
-import com.github.retro_game.retro_game.service.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

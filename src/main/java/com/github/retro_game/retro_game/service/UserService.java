@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service;
 
-import com.github.retro_game.retro_game.service.dto.UserSettingsDto;
+import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Date;
