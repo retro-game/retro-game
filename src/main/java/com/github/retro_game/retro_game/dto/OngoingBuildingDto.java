@@ -1,12 +1,12 @@
-package com.github.retro_game.retro_game.service.impl;
+package com.github.retro_game.retro_game.dto;
 
 import com.github.retro_game.retro_game.entity.BuildingKind;
 
-class OngoingBuildingDto {
+public class OngoingBuildingDto {
   private final BuildingKind kind;
   private final int level;
 
-  OngoingBuildingDto(BuildingKind kind, int level) {
+  public OngoingBuildingDto(BuildingKind kind, int level) {
     this.kind = kind;
     this.level = level;
   }
