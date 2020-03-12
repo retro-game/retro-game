@@ -117,13 +117,11 @@ public class GalaxySlotDto {
     return own;
   }
 
-  public boolean isShortInactive()
-  {
+  public boolean isShortInactive() {
     return shortInactive;
   }
 
-  public boolean isLongInactive()
-  {
+  public boolean isLongInactive() {
     return longInactive;
   }
 }

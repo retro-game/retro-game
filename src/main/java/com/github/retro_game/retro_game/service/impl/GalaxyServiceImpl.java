@@ -84,8 +84,7 @@ class GalaxyServiceImpl implements GalaxyService {
       boolean shortInactive = false;
       boolean longInactive = false;
       ActiveStateDto activeState = activityService.activeState(slot.getUserId());
-      switch (activeState)
-      {
+      switch (activeState) {
         case INACTIVE_LONG:
           longInactive = true;
         case INACTIVE_SHORT:
