@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.BuildingKind;
-import com.github.retro_game.retro_game.model.entity.TechnologyKind;
-import com.github.retro_game.retro_game.model.entity.UnitKind;
+import com.github.retro_game.retro_game.entity.BuildingKind;
+import com.github.retro_game.retro_game.entity.TechnologyKind;
+import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.service.TechnologyTreeService;
 import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;

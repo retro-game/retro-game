@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl.task;
 
-import com.github.retro_game.retro_game.model.repository.PrivateMessageRepository;
+import com.github.retro_game.retro_game.repository.PrivateMessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

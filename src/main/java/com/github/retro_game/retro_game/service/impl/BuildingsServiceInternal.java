@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.Body;
-import com.github.retro_game.retro_game.model.entity.BuildingKind;
-import com.github.retro_game.retro_game.model.entity.Resources;
+import com.github.retro_game.retro_game.entity.Body;
+import com.github.retro_game.retro_game.entity.BuildingKind;
+import com.github.retro_game.retro_game.entity.Resources;
 import com.github.retro_game.retro_game.service.BuildingsService;
 import io.vavr.Tuple2;
 

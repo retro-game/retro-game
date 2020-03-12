@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.cache;
 
-import com.github.retro_game.retro_game.model.entity.AllianceMember;
-import com.github.retro_game.retro_game.model.repository.AllianceMemberRepository;
+import com.github.retro_game.retro_game.entity.AllianceMember;
+import com.github.retro_game.retro_game.repository.AllianceMemberRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

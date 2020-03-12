@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.security;
 
-import com.github.retro_game.retro_game.model.entity.User;
-import com.github.retro_game.retro_game.model.entity.UserRole;
+import com.github.retro_game.retro_game.entity.User;
+import com.github.retro_game.retro_game.entity.UserRole;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 

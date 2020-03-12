@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl.task;
 
-import com.github.retro_game.retro_game.model.entity.CoordinatesKind;
+import com.github.retro_game.retro_game.entity.CoordinatesKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;

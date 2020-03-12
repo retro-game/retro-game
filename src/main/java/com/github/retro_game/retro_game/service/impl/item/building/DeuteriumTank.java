@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl.item.building;
 
-import com.github.retro_game.retro_game.model.entity.Body;
-import com.github.retro_game.retro_game.model.entity.CoordinatesKind;
-import com.github.retro_game.retro_game.model.entity.Resources;
+import com.github.retro_game.retro_game.entity.Body;
+import com.github.retro_game.retro_game.entity.CoordinatesKind;
+import com.github.retro_game.retro_game.entity.Resources;
 
 public class DeuteriumTank extends BuildingItem {
   @Override

@@ -1,10 +1,10 @@
 package com.github.retro_game.retro_game.service.impl.task;
 
-import com.github.retro_game.retro_game.model.entity.BuildingKind;
-import com.github.retro_game.retro_game.model.entity.Resources;
-import com.github.retro_game.retro_game.model.entity.TechnologyKind;
-import com.github.retro_game.retro_game.model.entity.UnitKind;
 import com.github.retro_game.retro_game.cache.StatisticsCache;
+import com.github.retro_game.retro_game.entity.BuildingKind;
+import com.github.retro_game.retro_game.entity.Resources;
+import com.github.retro_game.retro_game.entity.TechnologyKind;
+import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
 import com.github.retro_game.retro_game.service.impl.item.technology.TechnologyItem;
 import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;

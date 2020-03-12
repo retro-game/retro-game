@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.*;
+import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.service.ReportService;
 import com.github.retro_game.retro_game.service.impl.battleengine.BattleOutcome;
 import com.github.retro_game.retro_game.service.impl.battleengine.Combatant;

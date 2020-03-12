@@ -1,9 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.User;
-import com.github.retro_game.retro_game.model.repository.UserRepository;
+import com.github.retro_game.retro_game.entity.User;
+import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.service.dto.ActiveStateDto;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +14,8 @@ import javax.annotation.Resource;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,8 +33,7 @@ class ActivityServiceImpl implements ActivityService {
 
   public ActivityServiceImpl(UserRepository userRepository,
                              @Value("${retro-game.short-inactive-number-of-days}") int numberOfDaysForShortInactive,
-                             @Value("${retro-game.long-inactive-number-of-days}") int numberOfDaysForLongInactive)
-  {
+                             @Value("${retro-game.long-inactive-number-of-days}") int numberOfDaysForLongInactive) {
     this.userRepository = userRepository;
     this.numberOfDaysForShortInactive = numberOfDaysForShortInactive;
     this.numberOfDaysForLongInactive = numberOfDaysForLongInactive;
@@ -127,8 +125,7 @@ class ActivityServiceImpl implements ActivityService {
   }
 
   @Override
-  public ActiveStateDto activeState(long userId)
-  {
+  public ActiveStateDto activeState(long userId) {
     long numberOfInactiveDays = this.numberOfInactiveDays(userId);
     if (numberOfInactiveDays >= numberOfDaysForLongInactive)
       return ActiveStateDto.INACTIVE_LONG;
@@ -139,14 +136,12 @@ class ActivityServiceImpl implements ActivityService {
   }
 
   @Override
-  public boolean isInactive(long userId)
-  {
+  public boolean isInactive(long userId) {
     ActiveStateDto activeState = this.activeState(userId);
     return activeState == ActiveStateDto.INACTIVE_LONG || activeState == ActiveStateDto.INACTIVE_SHORT;
   }
 
-  private long numberOfInactiveDays(long userId)
-  {
+  private long numberOfInactiveDays(long userId) {
     String key = String.format("%s_%d", userPrefix, userId);
     String lastActivity = valueOperations.get(key);
 

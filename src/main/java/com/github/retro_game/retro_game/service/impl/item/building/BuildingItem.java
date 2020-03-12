@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl.item.building;
 
-import com.github.retro_game.retro_game.model.entity.Body;
-import com.github.retro_game.retro_game.model.entity.BuildingKind;
-import com.github.retro_game.retro_game.model.entity.Resources;
+import com.github.retro_game.retro_game.entity.Body;
+import com.github.retro_game.retro_game.entity.BuildingKind;
+import com.github.retro_game.retro_game.entity.Resources;
 import com.github.retro_game.retro_game.service.impl.item.Item;
 
 import java.util.Collections;

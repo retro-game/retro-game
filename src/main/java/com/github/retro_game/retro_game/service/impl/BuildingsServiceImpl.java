@@ -1,10 +1,10 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.*;
-import com.github.retro_game.retro_game.model.repository.BodyRepository;
-import com.github.retro_game.retro_game.model.repository.BuildingQueueEntryRepository;
-import com.github.retro_game.retro_game.model.repository.BuildingRepository;
-import com.github.retro_game.retro_game.model.repository.EventRepository;
+import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.repository.BodyRepository;
+import com.github.retro_game.retro_game.repository.BuildingQueueEntryRepository;
+import com.github.retro_game.retro_game.repository.BuildingRepository;
+import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.service.dto.BuildingDto;
 import com.github.retro_game.retro_game.service.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.service.dto.BuildingQueueEntryDto;

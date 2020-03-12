@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.Event;
-import com.github.retro_game.retro_game.model.repository.EventRepository;
+import com.github.retro_game.retro_game.entity.Event;
+import com.github.retro_game.retro_game.repository.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl.item.building;
 
-import com.github.retro_game.retro_game.model.entity.*;
+import com.github.retro_game.retro_game.entity.*;
 
 import java.util.Collections;
 import java.util.Map;

@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.PrangerEntry;
-import com.github.retro_game.retro_game.model.entity.User;
-import com.github.retro_game.retro_game.model.repository.PrangerEntryRepository;
+import com.github.retro_game.retro_game.entity.PrangerEntry;
+import com.github.retro_game.retro_game.entity.User;
+import com.github.retro_game.retro_game.repository.PrangerEntryRepository;
 import com.github.retro_game.retro_game.service.dto.PrangerEntryDto;
 import org.springframework.stereotype.Service;
 

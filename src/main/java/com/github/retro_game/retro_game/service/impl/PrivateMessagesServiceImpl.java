@@ -1,9 +1,10 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.PrivateMessage;
-import com.github.retro_game.retro_game.model.entity.User;
-import com.github.retro_game.retro_game.model.repository.PrivateMessageRepository;
-import com.github.retro_game.retro_game.model.repository.UserRepository;
+import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
+import com.github.retro_game.retro_game.entity.PrivateMessage;
+import com.github.retro_game.retro_game.entity.User;
+import com.github.retro_game.retro_game.repository.PrivateMessageRepository;
+import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.PrivateMessageService;
 import com.github.retro_game.retro_game.service.dto.PrivateMessageDto;
@@ -11,7 +12,6 @@ import com.github.retro_game.retro_game.service.dto.PrivateMessageKindDto;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
 import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
-import com.github.retro_game.retro_game.cache.MessagesSummaryCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;

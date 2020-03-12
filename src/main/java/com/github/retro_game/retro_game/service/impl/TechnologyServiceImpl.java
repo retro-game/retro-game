@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.*;
-import com.github.retro_game.retro_game.model.repository.*;
+import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.TechnologiesAndQueuePairDto;
 import com.github.retro_game.retro_game.service.dto.TechnologyDto;

@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.cache;
 
-import com.github.retro_game.retro_game.model.entity.Alliance;
-import com.github.retro_game.retro_game.model.repository.AllianceRepository;
+import com.github.retro_game.retro_game.entity.Alliance;
+import com.github.retro_game.retro_game.repository.AllianceRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 

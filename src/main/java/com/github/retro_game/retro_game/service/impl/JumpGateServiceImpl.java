@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.*;
-import com.github.retro_game.retro_game.model.repository.BodyUnitRepository;
+import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.repository.BodyUnitRepository;
 import com.github.retro_game.retro_game.service.JumpGateService;
 import com.github.retro_game.retro_game.service.dto.JumpGateInfoDto;
 import com.github.retro_game.retro_game.service.dto.JumpGateTargetDto;

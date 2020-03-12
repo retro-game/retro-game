@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.security;
 
-import com.github.retro_game.retro_game.model.repository.BodyRepository;
+import com.github.retro_game.retro_game.repository.BodyRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 

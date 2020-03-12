@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl.item.building;
 
-import com.github.retro_game.retro_game.model.entity.Resources;
+import com.github.retro_game.retro_game.entity.Resources;
 
 public class RoboticsFactory extends BuildingItem {
   @Override

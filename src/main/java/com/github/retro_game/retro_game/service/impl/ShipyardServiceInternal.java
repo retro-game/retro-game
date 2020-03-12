@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.Body;
-import com.github.retro_game.retro_game.model.entity.UnitKind;
+import com.github.retro_game.retro_game.entity.Body;
+import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.service.ShipyardService;
 import io.vavr.Tuple2;
 

@@ -1,9 +1,9 @@
 package com.github.retro_game.retro_game.security;
 
-import com.github.retro_game.retro_game.model.entity.FreeSystem;
-import com.github.retro_game.retro_game.model.entity.User;
-import com.github.retro_game.retro_game.model.repository.FreeSystemRepository;
-import com.github.retro_game.retro_game.model.repository.UserRepository;
+import com.github.retro_game.retro_game.entity.FreeSystem;
+import com.github.retro_game.retro_game.entity.User;
+import com.github.retro_game.retro_game.repository.FreeSystemRepository;
+import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.service.exception.NoMoreFreeSystemsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

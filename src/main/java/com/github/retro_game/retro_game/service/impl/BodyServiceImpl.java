@@ -1,8 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.model.entity.*;
-import com.github.retro_game.retro_game.model.repository.BodyRepository;
-import com.github.retro_game.retro_game.model.repository.UserRepository;
+import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.repository.BodyRepository;
+import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.dto.*;
 import com.github.retro_game.retro_game.service.exception.*;
