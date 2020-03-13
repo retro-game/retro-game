@@ -130,12 +130,13 @@ class JumpGateServiceImpl implements JumpGateService {
     if (lastJumpAt == null) {
       return null;
     }
-    Building jumpGate = body.getBuildings().get(BuildingKind.JUMP_GATE);
-    if (jumpGate == null) {
+
+    int level = body.getBuildingLevel(BuildingKind.JUMP_GATE);
+    assert level >= 0;
+    if (level == 0) {
       return null;
     }
-    int level = jumpGate.getLevel();
-    assert level >= 1;
+
     int coolDownTime = (7200 >> level) / jumpGateCoolDownSpeed;
     return Date.from(Instant.ofEpochSecond(lastJumpAt.toInstant().getEpochSecond() + coolDownTime));
   }

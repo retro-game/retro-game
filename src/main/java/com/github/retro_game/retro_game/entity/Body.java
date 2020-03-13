@@ -1,17 +1,18 @@
 package com.github.retro_game.retro_game.entity;
 
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 
 @Entity
 @Table(name = "bodies")
+@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class Body implements Serializable {
   @Column(name = "id")
   @Id
@@ -58,10 +59,9 @@ public class Body implements Serializable {
   @Temporal(TemporalType.TIMESTAMP)
   private Date lastJumpAt;
 
-  @OneToMany(mappedBy = "key.body")
-  @MapKey(name = "key.kind")
-  @Fetch(FetchMode.SUBSELECT)
-  private Map<BuildingKind, Building> buildings;
+  @Column(name = "buildings", nullable = false, insertable = false)
+  @Type(type = "int-array")
+  private int[] buildingsArray;
 
   @OneToMany(mappedBy = "key.body")
   @MapKey(name = "key.kind")
@@ -79,9 +79,41 @@ public class Body implements Serializable {
   @Fetch(FetchMode.SUBSELECT)
   private List<ShipyardQueueEntry> shipyardQueue;
 
+  public EnumMap<BuildingKind, Integer> getBuildings() {
+    var enumValues = BuildingKind.values();
+    var buildings = new EnumMap<BuildingKind, Integer>(BuildingKind.class);
+    for (var i = 0; i < buildingsArray.length; i++) {
+      var kind = enumValues[i];
+      var level = buildingsArray[i];
+      assert level >= 0;
+      buildings.put(kind, level);
+    }
+    return buildings;
+  }
+
+  public void setBuildings(Map<BuildingKind, Integer> buildings) {
+    var enumValues = BuildingKind.values();
+    var array = new int[enumValues.length];
+    for (var entry : buildings.entrySet()) {
+      var index = entry.getKey().ordinal();
+      var level = entry.getValue();
+      assert level >= 0;
+      array[index] = level;
+    }
+    buildingsArray = array;
+  }
+
   public int getBuildingLevel(BuildingKind kind) {
-    Building building = buildings.get(kind);
-    return building != null ? building.getLevel() : 0;
+    var index = kind.ordinal();
+    var level = buildingsArray[index];
+    assert level >= 0;
+    return level;
+  }
+
+  public void setBuildingLevel(BuildingKind kind, int level) {
+    assert level >= 0;
+    var index = kind.ordinal();
+    buildingsArray[index] = level;
   }
 
   public int getNumUnits(UnitKind kind) {
@@ -187,10 +219,6 @@ public class Body implements Serializable {
 
   public void setLastJumpAt(Date lastJumpAt) {
     this.lastJumpAt = lastJumpAt;
-  }
-
-  public Map<BuildingKind, Building> getBuildings() {
-    return buildings;
   }
 
   public Map<UnitKind, BodyUnit> getUnits() {

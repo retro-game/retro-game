@@ -562,9 +562,7 @@ class ReportServiceImpl implements ReportServiceInternal {
 
       stream.writeBoolean(buildingsVisible);
       if (buildingsVisible) {
-        EnumMap<BuildingKind, Integer> buildings = Converter.convertToEnumMap(body.getBuildings(), BuildingKind.class,
-            Function.identity(), Building::getLevel);
-        serializeEnumMap(stream, buildings);
+        serializeEnumMap(stream, body.getBuildings());
       }
 
       stream.writeBoolean(technologiesVisible);

@@ -10,9 +10,14 @@ import com.github.retro_game.retro_game.model.ItemCostUtils;
 import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
 import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
-import com.github.retro_game.retro_game.repository.*;
+import com.github.retro_game.retro_game.repository.EventRepository;
+import com.github.retro_game.retro_game.repository.TechnologyQueueEntryRepository;
+import com.github.retro_game.retro_game.repository.TechnologyRepository;
+import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.exception.*;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +30,13 @@ import org.springframework.util.Assert;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
   private final int technologyQueueCapacity;
   private final ItemTimeUtils itemTimeUtils;
-  private final BuildingRepository buildingRepository;
   private final EventRepository eventRepository;
   private final TechnologyQueueEntryRepository technologyQueueEntryRepository;
   private final TechnologyRepository technologyRepository;
@@ -41,13 +46,11 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   private EventScheduler eventScheduler;
 
   public TechnologyServiceImpl(@Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
-                               ItemTimeUtils itemTimeUtils, BuildingRepository buildingRepository,
-                               EventRepository eventRepository,
+                               ItemTimeUtils itemTimeUtils, EventRepository eventRepository,
                                TechnologyQueueEntryRepository technologyQueueEntryRepository,
                                TechnologyRepository technologyRepository, UserRepository userRepository) {
     this.technologyQueueCapacity = technologyQueueCapacity;
     this.itemTimeUtils = itemTimeUtils;
-    this.buildingRepository = buildingRepository;
     this.eventRepository = eventRepository;
     this.technologyQueueEntryRepository = technologyQueueEntryRepository;
     this.technologyRepository = technologyRepository;
@@ -650,22 +653,24 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   }
 
   private Map<Long, int[]> getEffectiveLevelTables(User user, Collection<Long> bodiesIds) {
-    Technology irn = user.getTechnologies().get(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
-    int irnLevel = irn == null ? 0 : irn.getLevel();
+    var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
-    List<Building> labs = buildingRepository.findByUserAndKindOrderByLevelDesc(user, BuildingKind.RESEARCH_LAB);
+    var bodies = user.getBodies();
+    var labs = bodies.entrySet().stream()
+        .map(entry -> Tuple.of(entry.getKey(), entry.getValue().getBuildingLevel(BuildingKind.RESEARCH_LAB)))
+        .sorted(Comparator.comparingInt(Tuple2<Long, Integer>::_2).reversed())
+        .collect(Collectors.toList());
 
     Map<Long, int[]> tables = new HashMap<>(bodiesIds.size());
     for (long bodyId : bodiesIds) {
-      Optional<Building> currentBodyLab = labs.stream().filter(b -> b.getBody().getId() == bodyId).findFirst();
-      int currentBodyLabLevel = currentBodyLab.map(Building::getLevel).orElse(0);
+      var currentBodyLabLevel = bodies.get(bodyId).getBuildingLevel(BuildingKind.RESEARCH_LAB);
 
       int[] table = new int[maxRequiredLabLevel + 1];
       Arrays.fill(table, 0, Math.min(maxRequiredLabLevel, currentBodyLabLevel) + 1, currentBodyLabLevel);
       labs.stream()
-          .filter(b -> b.getBody().getId() != bodyId)
+          .filter(tuple -> tuple._1 != bodyId)
           .limit(irnLevel)
-          .mapToInt(Building::getLevel)
+          .mapToInt(Tuple2::_2)
           .forEach(level -> {
             for (int i = Math.min(maxRequiredLabLevel, level); i >= 0; i--) {
               if (table[i] != 0) {

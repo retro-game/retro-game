@@ -1,7 +1,6 @@
 package com.github.retro_game.retro_game.cron;
 
 import com.github.retro_game.retro_game.cache.StatisticsCache;
-import com.github.retro_game.retro_game.entity.BuildingKind;
 import com.github.retro_game.retro_game.entity.Resources;
 import com.github.retro_game.retro_game.entity.TechnologyKind;
 import com.github.retro_game.retro_game.entity.UnitKind;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.Map;
+import java.util.StringJoiner;
 
 @Component
 class UpdateStatisticsTask {
@@ -34,23 +34,7 @@ class UpdateStatisticsTask {
     this.statisticsCache = statisticsCache;
 
     // Buildings
-    updateBuildingsStatisticsSql = "" +
-        "with p as (" +
-        "      select u.id," +
-        "             coalesce(cast(floor(sum(case bu.kind" + createBuildingsCases() + " end) / 1000) as int), 0) as p" +
-        "        from buildings bu" +
-        "        join bodies b" +
-        "          on b.id = bu.body_id" +
-        "  right join users u" +
-        "          on u.id = b.user_id" +
-        "    group by u.id" +
-        ")" +
-        "insert into buildings_statistics" +
-        "     select p.id," +
-        "            to_timestamp(?)," +
-        "            p.p," +
-        "            (rank() over (order by p.p desc))" +
-        "       from p";
+    updateBuildingsStatisticsSql = createUpdateBuildingsStatisticsSql();
 
     // Technologies
     updateTechnologiesStatisticsSql = "" +
@@ -132,18 +116,31 @@ class UpdateStatisticsTask {
   // Note that the expression in quadratic brackets will be constant.
   // This formula will give total cost of single building/technology from level 1 to Level.
 
-  private static String createBuildingsCases() {
-    StringBuilder builder = new StringBuilder();
-    for (Map.Entry<BuildingKind, BuildingItem> entry : BuildingItem.getAll().entrySet()) {
-      int kind = entry.getKey().ordinal();
-      BuildingItem item = entry.getValue();
-      Resources cost = item.getBaseCost();
-      double total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
-      double factor = item.getCostFactor();
-      builder.append(String.format(" when %d then %f * (%f ^ bu.level - 1)", kind, total / (factor - 1),
-          factor));
+  private static String createUpdateBuildingsStatisticsSql() {
+    var joiner = new StringJoiner(" + ");
+    for (var entry : BuildingItem.getAll().entrySet()) {
+      var index = entry.getKey().ordinal() + 1; // Postgres counts from 1.
+      var item = entry.getValue();
+      var cost = item.getBaseCost();
+      var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
+      var factor = item.getCostFactor();
+      joiner.add(String.format("%f * (%f ^ b.buildings[%d] - 1)", total / (factor - 1), factor, index));
     }
-    return builder.toString();
+    return "" +
+        "with p as (" +
+        "      select u.id," +
+        "             coalesce(cast(floor(sum(" + joiner.toString() + ") / 1000) as int), 0) as p" +
+        "        from bodies b" +
+        "  right join users u" +
+        "          on u.id = b.user_id" +
+        "    group by u.id" +
+        ")" +
+        "insert into buildings_statistics" +
+        "     select p.id," +
+        "            to_timestamp(?)," +
+        "            p.p," +
+        "            (rank() over (order by p.p desc))" +
+        "       from p";
   }
 
   private static String createTechnologiesCases() {

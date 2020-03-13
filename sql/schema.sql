@@ -124,20 +124,12 @@ create table bodies (
   fusion_reactor_factor int not null check (fusion_reactor_factor between 0 and 10),
   solar_satellites_factor int not null check (solar_satellites_factor between 0 and 10),
   last_jump_at timestamptz,
+  buildings int[] not null default array_fill(0, array[18]) check (array_length(buildings, 1) = 18),
   unique (galaxy, system, position, kind)
 );
 
 create index bodies_user_id_idx on bodies (user_id);
 create index bodies_upper_name_idx on bodies (upper(name) text_pattern_ops);
-
--- Buildings
-
-create table buildings (
-  body_id bigint references bodies not null,
-  kind int not null,
-  level int not null check (level >= 1),
-  primary key (body_id, kind)
-);
 
 -- Building queue
 

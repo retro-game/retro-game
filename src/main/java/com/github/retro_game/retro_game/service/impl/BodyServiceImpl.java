@@ -287,7 +287,7 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   public int getUsedFields(Body body) {
-    return body.getBuildings().values().stream().mapToInt(Building::getLevel).sum();
+    return body.getBuildings().values().stream().mapToInt(Integer::intValue).sum();
   }
 
   @Override

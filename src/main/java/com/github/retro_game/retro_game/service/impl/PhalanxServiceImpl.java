@@ -62,14 +62,10 @@ class PhalanxServiceImpl implements PhalanxService {
       return false;
     }
 
-    Building sensorPhalanx = body.getBuildings().get(BuildingKind.SENSOR_PHALANX);
-    if (sensorPhalanx == null) {
-      return false;
-    }
-
-    int diff = Math.abs(body.getCoordinates().getSystem() - system);
-    int level = sensorPhalanx.getLevel();
-    int range = level * level - 1;
+    var level = body.getBuildingLevel(BuildingKind.SENSOR_PHALANX);
+    assert level >= 0;
+    var range = level * level - 1;
+    var diff = Math.abs(body.getCoordinates().getSystem() - system);
     return Math.abs(Math.min(diff, 500 - diff)) <= range;
   }
 

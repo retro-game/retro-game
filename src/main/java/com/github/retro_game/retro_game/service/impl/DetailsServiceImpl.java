@@ -64,9 +64,8 @@ class DetailsServiceImpl implements DetailsService {
 
     Collection<BuildingQueueEntry> queue = body.getBuildingQueue().values();
 
-    Building building = body.getBuildings().get(k);
-    int currentLevel = building != null ? building.getLevel() : 0;
-    int futureLevel = currentLevel;
+    var currentLevel = body.getBuildingLevel(k);
+    var futureLevel = currentLevel;
     for (BuildingQueueEntry entry : queue) {
       if (entry.getKind() == k) {
         assert entry.getAction() == BuildingQueueAction.CONSTRUCT || entry.getAction() == BuildingQueueAction.DESTROY;

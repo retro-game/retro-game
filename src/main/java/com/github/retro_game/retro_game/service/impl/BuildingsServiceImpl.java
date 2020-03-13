@@ -9,7 +9,6 @@ import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.BuildingQueueEntryRepository;
-import com.github.retro_game.retro_game.repository.BuildingRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.service.exception.*;
 import io.vavr.Tuple;
@@ -38,7 +37,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
   private final BuildingQueueEntryRepository buildingQueueEntryRepository;
-  private final BuildingRepository buildingRepository;
   private final EventRepository eventRepository;
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
@@ -50,8 +48,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
     State(Body body, SortedMap<Integer, BuildingQueueEntry> queue) {
       buildings = new EnumMap<>(BuildingKind.class);
-      for (Map.Entry<BuildingKind, Building> entry : body.getBuildings().entrySet()) {
-        int level = entry.getValue().getLevel();
+      for (var entry : body.getBuildings().entrySet()) {
+        var level = entry.getValue();
         buildings.put(entry.getKey(), level);
         usedFields += level;
       }
@@ -92,14 +90,13 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
                               @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
                               ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
                               BuildingQueueEntryRepository buildingQueueEntryRepository,
-                              BuildingRepository buildingRepository, EventRepository eventRepository) {
+                              EventRepository eventRepository) {
     this.buildingQueueCapacity = buildingQueueCapacity;
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
     this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
     this.buildingQueueEntryRepository = buildingQueueEntryRepository;
-    this.buildingRepository = buildingRepository;
     this.eventRepository = eventRepository;
   }
 
@@ -231,8 +228,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
           ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) && (!queue.isEmpty() ||
           ItemRequirementsUtils.meetsTechnologiesRequirements(item, user));
       if (meetsRequirements || state.buildings.containsKey(kind)) {
-        Building building = body.getBuildings().get(kind);
-        int currentLevel = building == null ? 0 : building.getLevel();
+        var currentLevel = body.getBuildingLevel(kind);
         int futureLevel = state.buildings.getOrDefault(kind, 0);
 
         var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
@@ -276,8 +272,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     assert first != null;
     BuildingKind kind = first.getKind();
     BuildingQueueAction action = first.getAction();
-    Building building = body.getBuildings().get(kind);
-    int level = (building != null ? building.getLevel() : 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    var level = body.getBuildingLevel(kind) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
     return Optional.of(new OngoingBuildingDto(kind, level));
   }
 
@@ -698,42 +693,13 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     bodyServiceInternal.updateResources(body, at);
 
     // Update buildings.
-    Map<BuildingKind, Building> buildings = body.getBuildings();
-    Building building = buildings.get(kind);
-    if (entry.getAction() == BuildingQueueAction.CONSTRUCT) {
-      if (building != null) {
-        int level = building.getLevel() + 1;
-        logger.info("Handling building queue, increasing building level: bodyId={} kind={} level={}",
-            bodyId, kind, level);
-        building.setLevel(level);
-      } else {
-        logger.info("Handling building queue, creating building: bodyId={} kind={}", bodyId, kind);
-        BuildingKey key = new BuildingKey();
-        key.setBody(body);
-        key.setKind(kind);
-        building = new Building();
-        building.setKey(key);
-        building.setLevel(1);
-        body.getBuildings().put(kind, building);
-        buildingRepository.save(building);
-      }
-    } else {
-      assert entry.getAction() == BuildingQueueAction.DESTROY;
-      if (building == null) {
-        logger.error("Handling building queue, destroying non-existing building: bodyId={} kind={}", bodyId, kind);
-      } else {
-        int level = building.getLevel() - 1;
-        if (level >= 1) {
-          logger.info("Handling building queue, decreasing building level: bodyId={} kind={} level={}",
-              bodyId, kind, level);
-          building.setLevel(level);
-        } else {
-          logger.info("Handling building queue, destroying building: bodyId={} kind={}", bodyId, kind);
-          body.getBuildings().remove(kind);
-          buildingRepository.delete(building);
-        }
-      }
-    }
+    var oldLevel = body.getBuildingLevel(kind);
+    assert oldLevel >= 0;
+    var newLevel = oldLevel + (entry.getAction() == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    assert newLevel >= 0;
+    logger.info("Handling building queue, updating building level: bodyId={} kind={} oldLevel={} newLevel={}",
+        bodyId, kind, oldLevel, newLevel);
+    body.setBuildingLevel(kind, newLevel);
 
     // Handle subsequent entries.
 
@@ -756,8 +722,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         continue;
       }
 
-      building = body.getBuildings().get(kind);
-      int level = building != null ? building.getLevel() : 0;
+      var level = body.getBuildingLevel(kind);
       assert level >= 0;
 
       if (action == BuildingQueueAction.DESTROY && level == 0) {
@@ -823,7 +788,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, body.getId());
     event.ifPresent(eventRepository::delete);
     buildingQueueEntryRepository.deleteAll(body.getBuildingQueue().values());
-    buildingRepository.deleteAll(body.getBuildings().values());
   }
 
   private long getConstructionTime(Resources cost, Body body) {
