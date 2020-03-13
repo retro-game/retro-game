@@ -2,24 +2,25 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.Item;
+import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
+import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.BodyUnitRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.repository.ShipyardQueueEntryRepository;
 import com.github.retro_game.retro_game.service.exception.*;
-import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 class ShipyardServiceImpl implements ShipyardServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(ShipyardServiceImpl.class);
-  private final int unitConstructionSpeed;
+  private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
   private final BodyUnitRepository bodyUnitRepository;
   private final EventRepository eventRepository;
@@ -36,12 +37,10 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
 
-  public ShipyardServiceImpl(@Value("${retro-game.unit-construction-speed}") int unitConstructionSpeed,
-                             BodyRepository bodyRepository,
-                             BodyUnitRepository bodyUnitRepository,
-                             EventRepository eventRepository,
+  public ShipyardServiceImpl(ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
+                             BodyUnitRepository bodyUnitRepository, EventRepository eventRepository,
                              ShipyardQueueEntryRepository shipyardQueueEntryRepository) {
-    this.unitConstructionSpeed = unitConstructionSpeed;
+    this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
     this.bodyUnitRepository = bodyUnitRepository;
     this.eventRepository = eventRepository;
@@ -56,12 +55,6 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   @Autowired
   public void setEventScheduler(EventScheduler eventScheduler) {
     this.eventScheduler = eventScheduler;
-  }
-
-  @PostConstruct
-  private void checkProperties() {
-    Assert.isTrue(unitConstructionSpeed >= 1,
-        "retro-game.unit-construction-speed must be at least 1");
   }
 
   @Override
@@ -82,12 +75,12 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
       inQueue.put(kind, inQueue.getOrDefault(kind, 0) + count);
 
-      UnitItem item = UnitItem.getAll().get(kind);
+      var item = Item.get(kind);
 
       Resources cost = new Resources(item.getCost());
       cost.mul(count);
 
-      long constructionTime = getConstructionTime(kind, body);
+      var constructionTime = getConstructionTime(item.getCost(), body);
 
       long requiredTime;
       if (first) {
@@ -131,10 +124,10 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       int currentCount = body.getNumUnits(kind);
       int futureCount = currentCount + inQueue.getOrDefault(kind, 0);
 
-      boolean meetsRequirements = item.meetsRequirements(body);
+      var meetsRequirements = ItemRequirementsUtils.meetsRequirements(item, body);
 
       if (futureCount > 0 || meetsRequirements) {
-        long time = getConstructionTime(kind, body);
+        var time = getConstructionTime(item.getCost(), body);
         Resources cost = item.getCost();
 
         int maxBuildable = 0;
@@ -212,8 +205,8 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
-    UnitItem item = UnitItem.getAll().get(k);
-    if (!item.meetsRequirements(body)) {
+    var item = Item.get(k);
+    if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
       logger.warn("Constructing unit failed, requirements not met: bodyId={} kind={} count={}", bodyId, k, count);
       throw new RequirementsNotMetException();
     }
@@ -297,7 +290,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
     if (last == null) {
       // Add event.
-      long time = getConstructionTime(k, body);
+      long time = getConstructionTime(item.getCost(), body);
       Date now = body.getUpdatedAt();
       Date startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + time));
       Event event = new Event();
@@ -334,7 +327,8 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     boolean first = true;
     for (ShipyardQueueEntry entry : queue) {
       UnitKind kind = entry.getKind();
-      long time = getConstructionTime(kind, body);
+      var item = Item.get(kind);
+      long time = getConstructionTime(item.getCost(), body);
 
       int numBuilt;
       if (time == 0) {
@@ -392,15 +386,6 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     bodyUnitRepository.saveAll(newUnits);
   }
 
-  private long getConstructionTime(UnitKind kind, Body body) {
-    Resources cost = UnitItem.getAll().get(kind).getCost();
-    long seconds = (long) (1.44 * (cost.getMetal() + cost.getCrystal()));
-    seconds /= 1 + body.getBuildingLevel(BuildingKind.SHIPYARD);
-    seconds >>= body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
-    seconds /= unitConstructionSpeed;
-    return seconds;
-  }
-
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void deleteUnitsAndQueue(Body body) {
@@ -408,5 +393,11 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     event.ifPresent(eventRepository::delete);
     shipyardQueueEntryRepository.deleteAll(body.getShipyardQueue());
     bodyUnitRepository.deleteAll(body.getUnits().values());
+  }
+
+  private long getConstructionTime(Resources cost, Body body) {
+    int shipyardLevel = body.getBuildingLevel(BuildingKind.SHIPYARD);
+    int naniteFactoryLevel = body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
+    return itemTimeUtils.getUnitConstructionTime(cost, shipyardLevel, naniteFactoryLevel);
   }
 }

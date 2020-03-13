@@ -2,12 +2,16 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.Item;
+import com.github.retro_game.retro_game.model.ItemCostUtils;
+import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
+import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.BuildingQueueEntryRepository;
 import com.github.retro_game.retro_game.repository.BuildingRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.service.exception.*;
-import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.slf4j.Logger;
@@ -28,11 +32,10 @@ import java.util.stream.Collectors;
 @Service
 class BuildingsServiceImpl implements BuildingsServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(BuildingsServiceImpl.class);
-  private final int buildingConstructionSpeed;
-  private final int buildingDestructionSpeed;
   private final int buildingQueueCapacity;
   private final int fieldsPerTerraformerLevel;
   private final int fieldsPerLunarBaseLevel;
+  private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
   private final BuildingQueueEntryRepository buildingQueueEntryRepository;
   private final BuildingRepository buildingRepository;
@@ -84,18 +87,16 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
   }
 
-  public BuildingsServiceImpl(@Value("${retro-game.building-construction-speed}") int buildingConstructionSpeed,
-                              @Value("${retro-game.building-destruction-speed}") int buildingDestructionSpeed,
-                              @Value("${retro-game.building-queue-capacity}") int buildingQueueCapacity,
+  public BuildingsServiceImpl(@Value("${retro-game.building-queue-capacity}") int buildingQueueCapacity,
                               @Value("${retro-game.fields-per-terraformer-level}") int fieldsPerTerraformerLevel,
                               @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
-                              BodyRepository bodyRepository, BuildingQueueEntryRepository buildingQueueEntryRepository,
+                              ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
+                              BuildingQueueEntryRepository buildingQueueEntryRepository,
                               BuildingRepository buildingRepository, EventRepository eventRepository) {
-    this.buildingConstructionSpeed = buildingConstructionSpeed;
-    this.buildingDestructionSpeed = buildingDestructionSpeed;
     this.buildingQueueCapacity = buildingQueueCapacity;
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
+    this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
     this.buildingQueueEntryRepository = buildingQueueEntryRepository;
     this.buildingRepository = buildingRepository;
@@ -114,10 +115,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
   @PostConstruct
   private void checkProperties() {
-    Assert.isTrue(buildingConstructionSpeed >= 1,
-        "retro-game.building-construction-speed must be at least 1");
-    Assert.isTrue(buildingDestructionSpeed >= 1,
-        "retro-game.building-destruction-speed must be at least 1");
     Assert.isTrue(buildingQueueCapacity >= 1,
         "retro-game.building-queue-capacity must be at least 1");
     Assert.isTrue(fieldsPerTerraformerLevel > 1,
@@ -158,8 +155,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         int levelTo = levelFrom + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
         assert levelTo >= 0;
 
-        Resources cost = getCost(kind, levelTo);
-        int requiredEnergy = getRequiredEnergy(kind, levelTo);
+        var cost = ItemCostUtils.getCost(kind, levelTo);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, levelTo);
 
         long requiredTime;
         if (first) {
@@ -193,19 +190,19 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
               (nextAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
           assert nextLevel >= 0;
 
-          Resources nextCost = getCost(nextKind, nextLevel);
+          var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
           nextCost.sub(cost);
           if (!resources.greaterOrEqual(nextCost)) {
             downMovable = cancelable = false;
           }
 
-          int nextRequiredEnergy = getRequiredEnergy(nextKind, nextLevel);
+          var nextRequiredEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevel);
           if (nextRequiredEnergy > totalEnergy) {
             downMovable = cancelable = false;
           }
 
-          BuildingItem nextItem = BuildingItem.getAll().get(nextKind);
-          if (!nextItem.meetsTechnologiesRequirements(user)) {
+          var nextItem = Item.get(nextKind);
+          if (!ItemRequirementsUtils.meetsTechnologiesRequirements(nextItem, user)) {
             downMovable = cancelable = false;
           }
         }
@@ -231,15 +228,15 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       BuildingKind kind = entry.getKey();
       BuildingItem item = entry.getValue();
       boolean meetsRequirements = item.meetsSpecialRequirements(body) &&
-          item.meetsBuildingsRequirements(state.buildings) && (!queue.isEmpty() ||
-          item.meetsTechnologiesRequirements(user));
+          ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) && (!queue.isEmpty() ||
+          ItemRequirementsUtils.meetsTechnologiesRequirements(item, user));
       if (meetsRequirements || state.buildings.containsKey(kind)) {
         Building building = body.getBuildings().get(kind);
         int currentLevel = building == null ? 0 : building.getLevel();
         int futureLevel = state.buildings.getOrDefault(kind, 0);
 
-        Resources cost = getCost(kind, futureLevel + 1);
-        int requiredEnergy = getRequiredEnergy(kind, futureLevel + 1);
+        var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
         long constructionTime = getConstructionTime(cost, state.buildings);
         boolean canConstructNow = canConstruct && meetsRequirements &&
             (!queue.isEmpty() || (resources.greaterOrEqual(cost) && totalEnergy >= requiredEnergy));
@@ -308,9 +305,9 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       throw new NoMoreFreeFieldsException();
     }
 
-    BuildingItem item = BuildingItem.getAll().get(k);
-    if (!item.meetsSpecialRequirements(body) || !item.meetsBuildingsRequirements(state.buildings) ||
-        (queue.isEmpty() && !item.meetsTechnologiesRequirements(body.getUser()))) {
+    var item = Item.get(k);
+    if (!item.meetsSpecialRequirements(body) || !ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) ||
+        (queue.isEmpty() && !ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()))) {
       logger.warn("Constructing building failed, requirements not met: bodyId={} kind={}", bodyId, k);
       throw new RequirementsNotMetException();
     }
@@ -325,14 +322,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     } else {
       int level = state.buildings.getOrDefault(k, 0) + 1;
 
-      Resources cost = getCost(k, level);
+      var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.warn("Constructing building failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
 
-      int requiredEnergy = getRequiredEnergy(k, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -399,14 +396,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       int level = state.buildings.get(k) - 1;
       assert level >= 0;
 
-      Resources cost = getCost(k, level);
+      var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.warn("Destroying building failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
 
-      int requiredEnergy = getRequiredEnergy(k, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -477,7 +474,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       int firstLevel = state.buildings.getOrDefault(firstKind, 0) +
           (firstAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert firstLevel >= 0;
-      Resources firstCost = getCost(firstKind, firstLevel);
+      var firstCost = ItemCostUtils.getCost(firstKind, firstLevel);
 
       BuildingKind secondKind = next.getKind();
       BuildingQueueAction secondAction = next.getAction();
@@ -485,7 +482,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       int secondLevel = state.buildings.getOrDefault(secondKind, 0) +
           (secondAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert secondLevel >= 0;
-      Resources secondCost = getCost(secondKind, secondLevel);
+      var secondCost = ItemCostUtils.getCost(secondKind, secondLevel);
 
       body.getResources().add(firstCost);
       if (!body.getResources().greaterOrEqual(secondCost)) {
@@ -495,7 +492,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       }
       body.getResources().sub(secondCost);
 
-      int requiredEnergy = getRequiredEnergy(secondKind, secondLevel);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(secondKind, secondLevel);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -505,8 +502,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         }
       }
 
-      BuildingItem secondItem = BuildingItem.getAll().get(secondKind);
-      if (!secondItem.meetsTechnologiesRequirements(body.getUser())) {
+      var secondItem = Item.get(secondKind);
+      if (!ItemRequirementsUtils.meetsTechnologiesRequirements(secondItem, body.getUser())) {
         logger.warn("Moving down entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
         throw new RequirementsNotMetException();
@@ -606,7 +603,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       int level = state.buildings.getOrDefault(kind, 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert level >= 0;
 
-      Resources cost = getCost(kind, level);
+      var cost = ItemCostUtils.getCost(kind, level);
       body.getResources().add(cost);
 
       Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
@@ -631,7 +628,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         level = state.buildings.getOrDefault(kind, 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
         assert level >= 0;
 
-        cost = getCost(kind, level);
+        cost = ItemCostUtils.getCost(kind, level);
         if (!body.getResources().greaterOrEqual(cost)) {
           logger.warn("Cancelling entry in building queue failed, not enough resources: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
@@ -639,7 +636,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         }
         body.getResources().sub(cost);
 
-        int requiredEnergy = getRequiredEnergy(kind, level);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
         if (requiredEnergy > 0) {
           int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
           if (requiredEnergy > totalEnergy) {
@@ -649,8 +646,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
           }
         }
 
-        BuildingItem item = BuildingItem.getAll().get(kind);
-        if (!item.meetsTechnologiesRequirements(body.getUser())) {
+        var item = Item.get(kind);
+        if (!ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser())) {
           logger.warn("Cancelling entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
           throw new RequirementsNotMetException();
@@ -774,7 +771,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
       level += action == BuildingQueueAction.CONSTRUCT ? 1 : -1;
 
-      Resources cost = getCost(kind, level);
+      var cost = ItemCostUtils.getCost(kind, level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.info("Handling building queue, removing entry, not enough resources: bodyId={} kind={}" +
                 " sequenceNumber={}",
@@ -784,7 +781,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         continue;
       }
 
-      int requiredEnergy = getRequiredEnergy(kind, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
       if (requiredEnergy > totalEnergy) {
         logger.info("Handling building queue, removing entry, not enough energy: bodyId={} kind={}" +
                 " sequenceNumber={}",
@@ -794,8 +791,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         continue;
       }
 
-      BuildingItem item = BuildingItem.getAll().get(kind);
-      if (!item.meetsRequirements(body)) {
+      var item = Item.get(kind);
+      if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
         logger.info("Handling building queue, removing entry, requirements not met: bodyId={} kind={}" +
                 " sequenceNumber={}",
             bodyId, kind, sequenceNumber);
@@ -829,67 +826,28 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     buildingRepository.deleteAll(body.getBuildings().values());
   }
 
-  @Override
-  public Resources getCost(BuildingKind kind, int level) {
-    // Level is 0 when a building of level 1 needs to be destroyed.
-    assert level >= 0;
-    BuildingItem item = BuildingItem.getAll().get(kind);
-    Resources resources = item.getBaseCost();
-    resources.mul(Math.pow(item.getCostFactor(), level - 1));
-    resources.floor();
-    return resources;
-  }
-
-  private int getRequiredEnergy(BuildingKind kind, int level) {
-    assert level >= 0;
-    BuildingItem item = BuildingItem.getAll().get(kind);
-    return (int) (item.getBaseRequiredEnergy() * Math.pow(item.getCostFactor(), level - 1));
-  }
-
   private long getConstructionTime(Resources cost, Body body) {
-    return getRequiredTime(cost, body, buildingConstructionSpeed);
+    var roboticsFactoryLevel = body.getBuildingLevel(BuildingKind.ROBOTICS_FACTORY);
+    var naniteFactoryLevel = body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
+    return itemTimeUtils.getBuildingConstructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
   private long getConstructionTime(Resources cost, Map<BuildingKind, Integer> buildings) {
-    return getRequiredTime(cost, buildings, buildingConstructionSpeed);
+    var roboticsFactoryLevel = buildings.get(BuildingKind.ROBOTICS_FACTORY);
+    var naniteFactoryLevel = buildings.get(BuildingKind.NANITE_FACTORY);
+    return itemTimeUtils.getBuildingConstructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
-  @Override
-  public long getDestructionTime(Resources cost, Body body) {
-    return getRequiredTime(cost, body, buildingDestructionSpeed);
+  private long getDestructionTime(Resources cost, Body body) {
+    var roboticsFactoryLevel = body.getBuildingLevel(BuildingKind.ROBOTICS_FACTORY);
+    var naniteFactoryLevel = body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
+    return itemTimeUtils.getBuildingDestructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
   private long getDestructionTime(Resources cost, Map<BuildingKind, Integer> buildings) {
-    return getRequiredTime(cost, buildings, buildingDestructionSpeed);
-  }
-
-  private long getRequiredTime(Resources cost, Body body, int speed) {
-    Map<BuildingKind, Building> buildings = body.getBuildings();
-
-    Building roboticsFactory = buildings.get(BuildingKind.ROBOTICS_FACTORY);
-    int roboticsFactoryLevel = roboticsFactory != null ? roboticsFactory.getLevel() : 0;
-
-    Building naniteFactory = buildings.get(BuildingKind.NANITE_FACTORY);
-    int naniteFactoryLevel = naniteFactory != null ? naniteFactory.getLevel() : 0;
-
-    return getRequiredTime(cost, roboticsFactoryLevel, naniteFactoryLevel, speed);
-  }
-
-  private long getRequiredTime(Resources cost, Map<BuildingKind, Integer> buildings, int speed) {
-    int roboticsFactoryLevel = buildings.getOrDefault(BuildingKind.ROBOTICS_FACTORY, 0);
-    int naniteFactoryLevel = buildings.getOrDefault(BuildingKind.NANITE_FACTORY, 0);
-    return getRequiredTime(cost, roboticsFactoryLevel, naniteFactoryLevel, speed);
-  }
-
-  private long getRequiredTime(Resources cost, int roboticsFactoryLevel, int naniteFactoryLevel, int speed) {
-    assert roboticsFactoryLevel >= 0;
-    assert naniteFactoryLevel >= 0;
-    assert speed >= 1;
-    long seconds = (long) (1.44 * (cost.getMetal() + cost.getCrystal()));
-    seconds /= 1 + roboticsFactoryLevel;
-    seconds >>= naniteFactoryLevel;
-    seconds /= speed;
-    return Math.max(1, seconds);
+    var roboticsFactoryLevel = buildings.get(BuildingKind.ROBOTICS_FACTORY);
+    var naniteFactoryLevel = buildings.get(BuildingKind.NANITE_FACTORY);
+    return itemTimeUtils.getBuildingDestructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
   // Checks whether it is possible to swap top two items in the queue ignoring resources.
@@ -907,8 +865,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     // The second building will always meet requirements when the first action is destroy.
     if (first.getAction() == BuildingQueueAction.CONSTRUCT) {
       if (second.getAction() == BuildingQueueAction.CONSTRUCT) {
-        Map<BuildingKind, Integer> requirements = BuildingItem.getAll().get(second.getKind())
-            .getBuildingsRequirements();
+        var requirements = Item.get(second.getKind()).getBuildingsRequirements();
         if (requirements.getOrDefault(first.getKind(), 0) >
             state.buildings.getOrDefault(first.getKind(), 0)) {
           return false;
@@ -918,8 +875,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         if (!state.buildings.containsKey(second.getKind())) {
           return false;
         }
-        Map<BuildingKind, Integer> requirements = BuildingItem.getAll().get(first.getKind())
-            .getBuildingsRequirements();
+        var requirements = Item.get(first.getKind()).getBuildingsRequirements();
         int levelAfterDeconstruction = state.buildings.get(second.getKind()) - 1;
         assert levelAfterDeconstruction >= 0;
         if (requirements.getOrDefault(second.getKind(), 0) > levelAfterDeconstruction) {
@@ -994,7 +950,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
           level--;
         }
       } else {
-        Map<BuildingKind, Integer> requirements = BuildingItem.getAll().get(currentKind).getBuildingsRequirements();
+        var requirements = Item.get(currentKind).getBuildingsRequirements();
         if (requirements.getOrDefault(firstKind, 0) > level) {
           return false;
         }

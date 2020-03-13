@@ -5,10 +5,14 @@ import com.github.retro_game.retro_game.dto.TechnologyDto;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.dto.TechnologyQueueEntryDto;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.Item;
+import com.github.retro_game.retro_game.model.ItemCostUtils;
+import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
+import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.technology.TechnologyItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.exception.*;
-import com.github.retro_game.retro_game.service.impl.item.technology.TechnologyItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +29,8 @@ import java.util.function.Function;
 @Service
 class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
-  private final int technologyResearchSpeed;
   private final int technologyQueueCapacity;
+  private final ItemTimeUtils itemTimeUtils;
   private final BuildingRepository buildingRepository;
   private final EventRepository eventRepository;
   private final TechnologyQueueEntryRepository technologyQueueEntryRepository;
@@ -36,13 +40,13 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
 
-  public TechnologyServiceImpl(@Value("${retro-game.technology-research-speed}") int technologyResearchSpeed,
-                               @Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
-                               BuildingRepository buildingRepository, EventRepository eventRepository,
+  public TechnologyServiceImpl(@Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
+                               ItemTimeUtils itemTimeUtils, BuildingRepository buildingRepository,
+                               EventRepository eventRepository,
                                TechnologyQueueEntryRepository technologyQueueEntryRepository,
                                TechnologyRepository technologyRepository, UserRepository userRepository) {
-    this.technologyResearchSpeed = technologyResearchSpeed;
     this.technologyQueueCapacity = technologyQueueCapacity;
+    this.itemTimeUtils = itemTimeUtils;
     this.buildingRepository = buildingRepository;
     this.eventRepository = eventRepository;
     this.technologyQueueEntryRepository = technologyQueueEntryRepository;
@@ -106,11 +110,11 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         TechnologyKind kind = queueEntry.getKind();
 
         int level = futureTechs.getOrDefault(kind, 0) + 1;
-        Resources cost = getCost(kind, level);
-        int requiredEnergy = getRequiredEnergy(kind, level);
+        var cost = ItemCostUtils.getCost(kind, level);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
 
         Body entryBody = queueEntry.getBody();
-        TechnologyItem item = TechnologyItem.getAll().get(kind);
+        var item = Item.get(kind);
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
         int effectiveLabLevel = effectiveLevelTables.get(entryBody.getId())[requiredLabLevel];
 
@@ -122,7 +126,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           long now = body.getUpdatedAt().toInstant().getEpochSecond();
           requiredTime = finishAt - now;
         } else {
-          requiredTime = getResearchTime(cost, effectiveLabLevel);
+          requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
           finishAt += requiredTime;
         }
 
@@ -137,7 +141,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           Body nextBody = next.getValue().getBody();
           TechnologyKind nextKind = next.getValue().getKind();
           int nextLevel = futureTechs.getOrDefault(nextKind, 0) + 1;
-          Resources nextCost = getCost(nextKind, nextLevel);
+          var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
           if (currentBody.getId() == nextBody.getId()) {
             // If we cancel the first entry, we will getSlots some resources back. Thus we can use these resources to
             // research the second one, because both are being researched on the same body.
@@ -147,7 +151,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
             downMovable = cancelable = false;
           }
 
-          int nextRequiredEnergy = getRequiredEnergy(nextKind, nextLevel);
+          var nextRequiredEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevel);
           if (nextRequiredEnergy > 0) {
             int totalEnergy = bodyServiceInternal.getProduction(nextBody).getTotalEnergy();
             if (nextRequiredEnergy > totalEnergy) {
@@ -176,20 +180,20 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     for (Map.Entry<TechnologyKind, TechnologyItem> entry : TechnologyItem.getAll().entrySet()) {
       TechnologyKind kind = entry.getKey();
       TechnologyItem item = entry.getValue();
-      boolean meetsRequirements = item.meetsBuildingsRequirements(body) &&
-          item.meetsTechnologiesRequirements(futureTechs);
+      boolean meetsRequirements = ItemRequirementsUtils.meetsBuildingsRequirements(item, body) &&
+          ItemRequirementsUtils.meetsTechnologiesRequirements(item, futureTechs);
       if (meetsRequirements || futureTechs.containsKey(kind)) {
         Technology tech = user.getTechnologies().get(kind);
         int currentLevel = tech != null ? tech.getLevel() : 0;
         int futureLevel = futureTechs.getOrDefault(kind, 0);
 
-        Resources cost = getCost(kind, futureLevel + 1);
-        int requiredEnergy = getRequiredEnergy(kind, futureLevel + 1);
+        var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
 
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
         int effectiveLabLevel = currentBodyTable[requiredLabLevel];
 
-        long researchTime = getResearchTime(cost, effectiveLabLevel);
+        long researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
 
         boolean canResearchNow = canResearch && meetsRequirements &&
             (!queue.isEmpty() || (resources.greaterOrEqual(cost) && totalEnergy >= requiredEnergy));
@@ -226,9 +230,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         .map(TechnologyQueueEntry::getKind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.getOrDefault(techKind, 0) + 1));
 
-    TechnologyItem item = TechnologyItem.getAll().get(k);
-    if ((queue.isEmpty() && !item.meetsBuildingsRequirements(body)) ||
-        !item.meetsTechnologiesRequirements(futureTechs)) {
+    var item = Item.get(k);
+    if ((queue.isEmpty() && !ItemRequirementsUtils.meetsBuildingsRequirements(item, body)) ||
+        !ItemRequirementsUtils.meetsTechnologiesRequirements(item, futureTechs)) {
       logger.warn("Researching technology failed, requirements not met: bodyId={} kind={}", bodyId, k);
       throw new RequirementsNotMetException();
     }
@@ -243,14 +247,14 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     } else {
       int level = futureTechs.getOrDefault(k, 0) + 1;
 
-      Resources cost = getCost(k, level);
+      var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.warn("Researching technology failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
 
-      int requiredEnergy = getRequiredEnergy(k, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -263,7 +267,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int effectiveLabLevel = table[requiredLabLevel];
 
-      long requiredTime = getResearchTime(cost, effectiveLabLevel);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
 
       logger.info("Researching technology successful, creating a new event: bodyId={} kind={}", bodyId, k);
       Date now = body.getUpdatedAt();
@@ -329,12 +333,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       Body firstBody = entry.getBody();
       TechnologyKind firstKind = entry.getKind();
       int firstLevel = futureTechs.getOrDefault(firstKind, 0) + 1;
-      Resources firstCost = getCost(firstKind, firstLevel);
+      var firstCost = ItemCostUtils.getCost(firstKind, firstLevel);
 
       Body secondBody = next.getBody();
       TechnologyKind secondKind = next.getKind();
       int secondLevel = futureTechs.getOrDefault(secondKind, 0) + 1;
-      Resources secondCost = getCost(secondKind, secondLevel);
+      var secondCost = ItemCostUtils.getCost(secondKind, secondLevel);
 
       // If both bodies are the same, the references to resources should be the same as well.
       if (firstBody.getId() == secondBody.getId()) {
@@ -352,7 +356,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       }
       secondBody.getResources().sub(secondCost);
 
-      int requiredEnergy = getRequiredEnergy(secondKind, secondLevel);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(secondKind, secondLevel);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(secondBody).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -371,12 +375,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       }
       Event event = eventOptional.get();
 
-      TechnologyItem item = TechnologyItem.getAll().get(secondKind);
+      var item = Item.get(secondKind);
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int[] table = getEffectiveLevelTables(user, Collections.singletonList(secondBody.getId()))
           .get(secondBody.getId());
       int effectiveLabLevel = table[requiredLabLevel];
-      long requiredTime = getResearchTime(secondCost, effectiveLabLevel);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(secondCost, effectiveLabLevel);
 
       logger.info("Moving down entry in technology queue successful, the entry is the first, adding an event for the" +
               " next entry: userId={} sequenceNumber={}",
@@ -464,7 +468,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       Body body = entry.getBody();
       TechnologyKind kind = entry.getKind();
       int level = futureTechs.getOrDefault(kind, 0) + 1;
-      Resources cost = getCost(kind, level);
+      var cost = ItemCostUtils.getCost(kind, level);
 
       bodyServiceInternal.updateResources(body, null);
       body.getResources().add(cost);
@@ -489,7 +493,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         Body nextBody = next.getBody();
         kind = next.getKind();
         level = futureTechs.getOrDefault(kind, 0) + 1;
-        cost = getCost(kind, level);
+        cost = ItemCostUtils.getCost(kind, level);
 
         // If both bodies are the same, the references to resources should be the same as well.
         if (nextBody.getId() == body.getId()) {
@@ -504,7 +508,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         }
         nextBody.getResources().sub(cost);
 
-        int requiredEnergy = getRequiredEnergy(kind, level);
+        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
         if (requiredEnergy > 0) {
           int totalEnergy = bodyServiceInternal.getProduction(nextBody).getTotalEnergy();
           if (requiredEnergy > totalEnergy) {
@@ -514,12 +518,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           }
         }
 
-        TechnologyItem item = TechnologyItem.getAll().get(kind);
+        var item = Item.get(kind);
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
         int[] table = getEffectiveLevelTables(user, Collections.singletonList(nextBody.getId()))
             .get(nextBody.getId());
         int effectiveLabLevel = table[requiredLabLevel];
-        long requiredTime = getResearchTime(cost, effectiveLabLevel);
+        var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
 
         logger.info("Cancelling entry in technology queue successful, the entry is the first, modifying the event:" +
                 "userId={} sequenceNumber={}",
@@ -591,7 +595,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       long bodyId = body.getId();
       bodyServiceInternal.updateResources(body, at);
 
-      Resources cost = getCost(kind, level);
+      var cost = ItemCostUtils.getCost(kind, level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.info("Handling technology queue, removing entry, not enough resources: userId={} bodyId={} kind={}" +
                 " sequenceNumber={}",
@@ -601,7 +605,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         continue;
       }
 
-      int requiredEnergy = getRequiredEnergy(kind, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
@@ -614,8 +618,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         }
       }
 
-      TechnologyItem item = TechnologyItem.getAll().get(kind);
-      if (!item.meetsRequirements(body)) {
+      var item = Item.get(kind);
+      if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
         logger.info("Handling technology queue, removing entry, requirements not met: userId={} bodyId={} kind={}" +
                 " sequenceNumber={}",
             userId, bodyId, kind, sequenceNumber);
@@ -632,7 +636,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       int[] table = getEffectiveLevelTables(user, Collections.singletonList(bodyId)).get(bodyId);
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int effectiveLabLevel = table[requiredLabLevel];
-      long requiredTime = getResearchTime(cost, effectiveLabLevel);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
       Date startAt = Date.from(Instant.ofEpochSecond(at.toInstant().getEpochSecond() + requiredTime));
 
       Event newEvent = new Event();
@@ -675,33 +679,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     return tables;
   }
 
-  private Resources getCost(TechnologyKind kind, int level) {
-    assert level >= 1;
-    TechnologyItem item = TechnologyItem.getAll().get(kind);
-    // This is the formula for Astrophysics, but can be applied to other technologies as well.
-    Resources resources = item.getBaseCost();
-    resources.mul(0.01);
-    resources.mul(Math.pow(item.getCostFactor(), level - 1));
-    resources.add(new Resources(0.5, 0.5, 0.5));
-    resources.floor();
-    resources.mul(100.0);
-    resources.floor();
-    return resources;
-  }
-
-  private int getRequiredEnergy(TechnologyKind kind, int level) {
-    assert level >= 1;
-    TechnologyItem item = TechnologyItem.getAll().get(kind);
-    return (int) (item.getBaseRequiredEnergy() * Math.pow(item.getCostFactor(), level - 1));
-  }
-
-  private long getResearchTime(Resources cost, int effectiveLabLevel) {
-    long seconds = (long) (3.6 * (cost.getMetal() + cost.getCrystal()));
-    seconds /= 1 + effectiveLabLevel;
-    seconds /= technologyResearchSpeed;
-    return Math.max(1, seconds);
-  }
-
   // Checks whether it is possible to swap top two items in the queue ignoring resources.
   private boolean canSwapTop(Map<TechnologyKind, Integer> techs, SortedMap<Integer, TechnologyQueueEntry> queue) {
     if (queue.size() < 2) {
@@ -714,8 +691,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     TechnologyQueueEntry second = it.next();
 
     // Check whether the second one depends on the first one.
-    Map<TechnologyKind, Integer> requirements = TechnologyItem.getAll().get(second.getKind())
-        .getTechnologiesRequirements();
+    var requirements = Item.get(second.getKind()).getTechnologiesRequirements();
     return techs.getOrDefault(first.getKind(), 0) >= requirements.getOrDefault(first.getKind(), 0);
   }
 
@@ -735,8 +711,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       if (currentKind == firstKind) {
         level++;
       } else {
-        Map<TechnologyKind, Integer> requirements = TechnologyItem.getAll().get(currentKind)
-            .getTechnologiesRequirements();
+        var requirements = Item.get(currentKind).getTechnologiesRequirements();
         if (requirements.getOrDefault(firstKind, 0) > level) {
           return false;
         }

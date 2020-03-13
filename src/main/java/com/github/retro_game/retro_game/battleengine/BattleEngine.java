@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.battleengine;
 
 import com.github.retro_game.retro_game.entity.UnitKind;
-import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 

@@ -2,8 +2,8 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.entity.UnitKind;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.service.RapidFireTableService;
-import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;

@@ -2,10 +2,12 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.ItemCostUtils;
+import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.DetailsService;
-import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,14 +22,16 @@ import java.util.stream.Collectors;
 @Service
 class DetailsServiceImpl implements DetailsService {
   private final int buildingQueueCapacity;
+  private final ItemTimeUtils itemTimeUtils;
   private final UserRepository userRepository;
   private BodyServiceInternal bodyServiceInternal;
   private BuildingsServiceInternal buildingsServiceInternal;
   private UnitService unitService;
 
   public DetailsServiceImpl(@Value("${retro-game.building-queue-capacity}") int buildingQueueCapacity,
-                            UserRepository userRepository) {
+                            ItemTimeUtils itemTimeUtils, UserRepository userRepository) {
     this.buildingQueueCapacity = buildingQueueCapacity;
+    this.itemTimeUtils = itemTimeUtils;
     this.userRepository = userRepository;
   }
 
@@ -77,9 +81,12 @@ class DetailsServiceImpl implements DetailsService {
     boolean canDestroyNow = false;
 
     if (destroyable) {
-      Resources cost = buildingsServiceInternal.getCost(k, futureLevel - 1);
+      var cost = ItemCostUtils.getCost(k, futureLevel - 1);
       destructionCost = Converter.convert(cost);
-      destructionTime = buildingsServiceInternal.getDestructionTime(cost, body);
+
+      var roboticsFactoryLevel = body.getBuildingLevel(BuildingKind.ROBOTICS_FACTORY);
+      var naniteFactoryLevel = body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
+      destructionTime = itemTimeUtils.getBuildingDestructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
 
       if (queue.size() < buildingQueueCapacity && (!queue.isEmpty() || body.getResources().greaterOrEqual(cost))) {
         canDestroyNow = true;

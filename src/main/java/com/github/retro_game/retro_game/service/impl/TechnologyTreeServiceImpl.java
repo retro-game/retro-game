@@ -4,10 +4,10 @@ import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.BuildingKind;
 import com.github.retro_game.retro_game.entity.TechnologyKind;
 import com.github.retro_game.retro_game.entity.UnitKind;
+import com.github.retro_game.retro_game.model.building.BuildingItem;
+import com.github.retro_game.retro_game.model.technology.TechnologyItem;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.service.TechnologyTreeService;
-import com.github.retro_game.retro_game.service.impl.item.building.BuildingItem;
-import com.github.retro_game.retro_game.service.impl.item.technology.TechnologyItem;
-import com.github.retro_game.retro_game.service.impl.item.unit.UnitItem;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
