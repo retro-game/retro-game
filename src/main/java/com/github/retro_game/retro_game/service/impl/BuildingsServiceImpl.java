@@ -833,8 +833,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   private long getConstructionTime(Resources cost, Map<BuildingKind, Integer> buildings) {
-    var roboticsFactoryLevel = buildings.get(BuildingKind.ROBOTICS_FACTORY);
-    var naniteFactoryLevel = buildings.get(BuildingKind.NANITE_FACTORY);
+    var roboticsFactoryLevel = buildings.getOrDefault(BuildingKind.ROBOTICS_FACTORY, 0);
+    var naniteFactoryLevel = buildings.getOrDefault(BuildingKind.NANITE_FACTORY, 0);
     return itemTimeUtils.getBuildingConstructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
@@ -845,8 +845,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   }
 
   private long getDestructionTime(Resources cost, Map<BuildingKind, Integer> buildings) {
-    var roboticsFactoryLevel = buildings.get(BuildingKind.ROBOTICS_FACTORY);
-    var naniteFactoryLevel = buildings.get(BuildingKind.NANITE_FACTORY);
+    var roboticsFactoryLevel = buildings.getOrDefault(BuildingKind.ROBOTICS_FACTORY, 0);
+    var naniteFactoryLevel = buildings.getOrDefault(BuildingKind.NANITE_FACTORY, 0);
     return itemTimeUtils.getBuildingDestructionTime(cost, roboticsFactoryLevel, naniteFactoryLevel);
   }
 
