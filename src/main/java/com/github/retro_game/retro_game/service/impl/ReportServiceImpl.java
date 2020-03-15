@@ -35,6 +35,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service("reportService")
 class ReportServiceImpl implements ReportServiceInternal {
@@ -509,8 +510,7 @@ class ReportServiceImpl implements ReportServiceInternal {
         activity = 60;
       }
 
-      FlightUnit probes = flight.getUnits().get(UnitKind.ESPIONAGE_PROBE);
-      int numProbes = probes != null ? probes.getCount() : 0;
+      var numProbes = flight.getUnitsCount(UnitKind.ESPIONAGE_PROBE);
 
       Technology targetTech = body.getUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
       int targetLevel = targetTech != null ? targetTech.getLevel() : 0;
@@ -527,23 +527,22 @@ class ReportServiceImpl implements ReportServiceInternal {
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
       DataOutputStream stream = new DataOutputStream(byteArrayOutputStream);
 
-      Map<UnitKind, BodyUnit> units = body.getUnits();
+      var units = body.getUnits();
 
       stream.writeBoolean(fleetVisible);
       Long fleet = null;
       if (fleetVisible) {
-        EnumMap<UnitKind, Integer> fleetUnits = units.entrySet().stream()
-            .filter(e -> UnitItem.getFleet().containsKey(e.getKey()))
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getCount(), (a, b) -> {
-              throw new IllegalStateException();
-            }, () -> new EnumMap<>(UnitKind.class)));
-        holdingFlights.stream()
-            .flatMap(f -> f.getUnits().entrySet().stream())
-            .forEach(e -> {
-              UnitKind kind = e.getKey();
-              int count = e.getValue().getCount();
-              fleetUnits.put(kind, fleetUnits.getOrDefault(kind, 0) + count);
-            });
+        var bodyUnitsStream = units.entrySet().stream()
+            .filter(e -> UnitItem.getFleet().containsKey(e.getKey()));
+        var holdingUnitsStream = holdingFlights.stream().flatMap(f -> f.getUnits().entrySet().stream());
+        var fleetUnits = Stream.concat(bodyUnitsStream, holdingUnitsStream)
+            .filter(e -> e.getValue() > 0)
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                Integer::sum,
+                () -> new EnumMap<>(UnitKind.class)
+            ));
         fleet = calculateUnitsCost(fleetUnits);
         serializeEnumMap(stream, fleetUnits);
       }
@@ -551,9 +550,9 @@ class ReportServiceImpl implements ReportServiceInternal {
       stream.writeBoolean(defenseVisible);
       Long defense = null;
       if (defenseVisible) {
-        EnumMap<UnitKind, Integer> defenseUnits = units.entrySet().stream()
-            .filter(e -> UnitItem.getDefense().containsKey(e.getKey()))
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getCount(), (a, b) -> {
+        var defenseUnits = units.entrySet().stream()
+            .filter(e -> e.getValue() > 0 && UnitItem.getDefense().containsKey(e.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> {
               throw new IllegalStateException();
             }, () -> new EnumMap<>(UnitKind.class)));
         defense = calculateUnitsCost(defenseUnits);

@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.battleengine.Combatant;
 import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.Item;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
@@ -41,10 +42,8 @@ class FlightServiceImpl implements FlightServiceInternal {
   private final int fleetSpeed;
   private final BattleEngine battleEngine;
   private final BodyRepository bodyRepository;
-  private final BodyUnitRepository bodyUnitRepository;
   private final DebrisFieldRepository debrisFieldRepository;
   private final FlightRepository flightRepository;
-  private final FlightUnitRepository flightUnitRepository;
   private final FlightViewRepository flightViewRepository;
   private final PartyRepository partyRepository;
   private final EventRepository eventRepository;
@@ -60,21 +59,18 @@ class FlightServiceImpl implements FlightServiceInternal {
   FlightServiceImpl(@Value("${retro-game.astrophysics-based-colonization}") boolean astrophysicsBasedColonization,
                     @Value("${retro-game.max-planets}") int maxPlanets,
                     @Value("${retro-game.fleet-speed}") int fleetSpeed,
-                    BattleEngine battleEngine, BodyRepository bodyRepository, BodyUnitRepository bodyUnitRepository,
+                    BattleEngine battleEngine, BodyRepository bodyRepository,
                     DebrisFieldRepository debrisFieldRepository, EventRepository eventRepository,
-                    FlightRepository flightRepository, FlightUnitRepository flightUnitRepository,
-                    FlightViewRepository flightViewRepository, PartyRepository partyRepository,
-                    UserRepository userRepository) {
+                    FlightRepository flightRepository, FlightViewRepository flightViewRepository,
+                    PartyRepository partyRepository, UserRepository userRepository) {
     this.astrophysicsBasedColonization = astrophysicsBasedColonization;
     this.maxPlanets = maxPlanets;
     this.fleetSpeed = fleetSpeed;
     this.battleEngine = battleEngine;
     this.bodyRepository = bodyRepository;
-    this.bodyUnitRepository = bodyUnitRepository;
     this.debrisFieldRepository = debrisFieldRepository;
     this.eventRepository = eventRepository;
     this.flightRepository = flightRepository;
-    this.flightUnitRepository = flightUnitRepository;
     this.flightViewRepository = flightViewRepository;
     this.partyRepository = partyRepository;
     this.userRepository = userRepository;
@@ -153,8 +149,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       CoordinatesDto targetCoordinates = Converter.convert(flight.getTargetCoordinates());
       MissionDto mission = Converter.convert(flight.getMission());
       ResourcesDto resources = Converter.convert(flight.getResources());
-      Map<UnitKindDto, Integer> units = Converter.convertToEnumMap(flight.getUnits(), UnitKindDto.class,
-          Converter::convert, FlightUnit::getCount);
+      var units = convertUnitsForFlightEvent(flight.getUnits());
 
       if (arriving) {
         events.add(new OverviewFlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
@@ -203,8 +198,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       CoordinatesDto startCoordinates = Converter.convert(flight.getStartCoordinates());
       CoordinatesDto targetCoordinates = Converter.convert(flight.getTargetCoordinates());
       MissionDto mission = Converter.convert(flight.getMission());
-      Map<UnitKindDto, Integer> units = Converter.convertToEnumMap(flight.getUnits(), UnitKindDto.class,
-          Converter::convert, FlightUnit::getCount);
+      var units = convertUnitsForFlightEvent(flight.getUnits());
 
       if (arriving && (!isStart || flight.getMission() != Mission.DEPLOYMENT)) {
         events.add(new PhalanxFlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
@@ -243,14 +237,26 @@ class FlightServiceImpl implements FlightServiceInternal {
               (flight.getMission() == Mission.HOLD && flight.getHoldUntil().after(now)));
       boolean partyCreatable = recallable && flight.getPartyId() == null &&
           (flight.getMission() == Mission.ATTACK || flight.getMission() == Mission.DESTROY);
-      Map<UnitKindDto, Integer> units = Converter.convertToEnumMap(flight.getUnits(), UnitKindDto.class,
-          Converter::convert, FlightUnit::getCount);
+      var units = convertUnitsForFlightEvent(flight.getUnits());
       list.add(new FlightDto(flight.getId(), flight.getStartBodyName(), Converter.convert(flight.getStartCoordinates()),
           flight.getTargetBodyName(), Converter.convert(flight.getTargetCoordinates()), flight.getPartyId(),
           Converter.convert(flight.getMission()), flight.getDepartureAt(), flight.getArrivalAt(), flight.getReturnAt(),
           Converter.convert(flight.getResources()), units, recallable, partyCreatable));
     }
     return list;
+  }
+
+  private static EnumMap<UnitKindDto, Integer> convertUnitsForFlightEvent(Map<UnitKind, Integer> units) {
+    return units.entrySet().stream()
+        .filter(e -> e.getValue() > 0)
+        .collect(Collectors.toMap(
+            e -> Converter.convert(e.getKey()),
+            Map.Entry::getValue,
+            (a, b) -> {
+              throw new IllegalStateException();
+            },
+            () -> new EnumMap<>(UnitKindDto.class)
+        ));
   }
 
   @Override
@@ -289,7 +295,7 @@ class FlightServiceImpl implements FlightServiceInternal {
             e -> Converter.convert(e.getKey()),
             e -> {
               UnitKind kind = e.getKey();
-              int count = body.getNumUnits(kind);
+              int count = body.getUnitsCount(kind);
               UnitItem item = e.getValue();
               int capacity = item.getCapacity();
               int consumption = item.getConsumption(user);
@@ -647,33 +653,36 @@ class FlightServiceImpl implements FlightServiceInternal {
     flight.setParty(party);
     flight.setMission(mission);
     flight.setResources(flightResources);
-    flightRepository.save(flight);
 
     // Units.
-    Map<UnitKind, BodyUnit> bodyUnits = body.getUnits();
-    ArrayList<FlightUnit> flightUnits = new ArrayList<>();
-    for (Map.Entry<UnitKind, Integer> entry : units.entrySet()) {
-      UnitKind kind = entry.getKey();
-      BodyUnit bodyUnit = bodyUnits.get(kind);
-      if (bodyUnit == null) {
+    var flightUnits = new EnumMap<UnitKind, Integer>(UnitKind.class);
+    for (var entry : units.entrySet()) {
+      var kind = entry.getKey();
+
+      // The requested units should have been filtered at this point, the map should contain only positive integers.
+      var requestedCount = entry.getValue();
+      assert requestedCount >= 1;
+
+      // This check is important, because the calculations above are based on the requested units. Without this check,
+      // we could send e.g. espionage probe at the speed of a death star by specifying in the send fleet form one death
+      // star without having one on the planet. Thus, if the user requested some units but don't have them, we fail.
+      var bodyCount = body.getUnitsCount(kind);
+      if (bodyCount == 0) {
         logger.info("Sending fleet failed, not enough units: userId={} bodyId={}", userId, body.getId());
         throw new NotEnoughUnitsException();
       }
-      int count = Math.min(entry.getValue(), bodyUnit.getCount());
-      if (bodyUnit.getCount() == count) {
-        bodyUnitRepository.delete(bodyUnit);
-      } else {
-        bodyUnit.setCount(bodyUnit.getCount() - count);
-      }
-      FlightUnitKey key = new FlightUnitKey();
-      key.setFlight(flight);
-      key.setKind(kind);
-      FlightUnit flightUnit = new FlightUnit();
-      flightUnit.setKey(key);
-      flightUnit.setCount(count);
-      flightUnits.add(flightUnit);
+
+      var flightCount = Math.min(requestedCount, bodyCount);
+      assert flightCount >= 1;
+      flightUnits.put(kind, flightCount);
+
+      bodyCount -= flightCount;
+      assert bodyCount >= 0;
+      body.setUnitsCount(kind, bodyCount);
     }
-    flightUnitRepository.saveAll(flightUnits);
+    flight.setUnits(flightUnits);
+
+    flightRepository.save(flight);
 
     if (party == null) {
       // Add event.
@@ -746,9 +755,8 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   private long calculateCapacity(Map<UnitKind, Integer> units) {
     assert !units.isEmpty();
-    Map<UnitKind, UnitItem> fleet = UnitItem.getFleet();
     return units.entrySet().stream()
-        .mapToLong(e -> (long) e.getValue() * fleet.get(e.getKey()).getCapacity())
+        .mapToLong(e -> (long) e.getValue() * Item.get(e.getKey()).getCapacity())
         .sum();
   }
 
@@ -767,6 +775,9 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Override
   @Transactional(isolation = Isolation.SERIALIZABLE)
   public void sendMissiles(long bodyId, CoordinatesDto targetCoordinates, int numMissiles) {
+    // This should be validated in the controller.
+    assert numMissiles >= 1;
+
     Body body = bodyServiceInternal.getUpdated(bodyId);
     User user = body.getUser();
     long userId = user.getId();
@@ -817,19 +828,15 @@ class FlightServiceImpl implements FlightServiceInternal {
       throw new NoobProtectionException();
     }
 
-    BodyUnit ipm = body.getUnits().get(UnitKind.INTERPLANETARY_MISSILE);
-    if (ipm == null || ipm.getCount() < numMissiles) {
+    var ipmCount = body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE);
+    if (ipmCount < numMissiles) {
       logger.info("Sending missiles failed, not enough missiles: userId={} bodyId={} targetUserId={} targetBodyId={}" +
               " targetCoordinates={} numMissiles={}",
           userId, bodyId, targetUserId, targetBodyId, targetCoordinates, numMissiles);
       throw new NotEnoughUnitsException();
     }
-    int count = ipm.getCount() - numMissiles;
-    if (count == 0) {
-      bodyUnitRepository.delete(ipm);
-    } else {
-      ipm.setCount(count);
-    }
+    int count = ipmCount - numMissiles;
+    body.setUnitsCount(UnitKind.INTERPLANETARY_MISSILE, count);
 
     long now = body.getUpdatedAt().toInstant().getEpochSecond();
     long duration = 30 + 60 * diff;
@@ -849,15 +856,8 @@ class FlightServiceImpl implements FlightServiceInternal {
     f.setReturnAt(Date.from(Instant.ofEpochSecond(returnAt)));
     f.setMission(Mission.MISSILE_ATTACK);
     f.setResources(new Resources());
+    f.setUnits(Collections.singletonMap(UnitKind.INTERPLANETARY_MISSILE, numMissiles));
     flightRepository.save(f);
-
-    FlightUnitKey key = new FlightUnitKey();
-    key.setFlight(f);
-    key.setKind(UnitKind.INTERPLANETARY_MISSILE);
-    FlightUnit fu = new FlightUnit();
-    fu.setKey(key);
-    fu.setCount(numMissiles);
-    flightUnitRepository.save(fu);
 
     // Add event.
     Event event = new Event();
@@ -1000,7 +1000,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     if (logger.isInfoEnabled()) {
       String unitsString = flight.getUnits().entrySet().stream()
-          .map(entry -> entry.getValue().getCount() + " " + entry.getKey())
+          .map(entry -> entry.getValue() + " " + entry.getKey())
           .collect(Collectors.joining(", "));
       logger.info("Fleet return: flightId={} startUserId={} startBodyId={} targetCoordinates={} departureAt='{}'" +
               " arrivalAt='{}' returnAt='{}' holdUntil='{}' mission={} resources={} units='{}'",
@@ -1077,7 +1077,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     // When there is no units on the target body, we must skip the fight, as the battle engine cannot handle combatants
     // without units.
-    boolean fight = !body.getUnits().isEmpty() || !defendersFlights.isEmpty();
+    var fight = body.getTotalUnitsCount() != 0 || !defendersFlights.isEmpty();
     if (fight) {
       // Prepare input for the battle engine.
 
@@ -1085,8 +1085,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       for (int i = 0; i < attackers.length; i++) {
         Flight f = attackersFlights.get(i);
         User u = f.getStartUser();
-        Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
-            FlightUnit::getCount);
+        var groups = getUnitsForFight(f.getUnits());
         attackers[i] = new Combatant(u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
@@ -1099,8 +1098,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       for (int i = 0; i < defendersFlights.size(); i++) {
         Flight f = defendersFlights.get(i);
         User u = f.getStartUser();
-        Map<UnitKind, Integer> groups = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
-            FlightUnit::getCount);
+        var groups = getUnitsForFight(f.getUnits());
         defenders[i] = new Combatant(u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
@@ -1110,15 +1108,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       }
       if (!body.getUnits().isEmpty()) {
         User u = flight.getTargetUser();
-        Map<UnitKind, Integer> groups = body.getUnits().entrySet().stream()
-            .filter(e -> e.getKey() != UnitKind.ANTI_BALLISTIC_MISSILE && e.getKey() != UnitKind.INTERPLANETARY_MISSILE)
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                e -> e.getValue().getCount(),
-                (a, b) -> {
-                  throw new IllegalStateException();
-                },
-                () -> new EnumMap<>(UnitKind.class)));
+        var groups = getUnitsForFight(body.getUnits());
         defenders[defenders.length - 1] = new Combatant(u.getId(),
             flight.getTargetCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
@@ -1151,23 +1141,16 @@ class FlightServiceImpl implements FlightServiceInternal {
             for (int i = 0; i < flights.size(); i++) {
               Flight f = flights.get(i);
               CombatantOutcome outcome = outcomes[i];
-              for (Iterator<Map.Entry<UnitKind, FlightUnit>> it = f.getUnits().entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<UnitKind, FlightUnit> entry = it.next();
-
+              for (var entry : f.getUnits().entrySet()) {
                 UnitKind kind = entry.getKey();
-                FlightUnit unit = entry.getValue();
+                var count = entry.getValue();
 
                 int remaining = (int) outcome.getNumRemainingUnits(nRounds - 1, kind.ordinal());
                 totalRemaining += remaining;
-                int diff = unit.getCount() - remaining;
+                int diff = count - remaining;
                 assert diff >= 0;
 
-                if (remaining == 0) {
-                  flightUnitRepository.delete(unit);
-                  it.remove();
-                } else {
-                  unit.setCount(remaining);
-                }
+                f.setUnitsCount(kind, remaining);
 
                 Resources cost = new Resources(items.get(kind).getCost());
                 cost.mul(diff);
@@ -1200,11 +1183,9 @@ class FlightServiceImpl implements FlightServiceInternal {
       // Defender's body.
       if (!body.getUnits().isEmpty()) {
         CombatantOutcome outcome = defendersOutcomes[defendersOutcomes.length - 1];
-        for (Iterator<Map.Entry<UnitKind, BodyUnit>> it = body.getUnits().entrySet().iterator(); it.hasNext(); ) {
-          Map.Entry<UnitKind, BodyUnit> entry = it.next();
-
+        for (var entry : body.getUnits().entrySet()) {
           UnitKind kind = entry.getKey();
-          BodyUnit unit = entry.getValue();
+          var count = entry.getValue();
 
           if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
             continue;
@@ -1214,7 +1195,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
           int remaining = (int) outcome.getNumRemainingUnits(numRounds - 1, kind.ordinal());
           defendersTotalRemaining += remaining;
-          int diff = unit.getCount() - remaining;
+          int diff = count - remaining;
           assert diff >= 0;
 
           Resources cost = new Resources(items.get(kind).getCost());
@@ -1231,12 +1212,7 @@ class FlightServiceImpl implements FlightServiceInternal {
             remaining += (int) Math.floor(0.7 * diff);
           }
 
-          if (remaining == 0) {
-            bodyUnitRepository.delete(unit);
-            it.remove();
-          } else {
-            unit.setCount(remaining);
-          }
+          body.setUnitsCount(kind, remaining);
         }
       }
 
@@ -1286,10 +1262,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     // redirected to the corresponding planet.
     if (destroy && result == BattleResult.ATTACKERS_WIN && body.getCoordinates().getKind() == CoordinatesKind.MOON) {
       int totalDSs = attackersFlights.stream()
-          .mapToInt(f -> {
-            FlightUnit deathStars = f.getUnits().get(UnitKind.DEATH_STAR);
-            return deathStars != null ? deathStars.getCount() : 0;
-          })
+          .mapToInt(f -> f.getUnitsCount(UnitKind.DEATH_STAR))
           .sum();
       int diameter = body.getDiameter();
 
@@ -1332,10 +1305,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       double dssDestructionChance = 0.005 * Math.sqrt(diameter);
       if (dssDestructionChance > random.nextDouble()) {
         for (Flight f : attackersFlights) {
-          FlightUnit ds = f.getUnits().remove(UnitKind.DEATH_STAR);
-          if (ds != null) {
-            flightUnitRepository.delete(ds);
-          }
+          f.setUnitsCount(UnitKind.DEATH_STAR, 0);
         }
       }
     }
@@ -1349,7 +1319,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     for (Iterator<Flight> it = attackersFlights.iterator(); it.hasNext(); ) {
       Flight f = it.next();
-      if (f.getUnits().isEmpty()) {
+      if (f.getTotalUnitsCount() == 0) {
         flightRepository.delete(f);
         it.remove();
       }
@@ -1358,7 +1328,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     List<Long> deletedIds = new ArrayList<>();
     for (Iterator<Flight> it = defendersFlights.iterator(); it.hasNext(); ) {
       Flight f = it.next();
-      if (f.getUnits().isEmpty()) {
+      if (f.getTotalUnitsCount() == 0) {
         deletedIds.add(f.getId());
         flightRepository.delete(f);
         it.remove();
@@ -1385,8 +1355,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       List<MutablePair<Long, Long>> capacities = attackersFlights.stream()
           .map(f -> {
-            Map<UnitKind, Integer> units = Converter.convertToEnumMap(f.getUnits(), UnitKind.class, Function.identity(),
-                FlightUnit::getCount);
+            var units = f.getUnits();
             double capacity = calculateCapacity(units);
             Resources r = f.getResources();
             capacity -= r.getMetal() + r.getCrystal() + r.getDeuterium();
@@ -1506,6 +1475,22 @@ class FlightServiceImpl implements FlightServiceInternal {
     }
   }
 
+  // Prepares units for a fight. The battle engine should not have groups with 0 units. Missiles don't participate in
+  // a fight.
+  private static EnumMap<UnitKind, Integer> getUnitsForFight(Map<UnitKind, Integer> units) {
+    return units.entrySet().stream()
+        .filter(e -> e.getValue() > 0 &&
+            e.getKey() != UnitKind.ANTI_BALLISTIC_MISSILE && e.getKey() != UnitKind.INTERPLANETARY_MISSILE)
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue,
+            (a, b) -> {
+              throw new IllegalStateException();
+            },
+            () -> new EnumMap<>(UnitKind.class)
+        ));
+  }
+
   private void handleColonization(Flight flight) {
     User user = flight.getStartUser();
     Coordinates coordinates = flight.getTargetCoordinates();
@@ -1546,34 +1531,23 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     reportServiceInternal.createColonizationReport(flight, resources, (double) colony.getDiameter());
 
-    FlightUnit colonyShip = flight.getUnits().get(UnitKind.COLONY_SHIP);
-    assert colonyShip != null;
-    int numColonyShips = colonyShip.getCount();
+    var numColonyShips = flight.getUnitsCount(UnitKind.COLONY_SHIP);
     assert numColonyShips >= 1;
+    flight.setUnitsCount(UnitKind.COLONY_SHIP, numColonyShips - 1);
 
-    if (numColonyShips == 1) {
-      assert flight.getUnits().size() >= 1;
-      boolean hasOtherUnits = flight.getUnits().size() > 1;
-
-      flightUnitRepository.delete(colonyShip);
-
-      if (!hasOtherUnits) {
-        logger.info("Colonization successful, deleting flight: flightId={} startUserId={} startBodyId={}" +
-                " targetCoordinates={} arrivalAt='{}' colonyId={}",
-            flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetCoordinates(),
-            flight.getArrivalAt(), colony.getId());
-        flightRepository.delete(flight);
-        return;
-      }
+    if (flight.getTotalUnitsCount() == 0) {
+      logger.info("Colonization successful, deleting flight: flightId={} startUserId={} startBodyId={}" +
+              " targetCoordinates={} arrivalAt='{}' colonyId={}",
+          flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetCoordinates(),
+          flight.getArrivalAt(), colony.getId());
+      flightRepository.delete(flight);
     } else {
-      colonyShip.setCount(numColonyShips - 1);
+      logger.info("Colonization successful, scheduling return: flightId={} startUserId={} startBodyId={}" +
+              " targetCoordinates={} arrivalAt='{}' colonyId={}",
+          flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetCoordinates(),
+          flight.getArrivalAt(), colony.getId());
+      scheduleReturn(flight);
     }
-
-    logger.info("Colonization successful, scheduling return: flightId={} startUserId={} startBodyId={}" +
-            " targetCoordinates={} arrivalAt='{}' colonyId={}",
-        flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetCoordinates(),
-        flight.getArrivalAt(), colony.getId());
-    scheduleReturn(flight);
   }
 
   private void handleDeployment(Flight flight) {
@@ -1581,7 +1555,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     if (logger.isInfoEnabled()) {
       String unitsString = flight.getUnits().entrySet().stream()
-          .map(entry -> entry.getValue().getCount() + " " + entry.getKey())
+          .map(entry -> entry.getValue() + " " + entry.getKey())
           .collect(Collectors.joining(", "));
       logger.info("Deployment: flightId={} startUserId={} startBodyId={} targetBodyId={} arrivalAt='{}' resources={}" +
               " units='{}'",
@@ -1606,22 +1580,22 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     List<Flight> holdingFlights = getHoldingFlights(flight.getTargetBody(), flight.getArrivalAt());
 
+    var numProbes = flight.getUnitsCount(UnitKind.ESPIONAGE_PROBE);
+    var numShips = flight.getTotalUnitsCount();
+    assert numShips >= numProbes;
+    var hasOtherShips = numShips > numProbes;
+
     double counterChance;
-    if (flight.getUnits().size() > 1) {
+    if (hasOtherShips) {
       // If not only probes sent for espionage, always counter.
       counterChance = 1.0;
     } else {
-      FlightUnit probes = flight.getUnits().get(UnitKind.ESPIONAGE_PROBE);
-      assert probes != null;
-      int numProbes = probes.getCount();
-
       int numTargetShips = body.getUnits().entrySet().stream()
           .filter(e -> UnitItem.getFleet().containsKey(e.getKey()))
-          .mapToInt(e -> e.getValue().getCount())
+          .mapToInt(Map.Entry::getValue)
           .sum();
       numTargetShips += holdingFlights.stream()
-          .flatMap(f -> f.getUnits().values().stream())
-          .mapToInt(FlightUnit::getCount)
+          .mapToInt(Flight::getTotalUnitsCount)
           .sum();
 
       Technology targetTech = body.getUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
@@ -1665,15 +1639,14 @@ class FlightServiceImpl implements FlightServiceInternal {
           flight.getArrivalAt());
     } else {
       Resources flightResources = flight.getResources();
-      Map<UnitKind, FlightUnit> units = flight.getUnits();
 
       long totalCapacity = 0;
-      for (Map.Entry<UnitKind, FlightUnit> entry : units.entrySet()) {
-        totalCapacity += (long) entry.getValue().getCount() * UnitItem.getFleet().get(entry.getKey()).getCapacity();
+      for (var entry : flight.getUnits().entrySet()) {
+        totalCapacity += (long) entry.getValue() * Item.get(entry.getKey()).getCapacity();
       }
       totalCapacity -= (long) Math.ceil(flightResources.getMetal() + flightResources.getCrystal() +
           flightResources.getDeuterium());
-      int numRecyclers = units.get(UnitKind.RECYCLER).getCount();
+      var numRecyclers = flight.getUnitsCount(UnitKind.RECYCLER);
       assert numRecyclers >= 1;
       long recCapacity = (long) numRecyclers * UnitItem.getFleet().get(UnitKind.RECYCLER).getCapacity();
       long capacity = Math.min(recCapacity, totalCapacity);
@@ -1784,8 +1757,8 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Create activity.
     activityService.handleBodyActivity(body.getId(), flight.getArrivalAt().toInstant().getEpochSecond());
 
-    FlightUnit missiles = flight.getUnits().get(UnitKind.INTERPLANETARY_MISSILE);
-    if (missiles == null) {
+    var numIpm = flight.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE);
+    if (numIpm == 0) {
       logger.error("Missile attack, no missiles: flightId={} startUserId={} startBodyId={} targetUserId={}" +
               " targetBodyId={} arrivalAt='{}'",
           flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
@@ -1793,58 +1766,50 @@ class FlightServiceImpl implements FlightServiceInternal {
       flightRepository.delete(flight);
       return;
     }
-    int numMissiles = missiles.getCount();
 
-    BodyUnit antiMissiles;
+    Body planet;
     if (body.getCoordinates().getKind() == CoordinatesKind.PLANET) {
-      antiMissiles = body.getUnits().get(UnitKind.ANTI_BALLISTIC_MISSILE);
+      planet = body;
     } else {
       assert body.getCoordinates().getKind() == CoordinatesKind.MOON;
       // Anti-ballistic missiles from planet defend the moon.
       Coordinates moonCoords = body.getCoordinates();
       Coordinates planetCoords = new Coordinates(moonCoords.getGalaxy(), moonCoords.getSystem(),
           moonCoords.getPosition(), CoordinatesKind.PLANET);
-      Optional<Body> planet = bodyRepository.findByCoordinates(planetCoords);
-      if (!planet.isPresent()) {
+      Optional<Body> planetOpt = bodyRepository.findByCoordinates(planetCoords);
+      if (!planetOpt.isPresent()) {
         logger.error("Missile attack, moon without planet: flightId={} startUserId={} startBodyId={} targetUserId={}" +
                 " targetBodyId={} arrivalAt='{}'",
             flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(),
             flight.getTargetUser().getId(), body.getId(), flight.getArrivalAt());
-        flightUnitRepository.delete(missiles);
         flightRepository.delete(flight);
         return;
       }
-      antiMissiles = planet.get().getUnits().get(UnitKind.ANTI_BALLISTIC_MISSILE);
+      planet = planetOpt.get();
     }
 
-    if (antiMissiles != null) {
-      int count = antiMissiles.getCount();
-      int n = Math.min(numMissiles, count);
-      numMissiles -= n;
-      count -= n;
-      if (count == 0) {
-        bodyUnitRepository.delete(antiMissiles);
-      } else {
-        antiMissiles.setCount(count);
-      }
-    }
+    var numAbm = planet.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE);
+    var n = Math.min(numIpm, numAbm);
+    numIpm -= n;
+    numAbm -= n;
+    planet.setUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE, numAbm);
 
-    if (numMissiles == 0) {
+    if (numIpm == 0) {
       logger.info("Missile attack, missiles destroyed: flightId={} startUserId={} startBodyId={} targetUserId={}" +
               " targetBodyId={} arrivalAt='{}'",
           flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
           body.getId(), flight.getArrivalAt());
-      flightUnitRepository.delete(missiles);
       flightRepository.delete(flight);
       reportServiceInternal.createMissileAttackReport(flight, 0);
       return;
     }
 
     Map<UnitKind, UnitItem> defense = UnitItem.getDefense();
-    Map<UnitKind, BodyUnit> units = body.getUnits().entrySet().stream()
+    var units = body.getUnits().entrySet().stream()
         .filter(e -> {
-          UnitKind kind = e.getKey();
-          return defense.containsKey(kind) && kind != UnitKind.ANTI_BALLISTIC_MISSILE &&
+          var kind = e.getKey();
+          var count = e.getValue();
+          return count > 0 && defense.containsKey(kind) && kind != UnitKind.ANTI_BALLISTIC_MISSILE &&
               kind != UnitKind.INTERPLANETARY_MISSILE;
         })
         .collect(Collectors.toMap(
@@ -1864,64 +1829,42 @@ class FlightServiceImpl implements FlightServiceInternal {
           .map(UnitKind::toString)
           .collect(Collectors.joining(", "));
       logger.info("Missile attack, destroying defense: flightId={} startUserId={} startBodyId={} targetUserId={}" +
-              " targetBodyId={} arrivalAt='{}' numMissiles={} order='{}'",
+              " targetBodyId={} arrivalAt='{}' numIpm={} order='{}'",
           flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
-          body.getId(), flight.getArrivalAt(), numMissiles, orderString);
+          body.getId(), flight.getArrivalAt(), numIpm, orderString);
     }
 
     final double defFactor = 0.1 + 0.01 * flight.getTargetUser().getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY);
-    double power = numMissiles * defense.get(UnitKind.INTERPLANETARY_MISSILE).getBaseWeapons() *
+    double power = numIpm * defense.get(UnitKind.INTERPLANETARY_MISSILE).getBaseWeapons() *
         (1.0 + 0.1 * flight.getStartUser().getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY));
     int totalDestroyed = 0;
 
     for (Iterator<UnitKind> it = order.iterator(); it.hasNext() && power > 0.0; ) {
       UnitKind kind = it.next();
 
-      BodyUnit unit = units.get(kind);
-      assert unit != null;
-      int count = unit.getCount();
+      var count = units.get(kind);
 
       double armor = defFactor * defense.get(kind).getBaseArmor();
       int numDestroyed = Math.min(count, (int) (power / armor));
       power -= armor * numDestroyed;
 
-      if (numDestroyed == count) {
-        bodyUnitRepository.delete(unit);
-      } else {
-        unit.setCount(count - numDestroyed);
-      }
+      count -= numDestroyed;
+      body.setUnitsCount(kind, count);
 
       totalDestroyed += numDestroyed;
     }
 
-    flightUnitRepository.delete(missiles);
     flightRepository.delete(flight);
 
     reportServiceInternal.createMissileAttackReport(flight, totalDestroyed);
   }
 
   private void deployUnits(Flight flight, Body body) {
-    Map<UnitKind, BodyUnit> bodyUnits = body.getUnits();
-    for (Map.Entry<UnitKind, FlightUnit> entry : flight.getUnits().entrySet()) {
+    for (var entry : flight.getUnits().entrySet()) {
       UnitKind kind = entry.getKey();
-      int count = entry.getValue().getCount();
-      if (count == 0) {
-        continue;
-      }
-      BodyUnit bodyUnit = bodyUnits != null ? bodyUnits.get(kind) : null;
-      if (bodyUnit == null) {
-        BodyUnitKey key = new BodyUnitKey();
-        key.setBody(body);
-        key.setKind(kind);
-        bodyUnit = new BodyUnit();
-        bodyUnit.setKey(key);
-        bodyUnit.setCount(count);
-      } else {
-        bodyUnit.setCount(bodyUnit.getCount() + count);
-      }
-      bodyUnitRepository.save(bodyUnit);
+      var count = entry.getValue();
+      body.setUnitsCount(kind, body.getUnitsCount(kind) + count);
     }
-    flightUnitRepository.deleteAll(flight.getUnits().values());
   }
 
   private List<Flight> getHoldingFlights(Body body, Date at) {

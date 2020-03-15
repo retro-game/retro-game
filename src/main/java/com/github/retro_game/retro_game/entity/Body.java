@@ -59,14 +59,13 @@ public class Body implements Serializable {
   @Temporal(TemporalType.TIMESTAMP)
   private Date lastJumpAt;
 
-  @Column(name = "buildings", nullable = false, insertable = false)
+  @Column(name = "buildings", nullable = false)
   @Type(type = "int-array")
   private int[] buildingsArray;
 
-  @OneToMany(mappedBy = "key.body")
-  @MapKey(name = "key.kind")
-  @Fetch(FetchMode.SUBSELECT)
-  private Map<UnitKind, BodyUnit> units;
+  @Column(name = "units", nullable = false)
+  @Type(type = "int-array")
+  private int[] unitsArray;
 
   @OneToMany(mappedBy = "key.body")
   @MapKey(name = "key.sequence")
@@ -80,27 +79,11 @@ public class Body implements Serializable {
   private List<ShipyardQueueEntry> shipyardQueue;
 
   public EnumMap<BuildingKind, Integer> getBuildings() {
-    var enumValues = BuildingKind.values();
-    var buildings = new EnumMap<BuildingKind, Integer>(BuildingKind.class);
-    for (var i = 0; i < buildingsArray.length; i++) {
-      var kind = enumValues[i];
-      var level = buildingsArray[i];
-      assert level >= 0;
-      buildings.put(kind, level);
-    }
-    return buildings;
+    return ItemsSerialization.deserializeItems(BuildingKind.class, buildingsArray);
   }
 
   public void setBuildings(Map<BuildingKind, Integer> buildings) {
-    var enumValues = BuildingKind.values();
-    var array = new int[enumValues.length];
-    for (var entry : buildings.entrySet()) {
-      var index = entry.getKey().ordinal();
-      var level = entry.getValue();
-      assert level >= 0;
-      array[index] = level;
-    }
-    buildingsArray = array;
+    buildingsArray = ItemsSerialization.serializeItems(BuildingKind.class, buildings);
   }
 
   public int getBuildingLevel(BuildingKind kind) {
@@ -116,9 +99,29 @@ public class Body implements Serializable {
     buildingsArray[index] = level;
   }
 
-  public int getNumUnits(UnitKind kind) {
-    BodyUnit unit = units.get(kind);
-    return unit != null ? unit.getCount() : 0;
+  public EnumMap<UnitKind, Integer> getUnits() {
+    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+  }
+
+  public void setUnits(Map<UnitKind, Integer> units) {
+    unitsArray = ItemsSerialization.serializeItems(UnitKind.class, units);
+  }
+
+  public int getUnitsCount(UnitKind kind) {
+    var index = kind.ordinal();
+    var count = unitsArray[index];
+    assert count >= 0;
+    return count;
+  }
+
+  public void setUnitsCount(UnitKind kind, int count) {
+    assert count >= 0;
+    var index = kind.ordinal();
+    unitsArray[index] = count;
+  }
+
+  public int getTotalUnitsCount() {
+    return Arrays.stream(unitsArray).sum();
   }
 
   public long getId() {
@@ -219,10 +222,6 @@ public class Body implements Serializable {
 
   public void setLastJumpAt(Date lastJumpAt) {
     this.lastJumpAt = lastJumpAt;
-  }
-
-  public Map<UnitKind, BodyUnit> getUnits() {
-    return units;
   }
 
   public SortedMap<Integer, BuildingQueueEntry> getBuildingQueue() {

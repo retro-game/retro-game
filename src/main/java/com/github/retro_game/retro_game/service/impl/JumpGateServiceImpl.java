@@ -3,9 +3,11 @@ package com.github.retro_game.retro_game.service.impl;
 import com.github.retro_game.retro_game.dto.JumpGateInfoDto;
 import com.github.retro_game.retro_game.dto.JumpGateTargetDto;
 import com.github.retro_game.retro_game.dto.UnitKindDto;
-import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.entity.Body;
+import com.github.retro_game.retro_game.entity.BuildingKind;
+import com.github.retro_game.retro_game.entity.CoordinatesKind;
+import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
-import com.github.retro_game.retro_game.repository.BodyUnitRepository;
 import com.github.retro_game.retro_game.service.JumpGateService;
 import com.github.retro_game.retro_game.service.exception.CannotJumpException;
 import org.slf4j.Logger;
@@ -27,13 +29,10 @@ import java.util.stream.Collectors;
 class JumpGateServiceImpl implements JumpGateService {
   private static final Logger logger = LoggerFactory.getLogger(JumpGateServiceImpl.class);
   private final int jumpGateCoolDownSpeed;
-  private final BodyUnitRepository bodyUnitRepository;
   private BodyServiceInternal bodyServiceInternal;
 
-  public JumpGateServiceImpl(@Value("${retro-game.jump-gate-cool-down-speed}") int jumpGateCoolDownSpeed,
-                             BodyUnitRepository bodyUnitRepository) {
+  public JumpGateServiceImpl(@Value("${retro-game.jump-gate-cool-down-speed}") int jumpGateCoolDownSpeed) {
     this.jumpGateCoolDownSpeed = jumpGateCoolDownSpeed;
-    this.bodyUnitRepository = bodyUnitRepository;
   }
 
   @Autowired
@@ -51,8 +50,7 @@ class JumpGateServiceImpl implements JumpGateService {
         .collect(Collectors.toList());
     Map<UnitKindDto, Integer> units = new EnumMap<>(UnitKindDto.class);
     for (UnitKind kind : UnitItem.getFleet().keySet()) {
-      BodyUnit bodyUnit = body.getUnits().get(kind);
-      int count = bodyUnit != null ? bodyUnit.getCount() : 0;
+      int count = body.getUnitsCount(kind);
       units.put(Converter.convert(kind), count);
     }
     return new JumpGateInfoDto(canJumpAt, targets, units);
@@ -80,8 +78,6 @@ class JumpGateServiceImpl implements JumpGateService {
     body.setLastJumpAt(now);
     target.setLastJumpAt(now);
 
-    Map<UnitKind, BodyUnit> bodyUnits = body.getUnits();
-    Map<UnitKind, BodyUnit> targetUnits = target.getUnits();
     for (Map.Entry<UnitKindDto, Integer> entry : units.entrySet()) {
       UnitKind kind = Converter.convert(entry.getKey());
       if (!UnitItem.getFleet().containsKey(kind)) {
@@ -93,32 +89,18 @@ class JumpGateServiceImpl implements JumpGateService {
         continue;
       }
 
-      BodyUnit bodyUnit = bodyUnits.get(kind);
-      if (bodyUnit == null) {
+      var count = body.getUnitsCount(kind);
+      if (count == 0) {
         continue;
       }
-      int count = Math.min(entry.getValue(), bodyUnit.getCount());
+      count = Math.min(entry.getValue(), count);
       assert count >= 1;
 
-      int n = bodyUnit.getCount() - count;
-      if (n > 0) {
-        bodyUnit.setCount(n);
-      } else {
-        bodyUnitRepository.delete(bodyUnit);
-      }
+      int n = body.getUnitsCount(kind) - count;
+      body.setUnitsCount(kind, n);
 
-      BodyUnit targetUnit = targetUnits.get(kind);
-      if (targetUnit != null) {
-        targetUnit.setCount(targetUnit.getCount() + count);
-      } else {
-        BodyUnitKey key = new BodyUnitKey();
-        key.setBody(target);
-        key.setKind(kind);
-        targetUnit = new BodyUnit();
-        targetUnit.setKey(key);
-        targetUnit.setCount(count);
-        bodyUnitRepository.save(targetUnit);
-      }
+      var targetCount = target.getUnitsCount(kind) + count;
+      target.setUnitsCount(kind, targetCount);
     }
 
     // FIXME: Log units too.

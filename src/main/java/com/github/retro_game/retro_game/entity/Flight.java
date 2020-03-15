@@ -1,11 +1,18 @@
 package com.github.retro_game.retro_game.entity;
 
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.Map;
 
 @Entity
 @Table(name = "flights")
+@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class Flight {
   @Column(name = "id")
   @Id
@@ -68,9 +75,34 @@ public class Flight {
   @Embedded
   private Resources resources;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "key.flight")
-  @MapKey(name = "key.kind")
-  private Map<UnitKind, FlightUnit> units;
+  @Column(name = "units", nullable = false)
+  @Type(type = "int-array")
+  private int[] unitsArray;
+
+  public EnumMap<UnitKind, Integer> getUnits() {
+    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+  }
+
+  public void setUnits(Map<UnitKind, Integer> units) {
+    unitsArray = ItemsSerialization.serializeItems(UnitKind.class, units);
+  }
+
+  public int getUnitsCount(UnitKind kind) {
+    var index = kind.ordinal();
+    var count = unitsArray[index];
+    assert count >= 0;
+    return count;
+  }
+
+  public void setUnitsCount(UnitKind kind, int count) {
+    assert count >= 0;
+    var index = kind.ordinal();
+    unitsArray[index] = count;
+  }
+
+  public int getTotalUnitsCount() {
+    return Arrays.stream(unitsArray).sum();
+  }
 
   public long getId() {
     return id;
@@ -170,9 +202,5 @@ public class Flight {
 
   public void setResources(Resources resources) {
     this.resources = resources;
-  }
-
-  public Map<UnitKind, FlightUnit> getUnits() {
-    return units;
   }
 }

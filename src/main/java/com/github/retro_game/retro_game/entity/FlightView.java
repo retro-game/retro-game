@@ -1,14 +1,16 @@
 package com.github.retro_game.retro_game.entity;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Map;
+import java.util.EnumMap;
 
 @Entity
 @Table(name = "flight_view")
+@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class FlightView {
   @Column(name = "id")
   @Id
@@ -82,10 +84,13 @@ public class FlightView {
   @Embedded
   private Resources resources;
 
-  @OneToMany(fetch = FetchType.EAGER, mappedBy = "key.flight")
-  @MapKey(name = "key.kind")
-  @Fetch(FetchMode.SUBSELECT)
-  private Map<UnitKind, FlightUnit> units;
+  @Column(name = "units", nullable = false, insertable = false, updatable = false)
+  @Type(type = "int-array")
+  private int[] unitsArray;
+
+  public EnumMap<UnitKind, Integer> getUnits() {
+    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+  }
 
   public long getId() {
     return id;
@@ -157,9 +162,5 @@ public class FlightView {
 
   public Resources getResources() {
     return resources;
-  }
-
-  public Map<UnitKind, FlightUnit> getUnits() {
-    return units;
   }
 }

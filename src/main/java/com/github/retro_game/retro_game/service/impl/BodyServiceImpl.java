@@ -188,6 +188,8 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setImage(ThreadLocalRandom.current().nextInt(1, 11));
     body.setResources(new Resources(1000.0, 500.0, 0.0));
     body.setProductionFactors(new ProductionFactors());
+    body.setBuildings(Collections.emptyMap());
+    body.setUnits(Collections.emptyMap());
     body = bodyRepository.save(body);
     return body.getId();
   }
@@ -208,6 +210,8 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setImage(ThreadLocalRandom.current().nextInt(1, 11));
     body.setResources(new Resources(1000.0, 500.0, 0.0));
     body.setProductionFactors(new ProductionFactors());
+    body.setBuildings(Collections.emptyMap());
+    body.setUnits(Collections.emptyMap());
     return bodyRepository.save(body);
   }
 
@@ -229,6 +233,8 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setResources(new Resources());
     body.setProductionFactors(new ProductionFactors());
     body.setLastJumpAt(at);
+    body.setBuildings(Collections.emptyMap());
+    body.setUnits(Collections.emptyMap());
     return bodyRepository.save(body);
   }
 
@@ -860,7 +866,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     int deuteriumSynthesizerLevel = body.getBuildingLevel(BuildingKind.DEUTERIUM_SYNTHESIZER);
     int solarPlantLevel = body.getBuildingLevel(BuildingKind.SOLAR_PLANT);
     int fusionReactorLevel = body.getBuildingLevel(BuildingKind.FUSION_REACTOR);
-    int numSolarSatellites = body.getNumUnits(UnitKind.SOLAR_SATELLITE);
+    int numSolarSatellites = body.getUnitsCount(UnitKind.SOLAR_SATELLITE);
     return new ProductionItemsDto(metalMineLevel, crystalMineLevel, deuteriumSynthesizerLevel, solarPlantLevel,
         fusionReactorLevel, numSolarSatellites);
   }

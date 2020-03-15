@@ -124,7 +124,8 @@ create table bodies (
   fusion_reactor_factor int not null check (fusion_reactor_factor between 0 and 10),
   solar_satellites_factor int not null check (solar_satellites_factor between 0 and 10),
   last_jump_at timestamptz,
-  buildings int[] not null default array_fill(0, array[18]) check (array_length(buildings, 1) = 18),
+  buildings int[] not null check (array_length(buildings, 1) = 18),
+  units int[] not null check (array_length(units, 1) = 23),
   unique (galaxy, system, position, kind)
 );
 
@@ -158,15 +159,6 @@ create table technology_queue (
   body_id bigint references bodies not null,
   kind int not null,
   primary key (user_id, sequence)
-);
-
--- Body units (fleet and defense)
-
-create table body_units (
-  body_id bigint references bodies not null,
-  kind int not null,
-  count int not null check (count >= 1),
-  primary key (body_id, kind)
 );
 
 -- Shipyard queue
@@ -219,7 +211,8 @@ create table flights (
   mission int not null,
   metal double precision not null check (metal >= 0),
   crystal double precision not null check (crystal >= 0),
-  deuterium double precision not null check (deuterium >= 0)
+  deuterium double precision not null check (deuterium >= 0),
+  units int[] not null check (array_length(units, 1) = 23)
 );
 
 create index flights_start_user_id_idx on flights (start_user_id);
@@ -228,15 +221,6 @@ create index flights_target_user_id_idx on flights (target_user_id);
 create index flights_target_body_id_idx on flights (target_body_id);
 create index flights_target_coordinates_idx on flights (target_galaxy, target_system, target_position, target_kind);
 create index flights_party_id_idx on flights (party_id);
-
--- Flight units
-
-create table flight_units (
-  flight_id bigint references flights not null,
-  kind int not null,
-  count int not null check (count >= 1),
-  primary key (flight_id, kind)
-);
 
 -- Debris fields
 
@@ -606,7 +590,8 @@ create view flight_view as (
             f.mission,
             f.metal,
             f.crystal,
-            f.deuterium
+            f.deuterium,
+            f.units
        from flights f
        join users su
          on su.id = f.start_user_id

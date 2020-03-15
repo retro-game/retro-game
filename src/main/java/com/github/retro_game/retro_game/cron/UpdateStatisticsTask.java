@@ -54,35 +54,8 @@ class UpdateStatisticsTask {
         "       from p";
 
     // Units
-    String updateUnitsSql = "" +
-        "with p as (" +
-        "      select u.id," +
-        "             coalesce(cast(floor(sum(tmp.points) / 1000) as int), 0) as p" +
-        "        from (select b.user_id as user_id," +
-        "                     sum(case bu.kind %1$s end) as points" +
-        "                from body_units bu" +
-        "                join bodies b" +
-        "                  on b.id = bu.body_id" +
-        "            group by b.user_id" +
-        "               union" +
-        "              select f.start_user_id as user_id," +
-        "                     sum(case fu.kind %1$s end) as points" +
-        "                from flight_units fu" +
-        "                join flights f" +
-        "                  on f.id = fu.flight_id" +
-        "            group by f.start_user_id) as tmp" +
-        "  right join users u" +
-        "          on u.id = tmp.user_id" +
-        "    group by u.id" +
-        ")" +
-        "insert into %2$s_statistics" +
-        "     select p.id," +
-        "            to_timestamp(?)," +
-        "            p.p," +
-        "            (rank() over (order by p.p desc))" +
-        "       from p";
-    updateFleetStatisticsSql = String.format(updateUnitsSql, createUnitsCases(UnitItem.getFleet()), "fleet");
-    updateDefenseStatisticsSql = String.format(updateUnitsSql, createUnitsCases(UnitItem.getDefense()), "defense");
+    updateFleetStatisticsSql = createUpdateUnitsStatisticsSql("fleet", UnitItem.getFleet());
+    updateDefenseStatisticsSql = createUpdateUnitsStatisticsSql("defense", UnitItem.getDefense());
 
     // Overall
     updateOverallStatisticsSql = "" +
@@ -167,6 +140,40 @@ class UpdateStatisticsTask {
       builder.append(String.format(" when %d then %f * count", kind, total));
     }
     return builder.toString();
+  }
+
+  private static String createUpdateUnitsStatisticsSql(String kind, Map<UnitKind, UnitItem> units) {
+    var joiner = new StringJoiner(" + ");
+    for (var entry : units.entrySet()) {
+      var index = entry.getKey().ordinal() + 1; // Postgres counts from 1.
+      var item = entry.getValue();
+      var cost = item.getCost();
+      var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
+      joiner.add(String.format("%f * units[%d]", total, index));
+    }
+    return String.format("" +
+        "with p as (" +
+        "      select u.id," +
+        "             coalesce(cast(floor(sum(tmp.points) / 1000) as int), 0) as p" +
+        "        from (select b.user_id as user_id," +
+        "                     sum(" + joiner.toString() + ") as points" +
+        "                from bodies b" +
+        "            group by b.user_id" +
+        "               union" +
+        "              select f.start_user_id as user_id," +
+        "                     sum(" + joiner.toString() + ") as points" +
+        "                from flights f" +
+        "            group by f.start_user_id) as tmp" +
+        "  right join users u" +
+        "          on u.id = tmp.user_id" +
+        "    group by u.id" +
+        ")" +
+        "insert into %s_statistics" +
+        "     select p.id," +
+        "            to_timestamp(?)," +
+        "            p.p," +
+        "            (rank() over (order by p.p desc))" +
+        "       from p", kind);
   }
 
   @Scheduled(cron = "0 0 0,8,16 * * *")
