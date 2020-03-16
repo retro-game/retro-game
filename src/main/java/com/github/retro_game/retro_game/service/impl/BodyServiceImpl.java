@@ -806,9 +806,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     int fusionReactorEnergyProduction = 0;
     int fusionReactorLevel = items.getFusionReactorLevel();
     if (fusionReactorLevel != 0) {
-      // Query for energy technology only when necessary.
-      Technology energyTechnology = body.getUser().getTechnologies().get(TechnologyKind.ENERGY_TECHNOLOGY);
-      int energyTechnologyLevel = energyTechnology != null ? energyTechnology.getLevel() : 0;
+      var energyTechnologyLevel = body.getUser().getTechnologyLevel(TechnologyKind.ENERGY_TECHNOLOGY);
       double fusionReactorFactor = 0.1 * factors.getFusionReactorFactor();
       fusionReactorDeuteriumUsage = (int) Math.ceil(fusionReactorBaseDeuteriumUsage * fusionReactorLevel *
           Math.pow(1.1, fusionReactorLevel) * fusionReactorFactor) * productionSpeed;

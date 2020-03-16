@@ -5,6 +5,7 @@ begin;
 alter table bodies add column buildings int[]  check (array_length(buildings, 1) = 18);
 alter table bodies add column units int[] check (array_length(units, 1) = 23);
 alter table flights add column units int[] check (array_length(units, 1) = 23);
+alter table users add column technologies int[] check (array_length(technologies, 1) = 16);
 
 update bodies
    set buildings = tmp.buildings
@@ -48,13 +49,29 @@ update flights
     from flights) tmp
 where flights.id = tmp.id;
 
+update users
+   set technologies = tmp.technologies
+  from (
+    select users.id,
+           (select array(
+                select coalesce(technologies.level, 0)
+                  from generate_series(0, 15) as k
+             left join technologies
+                    on technologies.kind = k
+                   and technologies.user_id = users.id
+              order by k)) as technologies
+      from users) tmp
+ where users.id = tmp.id;
+
 alter table bodies alter column buildings set not null;
 alter table bodies alter column units set not null;
 alter table flights alter column units set not null;
+alter table users alter column technologies set not null;
 
 drop table buildings;
 drop table body_units;
 drop table flight_units;
+drop table technologies;
 
 drop view flight_view;
 

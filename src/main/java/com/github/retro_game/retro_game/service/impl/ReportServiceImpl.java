@@ -512,10 +512,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
       var numProbes = flight.getUnitsCount(UnitKind.ESPIONAGE_PROBE);
 
-      Technology targetTech = body.getUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
-      int targetLevel = targetTech != null ? targetTech.getLevel() : 0;
-      Technology ownTech = flight.getStartUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
-      int ownLevel = ownTech != null ? ownTech.getLevel() : 0;
+      var targetLevel = body.getUser().getTechnologyLevel(TechnologyKind.ESPIONAGE_TECHNOLOGY);
+      var ownLevel = flight.getStartUser().getTechnologyLevel(TechnologyKind.ESPIONAGE_TECHNOLOGY);
       int diff = targetLevel - ownLevel;
       int n = diff * Math.abs(diff);
 
@@ -571,8 +569,11 @@ class ReportServiceImpl implements ReportServiceInternal {
 
       stream.writeBoolean(technologiesVisible);
       if (technologiesVisible) {
-        EnumMap<TechnologyKind, Integer> technologies = Converter.convertToEnumMap(body.getUser().getTechnologies(),
-            TechnologyKind.class, Function.identity(), Technology::getLevel);
+        var technologies = body.getUser().getTechnologies().entrySet().stream()
+            .filter(e -> e.getValue() > 0)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> {
+              throw new IllegalStateException();
+            }, () -> new EnumMap<>(TechnologyKind.class)));
         serializeEnumMap(stream, technologies);
       }
 

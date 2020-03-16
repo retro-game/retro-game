@@ -2,7 +2,6 @@ package com.github.retro_game.retro_game.cron;
 
 import com.github.retro_game.retro_game.cache.StatisticsCache;
 import com.github.retro_game.retro_game.entity.Resources;
-import com.github.retro_game.retro_game.entity.TechnologyKind;
 import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
@@ -37,21 +36,7 @@ class UpdateStatisticsTask {
     updateBuildingsStatisticsSql = createUpdateBuildingsStatisticsSql();
 
     // Technologies
-    updateTechnologiesStatisticsSql = "" +
-        "with p as (" +
-        "      select u.id," +
-        "             coalesce(cast(floor(sum(case t.kind" + createTechnologiesCases() + " end) / 1000) as int), 0) as p" +
-        "        from technologies t" +
-        "  right join users u" +
-        "          on u.id = t.user_id" +
-        "    group by u.id" +
-        ")" +
-        "insert into technologies_statistics" +
-        "     select p.id," +
-        "            to_timestamp(?)," +
-        "            p.p," +
-        "            (rank() over (order by p.p desc))" +
-        "       from p";
+    updateTechnologiesStatisticsSql = createUpdateTechnologiesStatisticsSql();
 
     // Units
     updateFleetStatisticsSql = createUpdateUnitsStatisticsSql("fleet", UnitItem.getFleet());
@@ -116,19 +101,28 @@ class UpdateStatisticsTask {
         "       from p";
   }
 
-  private static String createTechnologiesCases() {
-    // The cost of astrophysics is calculated using different formula, but this will give us good enough approximation.
-    StringBuilder builder = new StringBuilder();
-    for (Map.Entry<TechnologyKind, TechnologyItem> entry : TechnologyItem.getAll().entrySet()) {
-      int kind = entry.getKey().ordinal();
-      TechnologyItem item = entry.getValue();
-      Resources cost = item.getBaseCost();
-      double total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
-      double factor = item.getCostFactor();
-      builder.append(String.format(" when %d then %f * (%f ^ t.level - 1)", kind, total / (factor - 1),
-          factor));
+  private static String createUpdateTechnologiesStatisticsSql() {
+    var joiner = new StringJoiner(" + ");
+    for (var entry : TechnologyItem.getAll().entrySet()) {
+      var index = entry.getKey().ordinal() + 1; // Postgres counts from 1.
+      var item = entry.getValue();
+      var cost = item.getBaseCost();
+      var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
+      var factor = item.getCostFactor();
+      joiner.add(String.format("%f * (%f ^ u.technologies[%d] - 1)", total / (factor - 1), factor, index));
     }
-    return builder.toString();
+    return "" +
+        "with p as (" +
+        "  select u.id," +
+        "         coalesce(cast(floor((" + joiner.toString() + ") / 1000) as int), 0) as p" +
+        "    from users u" +
+        ")" +
+        "insert into technologies_statistics" +
+        "     select p.id," +
+        "            to_timestamp(?)," +
+        "            p.p," +
+        "            (rank() over (order by p.p desc))" +
+        "       from p";
   }
 
   private static String createUnitsCases(Map<UnitKind, UnitItem> units) {

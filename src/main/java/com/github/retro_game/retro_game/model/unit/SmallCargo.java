@@ -41,12 +41,8 @@ public class SmallCargo extends UnitItem {
 
   @Override
   public int getConsumption(User user) {
-    Technology impulseDrive = user.getTechnologies().get(TechnologyKind.IMPULSE_DRIVE);
-    if (impulseDrive != null && impulseDrive.getLevel() >= 5) {
-      return 20;
-    } else {
-      return 10;
-    }
+    var level = user.getTechnologyLevel(TechnologyKind.IMPULSE_DRIVE);
+    return level >= 5 ? 20 : 10;
   }
 
   @Override

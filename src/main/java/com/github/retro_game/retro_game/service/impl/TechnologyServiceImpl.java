@@ -12,7 +12,6 @@ import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.repository.TechnologyQueueEntryRepository;
-import com.github.retro_game.retro_game.repository.TechnologyRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.exception.*;
@@ -29,7 +28,6 @@ import org.springframework.util.Assert;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +37,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   private final ItemTimeUtils itemTimeUtils;
   private final EventRepository eventRepository;
   private final TechnologyQueueEntryRepository technologyQueueEntryRepository;
-  private final TechnologyRepository technologyRepository;
   private final UserRepository userRepository;
   private final int maxRequiredLabLevel;
   private BodyServiceInternal bodyServiceInternal;
@@ -48,12 +45,11 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   public TechnologyServiceImpl(@Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
                                ItemTimeUtils itemTimeUtils, EventRepository eventRepository,
                                TechnologyQueueEntryRepository technologyQueueEntryRepository,
-                               TechnologyRepository technologyRepository, UserRepository userRepository) {
+                               UserRepository userRepository) {
     this.technologyQueueCapacity = technologyQueueCapacity;
     this.itemTimeUtils = itemTimeUtils;
     this.eventRepository = eventRepository;
     this.technologyQueueEntryRepository = technologyQueueEntryRepository;
-    this.technologyRepository = technologyRepository;
     this.userRepository = userRepository;
     this.maxRequiredLabLevel = getMaxRequiredLabLevel();
   }
@@ -93,8 +89,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     Map<Long, int[]> effectiveLevelTables = getEffectiveLevelTables(user, user.getBodies().keySet());
 
-    Map<TechnologyKind, Integer> futureTechs = Converter.convertToEnumMap(user.getTechnologies(), TechnologyKind.class,
-        Function.identity(), Technology::getLevel);
+    var futureTechs = user.getTechnologies();
 
     SortedMap<Integer, TechnologyQueueEntry> techQueue = user.getTechnologyQueue();
     int size = techQueue.size();
@@ -112,7 +107,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         TechnologyQueueEntry queueEntry = entry.getValue();
         TechnologyKind kind = queueEntry.getKind();
 
-        int level = futureTechs.getOrDefault(kind, 0) + 1;
+        var level = futureTechs.get(kind) + 1;
         var cost = ItemCostUtils.getCost(kind, level);
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
 
@@ -143,7 +138,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           Body currentBody = entry.getValue().getBody();
           Body nextBody = next.getValue().getBody();
           TechnologyKind nextKind = next.getValue().getKind();
-          int nextLevel = futureTechs.getOrDefault(nextKind, 0) + 1;
+          var nextLevel = futureTechs.get(nextKind) + 1;
           var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
           if (currentBody.getId() == nextBody.getId()) {
             // If we cancel the first entry, we will getSlots some resources back. Thus we can use these resources to
@@ -168,7 +163,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
             effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), requiredTime, downMovable, upMovable,
             cancelable));
 
-        futureTechs.put(kind, futureTechs.getOrDefault(kind, 0) + 1);
+        futureTechs.put(kind, futureTechs.get(kind) + 1);
 
         first = false;
         upMovable = downMovable;
@@ -185,10 +180,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       TechnologyItem item = entry.getValue();
       boolean meetsRequirements = ItemRequirementsUtils.meetsBuildingsRequirements(item, body) &&
           ItemRequirementsUtils.meetsTechnologiesRequirements(item, futureTechs);
-      if (meetsRequirements || futureTechs.containsKey(kind)) {
-        Technology tech = user.getTechnologies().get(kind);
-        int currentLevel = tech != null ? tech.getLevel() : 0;
-        int futureLevel = futureTechs.getOrDefault(kind, 0);
+      var futureLevel = futureTechs.get(kind);
+      if (meetsRequirements || futureLevel > 0) {
+        var currentLevel = user.getTechnologyLevel(kind);
 
         var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
@@ -227,11 +221,10 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
-    Map<TechnologyKind, Integer> futureTechs = Converter.convertToEnumMap(user.getTechnologies(), TechnologyKind.class,
-        Function.identity(), Technology::getLevel);
+    var futureTechs = user.getTechnologies();
     queue.values().stream()
         .map(TechnologyQueueEntry::getKind)
-        .forEach(techKind -> futureTechs.put(techKind, futureTechs.getOrDefault(techKind, 0) + 1));
+        .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     var item = Item.get(k);
     if ((queue.isEmpty() && !ItemRequirementsUtils.meetsBuildingsRequirements(item, body)) ||
@@ -248,7 +241,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       logger.info("Researching technology successful, appending to queue: bodyId={} kind={} sequenceNumber={}",
           bodyId, k, sequenceNumber);
     } else {
-      int level = futureTechs.getOrDefault(k, 0) + 1;
+      var level = futureTechs.get(k) + 1;
 
       var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
@@ -307,11 +300,10 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     SortedMap<Integer, TechnologyQueueEntry> head = queue.headMap(sequenceNumber);
     SortedMap<Integer, TechnologyQueueEntry> tail = queue.tailMap(sequenceNumber);
 
-    Map<TechnologyKind, Integer> futureTechs = Converter.convertToEnumMap(user.getTechnologies(), TechnologyKind.class,
-        Function.identity(), Technology::getLevel);
+    var futureTechs = user.getTechnologies();
     head.values().stream()
         .map(TechnologyQueueEntry::getKind)
-        .forEach(techKind -> futureTechs.put(techKind, futureTechs.getOrDefault(techKind, 0) + 1));
+        .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canSwapTop(futureTechs, tail)) {
       logger.warn("Moving down entry in technology queue failed, cannot swap top: userId={} sequenceNumber={}",
@@ -335,12 +327,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       Body firstBody = entry.getBody();
       TechnologyKind firstKind = entry.getKind();
-      int firstLevel = futureTechs.getOrDefault(firstKind, 0) + 1;
+      var firstLevel = futureTechs.get(firstKind) + 1;
       var firstCost = ItemCostUtils.getCost(firstKind, firstLevel);
 
       Body secondBody = next.getBody();
       TechnologyKind secondKind = next.getKind();
-      int secondLevel = futureTechs.getOrDefault(secondKind, 0) + 1;
+      var secondLevel = futureTechs.get(secondKind) + 1;
       var secondCost = ItemCostUtils.getCost(secondKind, secondLevel);
 
       // If both bodies are the same, the references to resources should be the same as well.
@@ -443,11 +435,10 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     SortedMap<Integer, TechnologyQueueEntry> head = queue.headMap(sequenceNumber);
     SortedMap<Integer, TechnologyQueueEntry> tail = queue.tailMap(sequenceNumber);
 
-    Map<TechnologyKind, Integer> futureTechs = Converter.convertToEnumMap(user.getTechnologies(), TechnologyKind.class,
-        Function.identity(), Technology::getLevel);
+    var futureTechs = user.getTechnologies();
     head.values().stream()
         .map(TechnologyQueueEntry::getKind)
-        .forEach(techKind -> futureTechs.put(techKind, futureTechs.getOrDefault(techKind, 0) + 1));
+        .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canRemoveTop(futureTechs, tail)) {
       logger.warn("Cancelling entry in technology queue failed, cannot remove top: userId={} sequenceNumber={}",
@@ -470,7 +461,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       TechnologyQueueEntry entry = it.next();
       Body body = entry.getBody();
       TechnologyKind kind = entry.getKind();
-      int level = futureTechs.getOrDefault(kind, 0) + 1;
+      var level = futureTechs.get(kind) + 1;
       var cost = ItemCostUtils.getCost(kind, level);
 
       bodyServiceInternal.updateResources(body, null);
@@ -495,7 +486,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         TechnologyQueueEntry next = it.next();
         Body nextBody = next.getBody();
         kind = next.getKind();
-        level = futureTechs.getOrDefault(kind, 0) + 1;
+        level = futureTechs.get(kind) + 1;
         cost = ItemCostUtils.getCost(kind, level);
 
         // If both bodies are the same, the references to resources should be the same as well.
@@ -567,32 +558,19 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     technologyQueueEntryRepository.delete(entry);
 
     // Update technologies.
-    Map<TechnologyKind, Technology> techs = user.getTechnologies();
-    Technology tech = techs.get(kind);
-    if (tech != null) {
-      int level = tech.getLevel() + 1;
-      logger.info("Handling technology queue, increasing technology level: userId={} kind={} level={}",
-          userId, kind, level);
-      tech.setLevel(level);
-    } else {
-      logger.info("Handling technology queue, creating technology: userId={} kind={}", userId, kind);
-      TechnologyKey key = new TechnologyKey();
-      key.setUser(user);
-      key.setKind(kind);
-      tech = new Technology();
-      tech.setKey(key);
-      tech.setLevel(1);
-      techs.put(kind, tech);
-      technologyRepository.save(tech);
-    }
+    var oldLevel = user.getTechnologyLevel(kind);
+    assert oldLevel >= 0;
+    var newLevel = oldLevel + 1;
+    logger.info("Handling technology queue, updating technology level: userId={} kind={} oldLevel={} newLevel={}",
+        userId, kind, oldLevel, newLevel);
+    user.setTechnologyLevel(kind, newLevel);
 
     while (it.hasNext()) {
       entry = it.next();
       kind = entry.getKind();
       int sequenceNumber = entry.getSequence();
 
-      tech = techs.get(kind);
-      int level = tech != null ? tech.getLevel() + 1 : 1;
+      var level = user.getTechnologyLevel(kind) + 1;
 
       Body body = entry.getBody();
       long bodyId = body.getId();
@@ -697,7 +675,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     // Check whether the second one depends on the first one.
     var requirements = Item.get(second.getKind()).getTechnologiesRequirements();
-    return techs.getOrDefault(first.getKind(), 0) >= requirements.getOrDefault(first.getKind(), 0);
+    return techs.get(first.getKind()) >= requirements.getOrDefault(first.getKind(), 0);
   }
 
   private boolean canRemoveTop(Map<TechnologyKind, Integer> techs, SortedMap<Integer, TechnologyQueueEntry> queue) {
@@ -707,7 +685,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     Iterator<TechnologyQueueEntry> it = queue.values().iterator();
     TechnologyKind firstKind = it.next().getKind();
-    int level = techs.getOrDefault(firstKind, 0);
+    var level = techs.get(firstKind);
 
     while (it.hasNext()) {
       TechnologyQueueEntry current = it.next();

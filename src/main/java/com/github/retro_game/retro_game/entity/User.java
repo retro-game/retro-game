@@ -1,15 +1,16 @@
 package com.github.retro_game.retro_game.entity;
 
+import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.springframework.data.domain.Sort;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
+@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class User {
   @Column(name = "id")
   @Id
@@ -85,14 +86,14 @@ public class User {
   @Column(name = "forced_vacation", nullable = false)
   private boolean forcedVacation;
 
+  @Column(name = "technologies", nullable = false)
+  @Type(type = "int-array")
+  private int[] technologiesArray;
+
   @OneToMany(mappedBy = "user")
   @MapKey(name = "id")
   @OrderBy("id")
   private SortedMap<Long, Body> bodies;
-
-  @OneToMany(mappedBy = "key.user")
-  @MapKey(name = "key.kind")
-  private Map<TechnologyKind, Technology> technologies;
 
   @OneToMany(mappedBy = "key.user")
   @MapKey(name = "key.sequence")
@@ -116,9 +117,25 @@ public class User {
     return (flags & flag) != 0;
   }
 
+  public EnumMap<TechnologyKind, Integer> getTechnologies() {
+    return ItemsSerialization.deserializeItems(TechnologyKind.class, technologiesArray);
+  }
+
+  public void setTechnologies(Map<TechnologyKind, Integer> technologies) {
+    technologiesArray = ItemsSerialization.serializeItems(TechnologyKind.class, technologies);
+  }
+
   public int getTechnologyLevel(TechnologyKind kind) {
-    Technology tech = technologies.get(kind);
-    return tech != null ? tech.getLevel() : 0;
+    var index = kind.ordinal();
+    var level = technologiesArray[index];
+    assert level >= 0;
+    return level;
+  }
+
+  public void setTechnologyLevel(TechnologyKind kind, int level) {
+    assert level >= 0;
+    var index = kind.ordinal();
+    technologiesArray[index] = level;
   }
 
   public long getId() {
@@ -287,10 +304,6 @@ public class User {
 
   public SortedMap<Long, Body> getBodies() {
     return bodies;
-  }
-
-  public Map<TechnologyKind, Technology> getTechnologies() {
-    return technologies;
   }
 
   public SortedMap<Integer, TechnologyQueueEntry> getTechnologyQueue() {

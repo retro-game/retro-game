@@ -43,7 +43,8 @@ create table users (
   bodies_sort_direction integer not null,
   flags integer not null,
   vacation_until timestamptz,
-  forced_vacation boolean not null
+  forced_vacation boolean not null,
+  technologies int[] not null check (array_length(technologies, 1) = 16)
 );
 
 create unique index users_upper_name_idx on users (upper(name) text_pattern_ops);

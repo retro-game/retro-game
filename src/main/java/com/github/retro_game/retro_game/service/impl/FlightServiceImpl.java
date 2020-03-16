@@ -280,8 +280,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   private int getMaxFlightSlots(User user) {
-    Technology computerTechnology = user.getTechnologies().get(TechnologyKind.COMPUTER_TECHNOLOGY);
-    return (computerTechnology == null ? 0 : computerTechnology.getLevel()) + 1;
+    return user.getTechnologyLevel(TechnologyKind.COMPUTER_TECHNOLOGY) + 1;
   }
 
   @Override
@@ -1598,10 +1597,8 @@ class FlightServiceImpl implements FlightServiceInternal {
           .mapToInt(Flight::getTotalUnitsCount)
           .sum();
 
-      Technology targetTech = body.getUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
-      int targetLevel = targetTech != null ? targetTech.getLevel() : 0;
-      Technology ownTech = flight.getStartUser().getTechnologies().get(TechnologyKind.ESPIONAGE_TECHNOLOGY);
-      int ownLevel = ownTech != null ? ownTech.getLevel() : 0;
+      var targetLevel = body.getUser().getTechnologyLevel(TechnologyKind.ESPIONAGE_TECHNOLOGY);
+      var ownLevel = flight.getStartUser().getTechnologyLevel(TechnologyKind.ESPIONAGE_TECHNOLOGY);
       int techDiff = targetLevel - ownLevel;
 
       counterChance = Math.min(1.0, 0.0025 * numProbes * numTargetShips * Math.pow(2.0, techDiff));
