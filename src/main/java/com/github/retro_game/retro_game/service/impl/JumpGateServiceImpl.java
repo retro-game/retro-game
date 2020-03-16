@@ -45,7 +45,7 @@ class JumpGateServiceImpl implements JumpGateService {
     Body body = bodyServiceInternal.getUpdated(bodyId);
     Date canJumpAt = canJumpAt(body);
     List<JumpGateTargetDto> targets = body.getUser().getBodies().values().stream()
-        .filter(b -> b.getId() != bodyId && b.getBuildings().get(BuildingKind.JUMP_GATE) != null)
+        .filter(b -> b.getId() != bodyId && b.getBuildingLevel(BuildingKind.JUMP_GATE) > 0)
         .map(b -> new JumpGateTargetDto(b.getId(), b.getName(), Converter.convert(b.getCoordinates()), canJumpAt(b)))
         .collect(Collectors.toList());
     Map<UnitKindDto, Integer> units = new EnumMap<>(UnitKindDto.class);
