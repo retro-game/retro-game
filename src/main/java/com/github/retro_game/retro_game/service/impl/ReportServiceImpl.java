@@ -561,7 +561,12 @@ class ReportServiceImpl implements ReportServiceInternal {
 
       stream.writeBoolean(buildingsVisible);
       if (buildingsVisible) {
-        serializeEnumMap(stream, body.getBuildings());
+        var buildings = body.getBuildings().entrySet().stream()
+            .filter(e -> e.getValue() > 0)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> {
+              throw new IllegalStateException();
+            }, () -> new EnumMap<>(BuildingKind.class)));
+        serializeEnumMap(stream, buildings);
       }
 
       stream.writeBoolean(technologiesVisible);
