@@ -1,7 +1,6 @@
 package com.github.retro_game.retro_game.cron;
 
 import com.github.retro_game.retro_game.cache.StatisticsCache;
-import com.github.retro_game.retro_game.entity.Resources;
 import com.github.retro_game.retro_game.entity.UnitKind;
 import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
@@ -31,40 +30,11 @@ class UpdateStatisticsTask {
   public UpdateStatisticsTask(JdbcTemplate jdbcTemplate, StatisticsCache statisticsCache) {
     this.jdbcTemplate = jdbcTemplate;
     this.statisticsCache = statisticsCache;
-
-    // Buildings
     updateBuildingsStatisticsSql = createUpdateBuildingsStatisticsSql();
-
-    // Technologies
     updateTechnologiesStatisticsSql = createUpdateTechnologiesStatisticsSql();
-
-    // Units
     updateFleetStatisticsSql = createUpdateUnitsStatisticsSql("fleet", UnitItem.getFleet());
     updateDefenseStatisticsSql = createUpdateUnitsStatisticsSql("defense", UnitItem.getDefense());
-
-    // Overall
-    updateOverallStatisticsSql = "" +
-        "with total as (" +
-        "  select b.user_id," +
-        "         (b.points + t.points + f.points + d.points) as points" +
-        "    from buildings_statistics b" +
-        "    join technologies_statistics t" +
-        "      on t.user_id = b.user_id" +
-        "     and t.at = b.at" +
-        "    join fleet_statistics f" +
-        "      on f.user_id = b.user_id" +
-        "     and f.at = b.at" +
-        "    join defense_statistics d" +
-        "      on d.user_id = b.user_id" +
-        "     and d.at = b.at" +
-        "   where b.at = to_timestamp(?)" +
-        ")" +
-        "insert into overall_statistics" +
-        "     select t.user_id," +
-        "            to_timestamp(?)," +
-        "            t.points," +
-        "            (rank() over (order by t.points desc))" +
-        "       from total t";
+    updateOverallStatisticsSql = createUpdateOverallStatisticsSql();
   }
 
   // Buildings & technologies can be calculated using the formula for sum of numbers in a geometric progression:
@@ -125,17 +95,6 @@ class UpdateStatisticsTask {
         "       from p";
   }
 
-  private static String createUnitsCases(Map<UnitKind, UnitItem> units) {
-    StringBuilder builder = new StringBuilder();
-    for (Map.Entry<UnitKind, UnitItem> entry : units.entrySet()) {
-      int kind = entry.getKey().ordinal();
-      Resources cost = entry.getValue().getCost();
-      double total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
-      builder.append(String.format(" when %d then %f * count", kind, total));
-    }
-    return builder.toString();
-  }
-
   private static String createUpdateUnitsStatisticsSql(String kind, Map<UnitKind, UnitItem> units) {
     var joiner = new StringJoiner(" + ");
     for (var entry : units.entrySet()) {
@@ -170,9 +129,36 @@ class UpdateStatisticsTask {
         "       from p", kind);
   }
 
+  private static String createUpdateOverallStatisticsSql() {
+    return "" +
+        "with total as (" +
+        "  select b.user_id," +
+        "         (b.points + t.points + f.points + d.points) as points" +
+        "    from buildings_statistics b" +
+        "    join technologies_statistics t" +
+        "      on t.user_id = b.user_id" +
+        "     and t.at = b.at" +
+        "    join fleet_statistics f" +
+        "      on f.user_id = b.user_id" +
+        "     and f.at = b.at" +
+        "    join defense_statistics d" +
+        "      on d.user_id = b.user_id" +
+        "     and d.at = b.at" +
+        "   where b.at = to_timestamp(?)" +
+        ")" +
+        "insert into overall_statistics" +
+        "     select t.user_id," +
+        "            to_timestamp(?)," +
+        "            t.points," +
+        "            (rank() over (order by t.points desc))" +
+        "       from total t";
+  }
+
   @Scheduled(cron = "0 0 0,8,16 * * *")
   private void update() {
     long now = Instant.now().getEpochSecond();
+
+    // The order is important, the overall statistics must be the last one.
     jdbcTemplate.update(updateBuildingsStatisticsSql, now);
     jdbcTemplate.update(updateTechnologiesStatisticsSql, now);
     jdbcTemplate.update(updateFleetStatisticsSql, now);
@@ -183,9 +169,9 @@ class UpdateStatisticsTask {
     statisticsCache.update(Date.from(Instant.ofEpochSecond(now)));
     logger.info("Rankings updated");
 
-    String[] prefixes = new String[]{"overall", "buildings", "technologies", "fleet", "defense"};
-    for (String prefix : prefixes) {
-      String sql = "" +
+    var prefixes = new String[]{"overall", "buildings", "technologies", "fleet", "defense"};
+    for (var prefix : prefixes) {
+      var sql = "" +
           "delete from %s_statistics s" +
           "      where (s.at < to_timestamp(?) - interval '1 week' and extract(hour from s.at) != 0)" +
           "         or (s.at < to_timestamp(?) - interval '1 month' and extract(dow from s.at) != 0)";
