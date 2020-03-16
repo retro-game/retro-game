@@ -227,9 +227,9 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       boolean meetsRequirements = item.meetsSpecialRequirements(body) &&
           ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) && (!queue.isEmpty() ||
           ItemRequirementsUtils.meetsTechnologiesRequirements(item, user));
-      if (meetsRequirements || state.buildings.containsKey(kind)) {
+      var futureLevel = state.buildings.get(kind);
+      if (meetsRequirements || futureLevel > 0) {
         var currentLevel = body.getBuildingLevel(kind);
-        int futureLevel = state.buildings.getOrDefault(kind, 0);
 
         var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
