@@ -52,11 +52,11 @@ public class FlightsController {
                      @RequestParam(required = false) MissionDto mission,
                      @RequestParam(required = false) Map<String, String> params,
                      Model model) {
-    List<BodyBasicInfoDto> bodies = bodyService.getBodiesBasicInfo(bodyId);
+    List<BodyInfoDto> bodies = bodyService.getBodiesBasicInfo(bodyId);
 
-    Optional<BodyBasicInfoDto> curBodyOptional = bodies.stream().filter(i -> i.getId() == bodyId).findFirst();
+    Optional<BodyInfoDto> curBodyOptional = bodies.stream().filter(i -> i.getId() == bodyId).findFirst();
     assert curBodyOptional.isPresent();
-    BodyBasicInfoDto curBody = curBodyOptional.get();
+    BodyInfoDto curBody = curBodyOptional.get();
 
     CoordinatesDto coords = curBody.getCoordinates();
     int g = galaxy != null ? galaxy : coords.getGalaxy();

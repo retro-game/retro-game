@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-class Converter {
+public class Converter {
   static <KeyFrom, ValueFrom, KeyTo extends Enum<KeyTo>, ValueTo> EnumMap<KeyTo, ValueTo>
   convertToEnumMap(Map<KeyFrom, ValueFrom> map, Class<KeyTo> keyToClass, Function<KeyFrom, KeyTo> keyConverter,
                    Function<ValueFrom, ValueTo> valueConverter) {
@@ -183,7 +183,7 @@ class Converter {
     }
   }
 
-  static CoordinatesDto convert(Coordinates entity) {
+  public static CoordinatesDto convert(Coordinates entity) {
     return new CoordinatesDto(entity.getGalaxy(), entity.getSystem(), entity.getPosition(), convert(entity.getKind()));
   }
 

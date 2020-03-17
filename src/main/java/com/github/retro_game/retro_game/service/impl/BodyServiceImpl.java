@@ -1,5 +1,8 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.cache.BodyInfoCache;
+import com.github.retro_game.retro_game.cache.CacheObserver;
+import com.github.retro_game.retro_game.cache.UserBodiesCache;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
@@ -12,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,9 @@ class BodyServiceImpl implements BodyServiceInternal {
   private final int fusionReactorBaseDeuteriumUsage;
   private final int fieldsPerTerraformerLevel;
   private final int fieldsPerLunarBaseLevel;
+  private final CacheObserver cacheObserver;
+  private final BodyInfoCache bodyInfoCache;
+  private final UserBodiesCache userBodiesCache;
   private final BodyRepository bodyRepository;
   private final UserRepository userRepository;
   private BuildingsServiceInternal buildingsServiceInternal;
@@ -72,6 +76,9 @@ class BodyServiceImpl implements BodyServiceInternal {
                          @Value("${retro-game.fusion-reactor-base-deuterium-usage}") int fusionReactorBaseDeuteriumUsage,
                          @Value("${retro-game.fields-per-terraformer-level}") int fieldsPerTerraformerLevel,
                          @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
+                         CacheObserver cacheObserver,
+                         BodyInfoCache bodyInfoCache,
+                         UserBodiesCache userBodiesCache,
                          BodyRepository bodyRepository,
                          UserRepository userRepository) {
     this.homeworldDiameter = homeworldDiameter;
@@ -90,6 +97,9 @@ class BodyServiceImpl implements BodyServiceInternal {
     this.fusionReactorBaseDeuteriumUsage = fusionReactorBaseDeuteriumUsage;
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
+    this.cacheObserver = cacheObserver;
+    this.bodyInfoCache = bodyInfoCache;
+    this.userBodiesCache = userBodiesCache;
     this.bodyRepository = bodyRepository;
     this.userRepository = userRepository;
   }
@@ -191,13 +201,17 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
     body = bodyRepository.save(body);
-    return body.getId();
+    var bodyId = body.getId();
+
+    cacheObserver.notifyBodyCreated(userId);
+
+    return bodyId;
   }
 
   @Override
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "#user.id")
   public Body createColony(User user, Coordinates coordinates, Date at) {
     assert coordinates.getKind() == CoordinatesKind.PLANET;
+
     Body body = new Body();
     body.setUser(user);
     body.setCoordinates(coordinates);
@@ -212,14 +226,18 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setProductionFactors(new ProductionFactors());
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
-    return bodyRepository.save(body);
+    body = bodyRepository.save(body);
+
+    cacheObserver.notifyBodyCreated(user.getId());
+
+    return body;
   }
 
   @Override
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "#user.id")
   public Body createMoon(User user, Coordinates coordinates, Date at, double chance) {
     assert coordinates.getKind() == CoordinatesKind.MOON;
     assert chance >= 0.01 && chance <= 0.2;
+
     Body body = new Body();
     body.setUser(user);
     body.setCoordinates(coordinates);
@@ -235,7 +253,11 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setLastJumpAt(at);
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
-    return bodyRepository.save(body);
+    body = bodyRepository.save(body);
+
+    cacheObserver.notifyBodyCreated(user.getId());
+
+    return body;
   }
 
   private BodyType generatePlanetType(int position) {
@@ -337,24 +359,21 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  public BodyBasicInfoDto getBodyBasicInfo(long bodyId) {
-    List<BodyBasicInfoDto> bodies = getBodiesBasicInfo(bodyId);
-    return bodies.stream().filter(b -> b.getId() == bodyId).findAny().orElseThrow(BodyDoesntExistException::new);
+  public BodyInfoDto getBodyBasicInfo(long bodyId) {
+    return bodyInfoCache.get(bodyId);
   }
 
   @Override
-  // The cache must be evicted every time the list may change, this includes colonizing, deleting bodies, updating name
-  // and also when the sort order of bodies changes (when a user updates hers settings, see UserServiceImpl).
-  @Cacheable(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
-  public List<BodyBasicInfoDto> getBodiesBasicInfo(long bodyId) {
-    long userId = CustomUser.getCurrentUserId();
+  public List<BodyInfoDto> getBodiesBasicInfo(long bodyId) {
+    var userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
-    List<BodyBasicInfoDto> bodies = user.getBodies().values().stream()
-        .map(b -> new BodyBasicInfoDto(b.getId(), b.getName(), Converter.convert(b.getCoordinates())))
-        .collect(Collectors.toList());
-    BodyKeyExtractors<BodyBasicInfoDto> keyExtractors = new BodyKeyExtractors<>(BodyBasicInfoDto::getId,
-        BodyBasicInfoDto::getCoordinates, BodyBasicInfoDto::getName);
+
+    var bodiesIds = userBodiesCache.get(userId);
+    var bodies = new ArrayList<>(bodyInfoCache.getAll(bodiesIds).values());
+
+    var keyExtractors = new BodyKeyExtractors<>(BodyInfoDto::getId, BodyInfoDto::getCoordinates, BodyInfoDto::getName);
     sort(bodies, keyExtractors, user);
+
     return bodies;
   }
 
@@ -366,11 +385,11 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   public BodiesPointersDto getBodiesPointers(long bodyId) {
-    BodyBasicInfoDto prev = null;
-    BodyBasicInfoDto next = null;
-    Iterator<BodyBasicInfoDto> it = getBodiesBasicInfo(bodyId).iterator();
+    BodyInfoDto prev = null;
+    BodyInfoDto next = null;
+    Iterator<BodyInfoDto> it = getBodiesBasicInfo(bodyId).iterator();
     assert it.hasNext();
-    BodyBasicInfoDto cur = it.next();
+    BodyInfoDto cur = it.next();
     while (cur != null) {
       next = it.hasNext() ? it.next() : null;
       if (cur.getId() == bodyId) {
@@ -903,10 +922,11 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public void rename(long bodyId, String name) {
     Body body = bodyRepository.getOne(bodyId);
     body.setName(name);
+
+    cacheObserver.notifyBodyUpdated(bodyId);
   }
 
   @Override
@@ -920,7 +940,6 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   @Transactional(isolation = Isolation.SERIALIZABLE)
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public long abandonPlanet(long bodyId, String password) {
     if (!userServiceInternal.checkCurrentUserPassword(password)) {
       throw new WrongPasswordException();
@@ -966,13 +985,14 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "#moon.user.id")
   public void destroyMoon(Body moon) {
     assert moon.getCoordinates().getKind() == CoordinatesKind.MOON;
     delete(moon);
   }
 
   private void delete(Body body) {
+    cacheObserver.notifyBodyDeleted(body.getUser().getId(), body.getId());
+
     buildingsServiceInternal.deleteBuildingsAndQueue(body);
     shipyardServiceInternal.deleteUnitsAndQueue(body);
     bodyRepository.delete(body);

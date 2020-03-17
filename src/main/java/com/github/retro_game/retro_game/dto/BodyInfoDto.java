@@ -1,21 +1,24 @@
 package com.github.retro_game.retro_game.dto;
 
-import java.io.Serializable;
-
-// Serializable is necessary, as objects of this class may be cached.
-public class BodyBasicInfoDto implements Serializable {
+public class BodyInfoDto {
   private final long id;
+  private final long userId;
   private final String name;
   private final CoordinatesDto coordinates;
 
-  public BodyBasicInfoDto(long id, String name, CoordinatesDto coordinates) {
+  public BodyInfoDto(long id, long userId, String name, CoordinatesDto coordinates) {
     this.id = id;
+    this.userId = userId;
     this.name = name;
     this.coordinates = coordinates;
   }
 
   public long getId() {
     return id;
+  }
+
+  public long getUserId() {
+    return userId;
   }
 
   public String getName() {

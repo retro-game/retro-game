@@ -3,19 +3,19 @@ package com.github.retro_game.retro_game.dto;
 import org.springframework.lang.Nullable;
 
 public class BodiesPointersDto {
-  private final BodyBasicInfoDto previous;
-  private final BodyBasicInfoDto next;
+  private final BodyInfoDto previous;
+  private final BodyInfoDto next;
 
-  public BodiesPointersDto(@Nullable BodyBasicInfoDto previous, @Nullable BodyBasicInfoDto next) {
+  public BodiesPointersDto(@Nullable BodyInfoDto previous, @Nullable BodyInfoDto next) {
     this.previous = previous;
     this.next = next;
   }
 
-  public BodyBasicInfoDto getPrevious() {
+  public BodyInfoDto getPrevious() {
     return previous;
   }
 
-  public BodyBasicInfoDto getNext() {
+  public BodyInfoDto getNext() {
     return next;
   }
 }

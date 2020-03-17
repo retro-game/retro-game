@@ -12,10 +12,10 @@ public interface BodyService {
   int getTemperature(long bodyId);
 
   @Activity(bodies = "#bodyId")
-  BodyBasicInfoDto getBodyBasicInfo(long bodyId);
+  BodyInfoDto getBodyBasicInfo(long bodyId);
 
   @Activity(bodies = "#bodyId")
-  List<BodyBasicInfoDto> getBodiesBasicInfo(long bodyId);
+  List<BodyInfoDto> getBodiesBasicInfo(long bodyId);
 
   @Activity(bodies = "#bodyId")
   BodyTypeAndImagePairDto getBodyTypeAndImagePair(long bodyId);

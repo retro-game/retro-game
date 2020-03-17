@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -148,10 +147,6 @@ class UserServiceImpl implements UserServiceInternal {
 
   @Override
   @Transactional
-  // Evict bodiesBasicInfo, as the user may change the sort order of bodies and thus making the cached list invalid.
-  // A better way would be to retrieve the cached value and then sort it, but the declarative nature of caching API in
-  // Spring disallows it without using some hacks.
-  @CacheEvict(cacheNames = "bodiesBasicInfo", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public void saveCurrentUserSettings(UserSettingsDto settings) {
     int flags = 0;
     if (settings.isNumberInputScrollingEnabled())
