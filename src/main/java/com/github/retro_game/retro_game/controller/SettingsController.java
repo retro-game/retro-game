@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -32,8 +30,8 @@ public class SettingsController {
                             SettingsFormValidator settingsFormValidator) {
     this.userService = userService;
     this.settingsFormValidator = settingsFormValidator;
-    this.languages = Collections.unmodifiableList(Arrays.asList(languages.split(",")));
-    this.skins = Collections.unmodifiableList(Arrays.asList(skins.split(",")));
+    this.languages = List.of(languages.split(","));
+    this.skins = List.of(skins.split(","));
   }
 
   @InitBinder
