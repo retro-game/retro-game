@@ -14,15 +14,18 @@ public class ItemTimeUtils {
   private final int buildingDestructionSpeed;
   private final int technologyResearchSpeed;
   private final int unitConstructionSpeed;
+  private final double irnBoostFactor;
 
   public ItemTimeUtils(@Value("${retro-game.building-construction-speed}") int buildingConstructionSpeed,
                        @Value("${retro-game.building-destruction-speed}") int buildingDestructionSpeed,
                        @Value("${retro-game.technology-research-speed}") int technologyResearchSpeed,
-                       @Value("${retro-game.unit-construction-speed}") int unitConstructionSpeed) {
+                       @Value("${retro-game.unit-construction-speed}") int unitConstructionSpeed,
+                       @Value("${retro-game.irn-boost-factor}") double irnBoostFactor) {
     this.buildingConstructionSpeed = buildingConstructionSpeed;
     this.buildingDestructionSpeed = buildingDestructionSpeed;
     this.technologyResearchSpeed = technologyResearchSpeed;
     this.unitConstructionSpeed = unitConstructionSpeed;
+    this.irnBoostFactor = irnBoostFactor;
   }
 
   @PostConstruct
@@ -35,6 +38,8 @@ public class ItemTimeUtils {
         "retro-game.technology-research-speed must be at least 1");
     Assert.isTrue(unitConstructionSpeed >= 1,
         "retro-game.unit-construction-speed must be at least 1");
+    Assert.isTrue(irnBoostFactor >= 0.0,
+        "retro-game.irn-boost-factor should be greater than or equal to 0");
   }
 
   // Buildings
@@ -60,10 +65,11 @@ public class ItemTimeUtils {
 
   // Technologies
 
-  public long getTechnologyResearchTime(Resources cost, int effectiveLabLevel) {
+  public long getTechnologyResearchTime(Resources cost, int effectiveLabLevel, int irnLevel) {
     assert effectiveLabLevel >= 0;
     var seconds = (long) (3.6 * (cost.getMetal() + cost.getCrystal()));
     seconds /= 1 + effectiveLabLevel;
+    seconds = (long) (seconds / Math.pow(1 + irnBoostFactor, irnLevel));
     seconds /= technologyResearchSpeed;
     return Math.max(1, seconds);
   }

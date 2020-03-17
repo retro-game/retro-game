@@ -115,6 +115,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         var item = Item.get(kind);
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
         int effectiveLabLevel = effectiveLevelTables.get(entryBody.getId())[requiredLabLevel];
+        var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
         long requiredTime;
         if (first) {
@@ -124,7 +125,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           long now = body.getUpdatedAt().toInstant().getEpochSecond();
           requiredTime = finishAt - now;
         } else {
-          requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
+          requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
           finishAt += requiredTime;
         }
 
@@ -189,8 +190,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
         int effectiveLabLevel = currentBodyTable[requiredLabLevel];
+        var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
-        long researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
+        long researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
 
         boolean canResearchNow = canResearch && meetsRequirements &&
             (!queue.isEmpty() || (resources.greaterOrEqual(cost) && totalEnergy >= requiredEnergy));
@@ -262,8 +264,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       int[] table = getEffectiveLevelTables(user, Collections.singletonList(bodyId)).get(bodyId);
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int effectiveLabLevel = table[requiredLabLevel];
+      var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
-      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
 
       logger.info("Researching technology successful, creating a new event: bodyId={} kind={}", bodyId, k);
       Date now = body.getUpdatedAt();
@@ -375,7 +378,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       int[] table = getEffectiveLevelTables(user, Collections.singletonList(secondBody.getId()))
           .get(secondBody.getId());
       int effectiveLabLevel = table[requiredLabLevel];
-      var requiredTime = itemTimeUtils.getTechnologyResearchTime(secondCost, effectiveLabLevel);
+      var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(secondCost, effectiveLabLevel, irnLevel);
 
       logger.info("Moving down entry in technology queue successful, the entry is the first, adding an event for the" +
               " next entry: userId={} sequenceNumber={}",
@@ -517,7 +521,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         int[] table = getEffectiveLevelTables(user, Collections.singletonList(nextBody.getId()))
             .get(nextBody.getId());
         int effectiveLabLevel = table[requiredLabLevel];
-        var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
+        var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
+        var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
 
         logger.info("Cancelling entry in technology queue successful, the entry is the first, modifying the event:" +
                 "userId={} sequenceNumber={}",
@@ -617,7 +622,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       int[] table = getEffectiveLevelTables(user, Collections.singletonList(bodyId)).get(bodyId);
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int effectiveLabLevel = table[requiredLabLevel];
-      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel);
+      var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
+      var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
       Date startAt = Date.from(Instant.ofEpochSecond(at.toInstant().getEpochSecond() + requiredTime));
 
       Event newEvent = new Event();
