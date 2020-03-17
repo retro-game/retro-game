@@ -11,6 +11,8 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.persistence.EntityNotFoundException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Component
@@ -40,6 +42,17 @@ public class BodyInfoCache {
 
   public BodyInfoDto get(long bodyId) {
     return cache.getUnchecked(bodyId);
+  }
+
+  public Optional<BodyInfoDto> find(long bodyId) {
+    try {
+      return Optional.of(get(bodyId));
+    } catch (UncheckedExecutionException e) {
+      if (e.getCause() instanceof EntityNotFoundException) {
+        return Optional.empty();
+      }
+      throw e;
+    }
   }
 
   public ImmutableMap<Long, BodyInfoDto> getAll(Iterable<Long> bodiesIds) {
