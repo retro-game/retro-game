@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Controller
@@ -24,7 +23,7 @@ public class RankingController {
   @GetMapping("/ranking")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String ranking(@RequestParam(name = "body") long bodyId,
-                        @RequestParam(name = "kind") @Valid @NotNull StatisticsKindDto kind,
+                        @RequestParam(name = "kind") @NotNull StatisticsKindDto kind,
                         Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ranking", statisticsService.getLatestRanking(bodyId, kind));

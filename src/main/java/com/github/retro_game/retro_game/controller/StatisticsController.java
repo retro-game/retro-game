@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import reactor.util.annotation.NonNull;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
@@ -43,8 +42,8 @@ public class StatisticsController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String distinctChanges(@RequestParam(name = "body") long bodyId,
                                 @RequestParam(name = "user") long userId,
-                                @RequestParam @Valid @NotNull StatisticsKindDto kind,
-                                @RequestParam @Valid @NonNull StatisticsPeriodDto period,
+                                @RequestParam @NotNull StatisticsKindDto kind,
+                                @RequestParam @NonNull StatisticsPeriodDto period,
                                 Model model) {
     List<Tuple2<Date, PointsAndRankPairDto>> changes = statisticsService.getDistinctChanges(bodyId, userId, kind,
         period);
@@ -75,7 +74,7 @@ public class StatisticsController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String distributionChanges(@RequestParam(name = "body") long bodyId,
                                     @RequestParam(name = "user") long userId,
-                                    @RequestParam @Valid @NonNull StatisticsPeriodDto period,
+                                    @RequestParam @NonNull StatisticsPeriodDto period,
                                     Model model) {
     List<Tuple2<Date, StatisticsDistributionDto>> changes = statisticsService.getDistributionChanges(bodyId, userId,
         period);

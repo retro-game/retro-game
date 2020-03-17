@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
-
 @Controller
 @Validated
 public class BodySettingsChangeImageController {
@@ -43,7 +41,7 @@ public class BodySettingsChangeImageController {
   @PostMapping("/body-settings/change-image")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doChangeImage(@RequestParam(name = "body") long bodyId,
-                              @RequestParam @Valid @Range(min = 1, max = 10) int image) {
+                              @RequestParam @Range(min = 1, max = 10) int image) {
     bodyService.setImage(bodyId, image);
     return "redirect:/overview?body=" + bodyId;
   }

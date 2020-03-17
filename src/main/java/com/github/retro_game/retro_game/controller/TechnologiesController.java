@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Controller
@@ -33,7 +32,7 @@ public class TechnologiesController {
   @PostMapping("/technologies/research")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String research(@RequestParam(name = "body") long bodyId,
-                         @RequestParam @Valid @NotNull TechnologyKindDto kind) {
+                         @RequestParam @NotNull TechnologyKindDto kind) {
     technologyService.research(bodyId, kind);
     return "redirect:/technologies?body=" + bodyId;
   }

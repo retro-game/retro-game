@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Controller
@@ -33,7 +32,7 @@ public class BuildingsController {
   @PostMapping("/buildings/construct")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String construct(@RequestParam(name = "body") long bodyId,
-                          @RequestParam @Valid @NotNull BuildingKindDto kind) {
+                          @RequestParam @NotNull BuildingKindDto kind) {
     buildingsService.construct(bodyId, kind);
     return "redirect:/buildings?body=" + bodyId;
   }
@@ -41,7 +40,7 @@ public class BuildingsController {
   @PostMapping("/buildings/destroy")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String destroy(@RequestParam(name = "body") long bodyId,
-                        @RequestParam @Valid @NotNull BuildingKindDto kind) {
+                        @RequestParam @NotNull BuildingKindDto kind) {
     buildingsService.destroy(bodyId, kind);
     return "redirect:/buildings?body=" + bodyId;
   }

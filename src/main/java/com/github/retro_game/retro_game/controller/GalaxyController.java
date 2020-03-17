@@ -12,7 +12,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import java.time.Instant;
 import java.util.Date;
 
@@ -32,9 +31,9 @@ public class GalaxyController {
   @GetMapping("/galaxy")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String galaxy(@RequestParam(name = "body") long bodyId,
-                       @Valid @Range(min = 1, max = 5) @RequestParam int galaxy,
-                       @Valid @Range(min = 1, max = 500) @RequestParam int system,
-                       @Valid @Range(min = 1, max = 15) @RequestParam(required = false) Integer position,
+                       @RequestParam @Range(min = 1, max = 5) int galaxy,
+                       @RequestParam @Range(min = 1, max = 500) int system,
+                       @RequestParam(required = false) @Range(min = 1, max = 15) Integer position,
                        @RequestParam(required = false) CoordinatesKindDto kind,
                        Model model) {
     model.addAttribute("bodyId", bodyId);

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -33,7 +32,7 @@ public class BodySettingsRenameController {
   @PostMapping("/body-settings/rename")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doRename(@RequestParam(name = "body") long bodyId,
-                         @RequestParam @Valid @NotNull @Size(min = 1, max = 16) @Pattern(regexp = "^[0-9A-Za-z\\-._]+( ?[0-9A-Za-z\\-._])*$") String name) {
+                         @RequestParam @NotNull @Size(min = 1, max = 16) @Pattern(regexp = "^[0-9A-Za-z\\-._]+( ?[0-9A-Za-z\\-._])*$") String name) {
     bodyService.rename(bodyId, name);
     return "redirect:/overview?body=" + bodyId;
   }

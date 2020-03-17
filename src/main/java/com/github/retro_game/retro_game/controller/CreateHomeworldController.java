@@ -25,8 +25,8 @@ public class CreateHomeworldController {
   }
 
   @GetMapping("/create-homeworld")
-  public String createHomeworld(@Valid @Range(min = 1, max = 5) @RequestParam int galaxy,
-                                @Valid @Range(min = 1, max = 500) @RequestParam int system,
+  public String createHomeworld(@RequestParam @Range(min = 1, max = 5) int galaxy,
+                                @RequestParam @Range(min = 1, max = 500) int system,
                                 Model model) {
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);

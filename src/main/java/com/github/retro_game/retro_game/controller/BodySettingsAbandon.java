@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Controller
@@ -31,7 +30,7 @@ public class BodySettingsAbandon {
   @PostMapping("/body-settings/abandon")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doAbandon(@RequestParam(name = "body") long bodyId,
-                          @Valid @NotNull String password) {
+                          @NotNull String password) {
     long id = bodyService.abandonPlanet(bodyId, password);
     return "redirect:/overview?body=" + id;
   }

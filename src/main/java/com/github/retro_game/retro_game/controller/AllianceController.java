@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -52,8 +51,8 @@ public class AllianceController {
   @PostMapping("/alliance/create")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String create(@RequestParam(name = "body") long bodyId,
-                       @RequestParam @Valid @NotNull @Size(min = 3, max = 8) @Pattern(regexp = "^[A-Za-z0-9]+( ?[A-Za-z0-9])*$") String tag,
-                       @RequestParam @Valid @NotNull @Size(min = 3, max = 16) @Pattern(regexp = "^[0-9A-Za-z\\-._]+( ?[0-9A-Za-z\\-._])*$") String name) {
+                       @RequestParam @NotNull @Size(min = 3, max = 8) @Pattern(regexp = "^[A-Za-z0-9]+( ?[A-Za-z0-9])*$") String tag,
+                       @RequestParam @NotNull @Size(min = 3, max = 16) @Pattern(regexp = "^[0-9A-Za-z\\-._]+( ?[0-9A-Za-z\\-._])*$") String name) {
     allianceService.create(bodyId, tag, name);
     return "redirect:/alliance?body=" + bodyId;
   }
@@ -116,7 +115,7 @@ public class AllianceController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doApply(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "alliance") long allianceId,
-                        @RequestParam(name = "application-text") @Valid @NotNull @Size(max = 10000) String text) {
+                        @RequestParam(name = "application-text") @NotNull @Size(max = 10000) String text) {
     allianceService.apply(bodyId, allianceId, text);
     return "redirect:/alliance?body=" + bodyId;
   }
@@ -205,7 +204,7 @@ public class AllianceController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String manageLogoSave(@RequestParam(name = "body") long bodyId,
                                @RequestParam(name = "alliance") long allianceId,
-                               @RequestParam @Valid @URL @Size(max = 128) String url) {
+                               @RequestParam @URL @Size(max = 128) String url) {
     allianceService.saveLogo(bodyId, allianceId, url);
     return "redirect:/alliance/manage?body=" + bodyId + "&alliance=" + allianceId;
   }
@@ -214,7 +213,7 @@ public class AllianceController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String manageText(@RequestParam(name = "body") long bodyId,
                            @RequestParam(name = "alliance") long allianceId,
-                           @RequestParam @Valid @NotNull AllianceTextKindDto kind,
+                           @RequestParam @NotNull AllianceTextKindDto kind,
                            Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("allianceId", allianceId);
@@ -228,8 +227,8 @@ public class AllianceController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String manageTextSave(@RequestParam(name = "body") long bodyId,
                                @RequestParam(name = "alliance") long allianceId,
-                               @RequestParam @Valid @NotNull AllianceTextKindDto kind,
-                               @RequestParam @Valid @NotNull @Size(max = 10000) String text) {
+                               @RequestParam @NotNull AllianceTextKindDto kind,
+                               @RequestParam @NotNull @Size(max = 10000) String text) {
     allianceService.saveText(bodyId, allianceId, kind, text);
     return "redirect:/alliance/manage?body=" + bodyId + "&alliance=" + allianceId;
   }
@@ -248,7 +247,7 @@ public class AllianceController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String manageDoDisband(@RequestParam(name = "body") long bodyId,
                                 @RequestParam(name = "alliance") long allianceId,
-                                @Valid @NotNull String password) {
+                                @NotNull String password) {
     allianceService.disband(bodyId, allianceId, password);
     return "redirect:/alliance?body=" + bodyId;
   }

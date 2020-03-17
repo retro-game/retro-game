@@ -42,8 +42,8 @@ public class MessagesPrivateController {
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam PrivateMessageKindDto kind,
                          @RequestParam(name = "correspondent", required = false) Long correspondentId,
-                         @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                         @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
+                         @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                         @RequestParam(required = false, defaultValue = "10") @Range(min = 1, max = 1000) int size,
                          Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<PrivateMessageDto> messages = privateMessageService.getMessages(bodyId, kind, correspondentId, pageRequest);

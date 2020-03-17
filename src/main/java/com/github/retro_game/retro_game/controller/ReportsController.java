@@ -63,13 +63,13 @@ public class ReportsController {
   }
 
   @GetMapping("/combat-report")
-  public String combatReport(@RequestParam long id, @RequestParam @Valid @NotBlank String token, Model model) {
+  public String combatReport(@RequestParam long id, @RequestParam @NotBlank String token, Model model) {
     model.addAttribute("report", reportService.getCombatReport(id, token));
     return "combat-report";
   }
 
   @GetMapping("/espionage-report")
-  public String espionageReport(@RequestParam long id, @RequestParam @Valid @NotBlank String token, Model model) {
+  public String espionageReport(@RequestParam long id, @RequestParam @NotBlank String token, Model model) {
     EspionageReportDto report = reportService.getEspionageReport(id, token);
     model.addAttribute("report", report);
     model.addAttribute("websimLink", generateWebsimLink(report));
@@ -122,8 +122,8 @@ public class ReportsController {
   public String reportsCombat(@RequestParam(name = "body") long bodyId,
                               @RequestParam(required = false, defaultValue = "AT") SimplifiedCombatReportSortOrderDto order,
                               @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
-                              @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                              @RequestParam(required = false, defaultValue = "50") @Valid @Min(1) int size,
+                              @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                              @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                               Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedCombatReportDto> reports = reportService.getSimplifiedCombatReports(bodyId, order, direction,
@@ -164,8 +164,8 @@ public class ReportsController {
   public String reportsEspionage(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") EspionageReportSortOrderDto order,
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
-                                 @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                                 @RequestParam(required = false, defaultValue = "50") @Valid @Min(1) int size,
+                                 @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                                 @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                  Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedEspionageReportDto> reports = reportService.getSimplifiedEspionageReports(bodyId, order, direction,
@@ -207,8 +207,8 @@ public class ReportsController {
   public String reportsHarvest(@RequestParam(name = "body") long bodyId,
                                @RequestParam(required = false, defaultValue = "AT") HarvestReportSortOrderDto order,
                                @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
-                               @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                               @RequestParam(required = false, defaultValue = "50") @Valid @Min(1) int size,
+                               @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                               @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<HarvestReportDto> reports = reportService.getHarvestReports(bodyId, order, direction, pageRequest);
@@ -248,8 +248,8 @@ public class ReportsController {
   public String reportsTransport(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") TransportReportSortOrderDto order,
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
-                                 @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                                 @RequestParam(required = false, defaultValue = "50") @Valid @Min(1) int size,
+                                 @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                                 @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                  Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<TransportReportDto> reports = reportService.getTransportReports(bodyId, order, direction, pageRequest);
@@ -287,8 +287,8 @@ public class ReportsController {
   @GetMapping("/reports/other")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String reportsOther(@RequestParam(name = "body") long bodyId,
-                             @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
-                             @RequestParam(required = false, defaultValue = "50") @Valid @Min(1) int size,
+                             @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
+                             @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                              Model model) {
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<OtherReportDto> reports = reportService.getOtherReports(bodyId, pageRequest);
