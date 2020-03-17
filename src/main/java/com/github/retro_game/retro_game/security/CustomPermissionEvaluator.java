@@ -16,17 +16,15 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
 
   @Override
   public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-    if (permission instanceof String) {
-      switch ((String) permission) {
-        case "ACCESS_BODY": {
-          long bodyId = (Long) targetDomainObject;
-          CustomUser customUser = (CustomUser) authentication.getPrincipal();
-          return bodyAccessPermissionEvaluator.hasAccessBodyPermission(customUser.getUserId(), bodyId);
-        }
-      }
+    var bodyId = (long) targetDomainObject;
+
+    var perm = (String) permission;
+    if (!"ACCESS".equals(perm)) {
+      throw new IllegalArgumentException("Permission should be always 'ACCESS'");
     }
 
-    return false;
+    var user = (CustomUser) authentication.getPrincipal();
+    return bodyAccessPermissionEvaluator.hasAccessBodyPermission(user.getUserId(), bodyId);
   }
 
   @Override

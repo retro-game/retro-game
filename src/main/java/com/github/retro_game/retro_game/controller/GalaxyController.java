@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.PhalanxService;
 import com.github.retro_game.retro_game.service.UserService;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ public class GalaxyController {
   }
 
   @GetMapping("/galaxy")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String galaxy(@RequestParam(name = "body") long bodyId,
                        @Valid @Range(min = 1, max = 5) @RequestParam int galaxy,
                        @Valid @Range(min = 1, max = 500) @RequestParam int system,

@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.controller.validator.SettingsFormValidat
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -41,6 +42,7 @@ public class SettingsController {
   }
 
   @GetMapping("/settings")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String settings(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("languages", languages);
@@ -49,6 +51,7 @@ public class SettingsController {
   }
 
   @PostMapping("/settings")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String saveSettings(@Valid SettingsForm form) {
     UserSettingsDto settings = new UserSettingsDto(form.getLanguage(), form.getSkin(), form.getNumProbes(),
         form.getBodiesSortOrder(), form.getBodiesSortDirection(), form.isNumberInputScrollingEnabled(),

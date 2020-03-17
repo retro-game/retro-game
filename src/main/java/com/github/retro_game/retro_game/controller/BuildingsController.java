@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.service.BuildingsService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ public class BuildingsController {
   }
 
   @GetMapping("/buildings")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String buildings(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("pair", buildingsService.getBuildingsAndQueuePair(bodyId));
@@ -29,6 +31,7 @@ public class BuildingsController {
   }
 
   @PostMapping("/buildings/construct")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String construct(@RequestParam(name = "body") long bodyId,
                           @RequestParam @Valid @NotNull BuildingKindDto kind) {
     buildingsService.construct(bodyId, kind);
@@ -36,6 +39,7 @@ public class BuildingsController {
   }
 
   @PostMapping("/buildings/destroy")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String destroy(@RequestParam(name = "body") long bodyId,
                         @RequestParam @Valid @NotNull BuildingKindDto kind) {
     buildingsService.destroy(bodyId, kind);
@@ -43,6 +47,7 @@ public class BuildingsController {
   }
 
   @PostMapping("/buildings/move-down")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String moveDown(@RequestParam(name = "body") long bodyId,
                          @RequestParam(name = "sequence-number") int sequenceNumber) {
     buildingsService.moveDown(bodyId, sequenceNumber);
@@ -50,6 +55,7 @@ public class BuildingsController {
   }
 
   @PostMapping("/buildings/move-up")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String moveUp(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "sequence-number") int sequenceNumber) {
     buildingsService.moveUp(bodyId, sequenceNumber);
@@ -57,6 +63,7 @@ public class BuildingsController {
   }
 
   @PostMapping("/buildings/cancel")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String cancel(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "sequence-number") int sequenceNumber) {
     buildingsService.cancel(bodyId, sequenceNumber);

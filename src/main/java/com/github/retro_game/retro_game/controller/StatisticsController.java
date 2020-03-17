@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.StatisticsKindDto;
 import com.github.retro_game.retro_game.dto.StatisticsPeriodDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
 import io.vavr.Tuple2;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +29,7 @@ public class StatisticsController {
   }
 
   @GetMapping("/statistics/summary")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String summary(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "user") long userId,
                         Model model) {
@@ -38,6 +40,7 @@ public class StatisticsController {
   }
 
   @GetMapping("/statistics/distinct-changes")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String distinctChanges(@RequestParam(name = "body") long bodyId,
                                 @RequestParam(name = "user") long userId,
                                 @RequestParam @Valid @NotNull StatisticsKindDto kind,
@@ -69,6 +72,7 @@ public class StatisticsController {
   }
 
   @GetMapping("/statistics/distribution-changes")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String distributionChanges(@RequestParam(name = "body") long bodyId,
                                     @RequestParam(name = "user") long userId,
                                     @RequestParam @Valid @NonNull StatisticsPeriodDto period,

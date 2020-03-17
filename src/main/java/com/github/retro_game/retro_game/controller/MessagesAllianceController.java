@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.service.AllianceMessagesService;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,7 @@ public class MessagesAllianceController {
   }
 
   @GetMapping("/messages/alliance")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
@@ -47,6 +49,7 @@ public class MessagesAllianceController {
   }
 
   @GetMapping("/messages/alliance/send")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "alliance") long allianceId,
                      Model model) {
@@ -56,9 +59,9 @@ public class MessagesAllianceController {
   }
 
   @PostMapping("/messages/alliance/send")
-  public String doSend(@Valid SendAllianceMessageForm sendAllianceMessageForm) {
-    allianceMessagesService.send(sendAllianceMessageForm.getBody(), sendAllianceMessageForm.getAlliance(),
-        sendAllianceMessageForm.getMessage());
-    return "redirect:/messages/alliance?body=" + sendAllianceMessageForm.getBody();
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  public String doSend(@Valid SendAllianceMessageForm form) {
+    allianceMessagesService.send(form.getBody(), form.getAlliance(), form.getMessage());
+    return "redirect:/messages/alliance?body=" + form.getBody();
   }
 }

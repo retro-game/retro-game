@@ -1,6 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.service.BodyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -21,12 +22,14 @@ public class BodySettingsAbandon {
   }
 
   @GetMapping("/body-settings/abandon")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String abandon(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     return "body-settings-abandon";
   }
 
   @PostMapping("/body-settings/abandon")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doAbandon(@RequestParam(name = "body") long bodyId,
                           @Valid @NotNull String password) {
     long id = bodyService.abandonPlanet(bodyId, password);

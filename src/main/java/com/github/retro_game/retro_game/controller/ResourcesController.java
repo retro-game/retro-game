@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
 import com.github.retro_game.retro_game.dto.ProductionItemsDto;
 import com.github.retro_game.retro_game.dto.ResourcesDto;
 import com.github.retro_game.retro_game.service.BodyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ public class ResourcesController {
   }
 
   @GetMapping("/resources")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String resources(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
 
@@ -91,6 +93,7 @@ public class ResourcesController {
   }
 
   @PostMapping("/resources/set-factors")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String setFactors(@Valid SetProductionFactorsForm form) {
     ProductionFactorsDto factors = new ProductionFactorsDto(form.getMetalMineFactor(), form.getCrystalMineFactor(),
         form.getDeuteriumSynthesizerFactor(), form.getSolarPlantFactor(), form.getFusionReactorFactor(),

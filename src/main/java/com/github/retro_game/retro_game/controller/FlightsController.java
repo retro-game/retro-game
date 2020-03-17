@@ -9,6 +9,7 @@ import com.github.retro_game.retro_game.service.exception.NoMoreFreeSlotsExcepti
 import com.github.retro_game.retro_game.service.exception.NotEnoughCapacityException;
 import com.github.retro_game.retro_game.service.exception.NotEnoughDeuteriumException;
 import com.github.retro_game.retro_game.service.exception.NotEnoughUnitsException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class FlightsController {
   }
 
   @GetMapping("/flights")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String flights(@RequestParam(name = "body") long bodyId, Model model) {
     List<FlightDto> flights = flightService.getFlights(bodyId);
     model.addAttribute("bodyId", bodyId);
@@ -41,6 +43,7 @@ public class FlightsController {
   }
 
   @GetMapping("/flights/send")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(required = false) Integer galaxy,
                      @RequestParam(required = false) Integer system,
@@ -77,6 +80,7 @@ public class FlightsController {
   }
 
   @PostMapping("/flights/send")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String doSend(@Valid SendFleetForm form) {
     CoordinatesDto c = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
     ResourcesDto r = new ResourcesDto(
@@ -91,6 +95,7 @@ public class FlightsController {
 
   @PostMapping("/flights/send-probes")
   @ResponseBody
+  @PreAuthorize("hasPermission(#request.body, 'ACCESS')")
   public SendProbesResponse sendProbes(@RequestBody @Valid SendProbesRequest request) {
     SendProbesResponse response = new SendProbesResponse();
     try {
@@ -111,6 +116,7 @@ public class FlightsController {
   }
 
   @GetMapping("/flights/send-missiles")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String sendMissiles(@RequestParam(name = "body") long bodyId,
                              @RequestParam(required = false) Integer galaxy,
                              @RequestParam(required = false) Integer system,
@@ -126,6 +132,7 @@ public class FlightsController {
   }
 
   @PostMapping("/flights/send-missiles")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String doSendMissiles(@Valid SendMissilesForm form) {
     CoordinatesDto target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
     flightService.sendMissiles(form.getBody(), target, form.getNumMissiles());
@@ -133,6 +140,7 @@ public class FlightsController {
   }
 
   @PostMapping("/flights/recall")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String recall(@Valid RecallFlightForm form) {
     flightService.recall(form.getBody(), form.getFlight());
     return "redirect:/flights?body=" + form.getBody();

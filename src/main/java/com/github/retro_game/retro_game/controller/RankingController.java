@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.dto.StatisticsKindDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ public class RankingController {
   }
 
   @GetMapping("/ranking")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String ranking(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "kind") @Valid @NotNull StatisticsKindDto kind,
                         Model model) {

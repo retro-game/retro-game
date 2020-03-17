@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.form.BuildUnitsForm;
 import com.github.retro_game.retro_game.dto.UnitTypeDto;
 import com.github.retro_game.retro_game.service.ShipyardService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ public class ShipyardController {
   }
 
   @GetMapping("/shipyard")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String shipyard(@RequestParam(name = "body") long bodyId, @RequestParam(required = false) UnitTypeDto type,
                          Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -29,6 +31,7 @@ public class ShipyardController {
   }
 
   @PostMapping("/shipyard/build")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String build(@Valid BuildUnitsForm form) {
     shipyardService.build(form.getBody(), form.getKind(), form.getCount());
     return "redirect:/shipyard?body=" + form.getBody() + (form.getType() != null ? "&type=" + form.getType() : "");

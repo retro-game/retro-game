@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.InviteToPartyForm;
 import com.github.retro_game.retro_game.service.PartyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ public class PartyController {
   }
 
   @GetMapping("/party")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String party(@RequestParam(name = "body") long bodyId, @RequestParam(name = "party") long partyId,
                       Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -27,12 +29,14 @@ public class PartyController {
   }
 
   @PostMapping("/party/create")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String create(@RequestParam(name = "body") long bodyId, @RequestParam(name = "flight") long flightId) {
     long partyId = partyService.create(bodyId, flightId);
     return "redirect:/party?body=" + bodyId + "&party=" + partyId;
   }
 
   @PostMapping("/party/invite")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   public String invite(@Valid InviteToPartyForm form) {
     partyService.invite(form.getBody(), form.getParty(), form.getName());
     return "redirect:/party?body=" + form.getBody() + "&party=" + form.getParty();

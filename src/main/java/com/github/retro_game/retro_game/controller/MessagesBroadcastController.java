@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.service.BroadcastMessageService;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,7 @@ public class MessagesBroadcastController {
   }
 
   @GetMapping("/messages/broadcast")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam(required = false, defaultValue = "1") @Valid @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Valid @Range(min = 1, max = 1000) int size,
@@ -47,14 +49,16 @@ public class MessagesBroadcastController {
   }
 
   @GetMapping("/messages/broadcast/send")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String send(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     return "messages-broadcast-send";
   }
 
   @PostMapping("/messages/broadcast/send")
-  public String doSend(@Valid SendBroadcastMessageForm sendBroadcastMessageForm) {
-    broadcastMessageService.send(sendBroadcastMessageForm.getBody(), sendBroadcastMessageForm.getMessage());
-    return "redirect:/messages/broadcast?body=" + sendBroadcastMessageForm.getBody();
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  public String doSend(@Valid SendBroadcastMessageForm form) {
+    broadcastMessageService.send(form.getBody(), form.getMessage());
+    return "redirect:/messages/broadcast?body=" + form.getBody();
   }
 }

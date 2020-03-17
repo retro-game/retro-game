@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.dto.BodyTypeDto;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +25,7 @@ public class BodySettingsChangeImageController {
   }
 
   @GetMapping("/body-settings/change-image")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String changeImage(@RequestParam(name = "body") long bodyId, Model model) {
     BodyTypeAndImagePairDto pair = bodyService.getBodyTypeAndImagePair(bodyId);
     BodyTypeDto type = pair.getType();
@@ -39,6 +41,7 @@ public class BodySettingsChangeImageController {
   }
 
   @PostMapping("/body-settings/change-image")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String doChangeImage(@RequestParam(name = "body") long bodyId,
                               @RequestParam @Valid @Range(min = 1, max = 10) int image) {
     bodyService.setImage(bodyId, image);

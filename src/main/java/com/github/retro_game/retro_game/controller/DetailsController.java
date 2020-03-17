@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.DetailsService;
 import com.github.retro_game.retro_game.service.TechnologyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ public class DetailsController {
   }
 
   @GetMapping("/details/building")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String buildingDetails(@RequestParam(name = "body") long bodyId, @RequestParam BuildingKindDto kind,
                                 Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -37,6 +39,7 @@ public class DetailsController {
   }
 
   @GetMapping("/details/technology")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String technologyDetails(@RequestParam(name = "body") long bodyId, @RequestParam TechnologyKindDto kind,
                                   Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -46,6 +49,7 @@ public class DetailsController {
   }
 
   @GetMapping("/details/unit")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   public String unitDetails(@RequestParam(name = "body") long bodyId, @RequestParam UnitKindDto kind, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);
