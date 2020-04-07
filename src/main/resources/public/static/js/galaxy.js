@@ -33,18 +33,21 @@ $('#system-input').submit(function () {
   $('[name="galaxy"]', this).val(galaxy);
 });
 
-var reports = $('#reports');
-
 $('[data-spy]').click(function () {
+  let reports = $('#reports');
   if (reports.children().length === 0) {
     reports.append('<tr><th>Espionage</th></tr>');
   }
+
+  let addReport = (html) => $('#reports :first-child').first().after(html);
+
   var body = 0 | $($('[name="body"]')[0]).val();
   var galaxy = 0 | $(this).attr('data-galaxy');
   var system = 0 | $(this).attr('data-system');
   var position = 0 | $(this).attr('data-position');
   var kind = $(this).attr('data-kind');
   var count = 0 | $('#num-probes').val();
+
   $.ajax({
     type: 'post',
     url: '/flights/send-probes',
@@ -60,7 +63,7 @@ $('[data-spy]').click(function () {
     success: function (data) {
       var coordinates = [galaxy, system, position, kind[0]].join('-');
       if (data.success) {
-        reports.append('<tr><td>Probes were sent to ' + coordinates + ' successfully</td></tr>');
+        addReport('<tr><td>Probes were sent to ' + coordinates + ' successfully</td></tr>');
         return;
       }
       var message = 'Probes couldn\'t be sent to ' + coordinates + ', ';
@@ -78,10 +81,10 @@ $('[data-spy]').click(function () {
           message += 'you don\'t have enough probes';
           break;
       }
-      reports.append('<tr><td><font color="red">' + message + '</font></td></tr>');
+      addReport('<tr><td><font color="red">' + message + '</font></td></tr>');
     },
     error: function () {
-      reports.append('<tr><td><font color="red">Internal error</font></td></tr>');
+      addReport('<tr><td><font color="red">Internal error</font></td></tr>');
     }
   });
 });
