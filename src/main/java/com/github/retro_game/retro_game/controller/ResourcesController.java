@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.SetProductionFactorsForm;
 import com.github.retro_game.retro_game.dto.ProductionDto;
 import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
@@ -27,6 +28,7 @@ public class ResourcesController {
 
   @GetMapping("/resources")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String resources(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
 
@@ -94,6 +96,7 @@ public class ResourcesController {
 
   @PostMapping("/resources/set-factors")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String setFactors(@Valid SetProductionFactorsForm form) {
     ProductionFactorsDto factors = new ProductionFactorsDto(form.getMetalMineFactor(), form.getCrystalMineFactor(),
         form.getDeuteriumSynthesizerFactor(), form.getSolarPlantFactor(), form.getFusionReactorFactor(),

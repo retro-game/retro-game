@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.DeleteAllReportsForm;
 import com.github.retro_game.retro_game.controller.form.DeleteReportForm;
 import com.github.retro_game.retro_game.controller.form.DeleteReportResponse;
@@ -111,6 +112,7 @@ public class ReportsController {
 
   @GetMapping("/reports")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reports(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("summary", reportService.getSummary(bodyId));
@@ -119,6 +121,7 @@ public class ReportsController {
 
   @GetMapping("/reports/combat")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reportsCombat(@RequestParam(name = "body") long bodyId,
                               @RequestParam(required = false, defaultValue = "AT") SimplifiedCombatReportSortOrderDto order,
                               @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
@@ -141,6 +144,7 @@ public class ReportsController {
   @PostMapping("/reports/combat/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.bodyId, 'ACCESS')")
+  @Activity(bodies = "#form.bodyId")
   public DeleteReportResponse reportsCombatDelete(@RequestBody @Valid DeleteReportForm form) {
     DeleteReportResponse response = new DeleteReportResponse();
     try {
@@ -154,6 +158,7 @@ public class ReportsController {
 
   @PostMapping("/reports/combat/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String reportsCombatDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllSimplifiedCombatReports(form.getBody());
     return "redirect:/reports/combat?body=" + form.getBody();
@@ -161,6 +166,7 @@ public class ReportsController {
 
   @GetMapping("/reports/espionage")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reportsEspionage(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") EspionageReportSortOrderDto order,
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
@@ -184,6 +190,7 @@ public class ReportsController {
   @PostMapping("/reports/espionage/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.bodyId, 'ACCESS')")
+  @Activity(bodies = "#form.bodyId")
   public DeleteReportResponse reportsEspionageDelete(@RequestBody @Valid DeleteReportForm form) {
     DeleteReportResponse response = new DeleteReportResponse();
     try {
@@ -197,6 +204,7 @@ public class ReportsController {
 
   @PostMapping("/reports/espionage/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String reportsEspionageDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllEspionageReports(form.getBody());
     return "redirect:/reports/espionage?body=" + form.getBody();
@@ -204,6 +212,7 @@ public class ReportsController {
 
   @GetMapping("/reports/harvest")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reportsHarvest(@RequestParam(name = "body") long bodyId,
                                @RequestParam(required = false, defaultValue = "AT") HarvestReportSortOrderDto order,
                                @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
@@ -225,6 +234,7 @@ public class ReportsController {
   @PostMapping("/reports/harvest/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.bodyId, 'ACCESS')")
+  @Activity(bodies = "#form.bodyId")
   public DeleteReportResponse reportsHarvestDelete(@RequestBody @Valid DeleteReportForm form) {
     DeleteReportResponse response = new DeleteReportResponse();
     try {
@@ -238,6 +248,7 @@ public class ReportsController {
 
   @PostMapping("/reports/harvest/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String reportsHarvestDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllHarvestReports(form.getBody());
     return "redirect:/reports/harvest?body=" + form.getBody();
@@ -245,6 +256,7 @@ public class ReportsController {
 
   @GetMapping("/reports/transport")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reportsTransport(@RequestParam(name = "body") long bodyId,
                                  @RequestParam(required = false, defaultValue = "AT") TransportReportSortOrderDto order,
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
@@ -266,6 +278,7 @@ public class ReportsController {
   @PostMapping("/reports/transport/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.bodyId, 'ACCESS')")
+  @Activity(bodies = "#form.bodyId")
   public DeleteReportResponse reportsTransportDelete(@RequestBody @Valid DeleteReportForm form) {
     DeleteReportResponse response = new DeleteReportResponse();
     try {
@@ -279,6 +292,7 @@ public class ReportsController {
 
   @PostMapping("/reports/transport/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String reportsTransportDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllTransportReports(form.getBody());
     return "redirect:/reports/transport?body=" + form.getBody();
@@ -286,6 +300,7 @@ public class ReportsController {
 
   @GetMapping("/reports/other")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String reportsOther(@RequestParam(name = "body") long bodyId,
                              @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                              @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
@@ -303,6 +318,7 @@ public class ReportsController {
   @PostMapping("/reports/other/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.bodyId, 'ACCESS')")
+  @Activity(bodies = "#form.bodyId")
   public DeleteReportResponse reportsOtherDelete(@RequestBody @Valid DeleteReportForm form) {
     DeleteReportResponse response = new DeleteReportResponse();
     try {
@@ -316,6 +332,7 @@ public class ReportsController {
 
   @PostMapping("/reports/other/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String reportsOtherDeleteAll(@Valid DeleteAllReportsForm form) {
     reportService.deleteAllOtherReports(form.getBody());
     return "redirect:/reports/other?body=" + form.getBody();

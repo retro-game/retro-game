@@ -8,6 +8,5 @@ public interface GalaxyService {
   // A player needs the galaxy view when she/he wants to create the homeworld.
   Map<Integer, GalaxySlotDto> getSlots(int galaxy, int system);
 
-  @Activity(bodies = "#bodyId")
   Map<Integer, GalaxySlotDto> getSlots(long bodyId, int galaxy, int system);
 }

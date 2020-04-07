@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.*;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.BodyService;
@@ -33,6 +34,7 @@ public class FlightsController {
 
   @GetMapping("/flights")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String flights(@RequestParam(name = "body") long bodyId, Model model) {
     List<FlightDto> flights = flightService.getFlights(bodyId);
     model.addAttribute("bodyId", bodyId);
@@ -44,6 +46,7 @@ public class FlightsController {
 
   @GetMapping("/flights/send")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(required = false) Integer galaxy,
                      @RequestParam(required = false) Integer system,
@@ -81,6 +84,7 @@ public class FlightsController {
 
   @PostMapping("/flights/send")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String doSend(@Valid SendFleetForm form) {
     CoordinatesDto c = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
     ResourcesDto r = new ResourcesDto(
@@ -96,6 +100,7 @@ public class FlightsController {
   @PostMapping("/flights/send-probes")
   @ResponseBody
   @PreAuthorize("hasPermission(#request.body, 'ACCESS')")
+  @Activity(bodies = "#request.body")
   public SendProbesResponse sendProbes(@RequestBody @Valid SendProbesRequest request) {
     SendProbesResponse response = new SendProbesResponse();
     try {
@@ -117,6 +122,7 @@ public class FlightsController {
 
   @GetMapping("/flights/send-missiles")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String sendMissiles(@RequestParam(name = "body") long bodyId,
                              @RequestParam(required = false) Integer galaxy,
                              @RequestParam(required = false) Integer system,
@@ -133,6 +139,7 @@ public class FlightsController {
 
   @PostMapping("/flights/send-missiles")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String doSendMissiles(@Valid SendMissilesForm form) {
     CoordinatesDto target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
     flightService.sendMissiles(form.getBody(), target, form.getNumMissiles());
@@ -141,6 +148,7 @@ public class FlightsController {
 
   @PostMapping("/flights/recall")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String recall(@Valid RecallFlightForm form) {
     flightService.recall(form.getBody(), form.getFlight());
     return "redirect:/flights?body=" + form.getBody();

@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.BodyTypeAndImagePairDto;
 import com.github.retro_game.retro_game.dto.BodyTypeDto;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
@@ -24,6 +25,7 @@ public class BodySettingsChangeImageController {
 
   @GetMapping("/body-settings/change-image")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String changeImage(@RequestParam(name = "body") long bodyId, Model model) {
     BodyTypeAndImagePairDto pair = bodyService.getBodyTypeAndImagePair(bodyId);
     BodyTypeDto type = pair.getType();
@@ -40,6 +42,7 @@ public class BodySettingsChangeImageController {
 
   @PostMapping("/body-settings/change-image")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String doChangeImage(@RequestParam(name = "body") long bodyId,
                               @RequestParam @Range(min = 1, max = 10) int image) {
     bodyService.setImage(bodyId, image);

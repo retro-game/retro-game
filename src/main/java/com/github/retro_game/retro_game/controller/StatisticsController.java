@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.PointsAndRankPairDto;
 import com.github.retro_game.retro_game.dto.StatisticsDistributionDto;
 import com.github.retro_game.retro_game.dto.StatisticsKindDto;
@@ -29,6 +30,7 @@ public class StatisticsController {
 
   @GetMapping("/statistics/summary")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String summary(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "user") long userId,
                         Model model) {
@@ -40,6 +42,7 @@ public class StatisticsController {
 
   @GetMapping("/statistics/distinct-changes")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String distinctChanges(@RequestParam(name = "body") long bodyId,
                                 @RequestParam(name = "user") long userId,
                                 @RequestParam @NotNull StatisticsKindDto kind,
@@ -72,6 +75,7 @@ public class StatisticsController {
 
   @GetMapping("/statistics/distribution-changes")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String distributionChanges(@RequestParam(name = "body") long bodyId,
                                     @RequestParam(name = "user") long userId,
                                     @RequestParam @NonNull StatisticsPeriodDto period,

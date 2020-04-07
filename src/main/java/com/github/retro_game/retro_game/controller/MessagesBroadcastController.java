@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.SendBroadcastMessageForm;
 import com.github.retro_game.retro_game.dto.BroadcastMessageDto;
 import com.github.retro_game.retro_game.service.BroadcastMessageService;
@@ -32,6 +33,7 @@ public class MessagesBroadcastController {
 
   @GetMapping("/messages/broadcast")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Range(min = 1, max = 1000) int size,
@@ -50,6 +52,7 @@ public class MessagesBroadcastController {
 
   @GetMapping("/messages/broadcast/send")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String send(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     return "messages-broadcast-send";
@@ -57,6 +60,7 @@ public class MessagesBroadcastController {
 
   @PostMapping("/messages/broadcast/send")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String doSend(@Valid SendBroadcastMessageForm form) {
     broadcastMessageService.send(form.getBody(), form.getMessage());
     return "redirect:/messages/broadcast?body=" + form.getBody();

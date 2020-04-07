@@ -1,4 +1,4 @@
-package com.github.retro_game.retro_game.service.impl;
+package com.github.retro_game.retro_game.service;
 
 import com.github.retro_game.retro_game.dto.ActiveStateDto;
 import org.springframework.lang.Nullable;
@@ -6,7 +6,7 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 import java.util.Map;
 
-interface ActivityService {
+public interface ActivityService {
   // Updates the body's activity if necessary. If 'at' param is null, current time is taken.
   void handleBodyActivity(long bodyId, @Nullable Long at);
 

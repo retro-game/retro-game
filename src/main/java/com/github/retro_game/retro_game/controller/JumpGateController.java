@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.JumpForm;
 import com.github.retro_game.retro_game.service.JumpGateService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ public class JumpGateController {
 
   @GetMapping("/jump-gate")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String jumpGate(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("info", jumpGateService.getInfo(bodyId));
@@ -29,6 +31,7 @@ public class JumpGateController {
 
   @PostMapping("/jump-gate/jump")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS') && hasPermission(#form.target, 'ACCESS')")
+  @Activity(bodies = {"#form.body", "#form.target"})
   public String jump(@Valid JumpForm form) {
     jumpGateService.jump(form.getBody(), form.getTarget(), form.getUnits());
     return "redirect:/jump-gate?body=" + form.getBody();

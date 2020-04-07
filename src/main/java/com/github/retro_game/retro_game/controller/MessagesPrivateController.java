@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.DeleteAllPrivateMessagesForm;
 import com.github.retro_game.retro_game.controller.form.DeletePrivateMessageForm;
 import com.github.retro_game.retro_game.controller.form.DeletePrivateMessageResponse;
@@ -39,6 +40,7 @@ public class MessagesPrivateController {
 
   @GetMapping("/messages/private")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam PrivateMessageKindDto kind,
                          @RequestParam(name = "correspondent", required = false) Long correspondentId,
@@ -60,6 +62,7 @@ public class MessagesPrivateController {
 
   @GetMapping("/messages/private/send")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "recipient") long recipientId,
                      Model model) {
@@ -74,6 +77,7 @@ public class MessagesPrivateController {
 
   @PostMapping("/messages/private/send")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String doSend(@Valid SendPrivateMessageForm form) {
     privateMessageService.send(form.getBody(), form.getRecipient(), form.getMessage());
     return "redirect:/messages/private?body=" + form.getBody() + "&kind=SENT";
@@ -82,6 +86,7 @@ public class MessagesPrivateController {
   @PostMapping("/messages/private/delete")
   @ResponseBody
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public DeletePrivateMessageResponse delete(@RequestBody @Valid DeletePrivateMessageForm form) {
     DeletePrivateMessageResponse response = new DeletePrivateMessageResponse();
     try {
@@ -95,6 +100,7 @@ public class MessagesPrivateController {
 
   @PostMapping("/messages/private/delete-all")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String deleteAll(@Valid DeleteAllPrivateMessagesForm form) {
     privateMessageService.deleteAll(form.getBody(), form.getKind());
     return "redirect:/messages/private?body=" + form.getBody() + "&kind=" + form.getKind();

@@ -1,6 +1,5 @@
-package com.github.retro_game.retro_game.service.impl;
+package com.github.retro_game.retro_game.controller.activity;
 
-import com.github.retro_game.retro_game.service.Activity;
 import org.aopalliance.aop.Advice;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
@@ -21,7 +20,7 @@ class ActivityAdvisor extends AbstractPointcutAdvisor {
 
   private final ActivityAdvice activityAdvice;
 
-  public ActivityAdvisor(ActivityAdvice activityAdvice) {
+  ActivityAdvisor(ActivityAdvice activityAdvice) {
     this.activityAdvice = activityAdvice;
   }
 

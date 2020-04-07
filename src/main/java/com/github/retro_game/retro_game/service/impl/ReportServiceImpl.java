@@ -8,6 +8,7 @@ import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
+import com.github.retro_game.retro_game.service.ActivityService;
 import com.github.retro_game.retro_game.service.exception.ReportDoesntExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedReportAccessException;
 import org.slf4j.Logger;

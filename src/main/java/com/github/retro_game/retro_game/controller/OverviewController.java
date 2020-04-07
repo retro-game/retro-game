@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +34,7 @@ public class OverviewController {
 
   @GetMapping("/overview")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String overview(@RequestParam(name = "body") long bodyId, Model model) {
     UserSettingsDto settings = userService.getCurrentUserSettings();
     model.addAttribute("numNewMessages", settings.isShowNewMessagesInOverviewEnabled() ?

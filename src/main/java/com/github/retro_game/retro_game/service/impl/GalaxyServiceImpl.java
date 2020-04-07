@@ -10,6 +10,7 @@ import com.github.retro_game.retro_game.dto.StatisticsSummaryDto;
 import com.github.retro_game.retro_game.entity.GalaxySlot;
 import com.github.retro_game.retro_game.repository.GalaxySlotRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
+import com.github.retro_game.retro_game.service.ActivityService;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

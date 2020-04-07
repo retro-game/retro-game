@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ public class EmpireController {
 
   @GetMapping("/empire")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String empire(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "galaxy", required = false) Integer galaxy,
                        @RequestParam(name = "system", required = false) Integer system,

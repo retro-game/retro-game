@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.SettingsForm;
 import com.github.retro_game.retro_game.controller.validator.SettingsFormValidator;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
@@ -41,6 +42,7 @@ public class SettingsController {
 
   @GetMapping("/settings")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String settings(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("languages", languages);
@@ -50,6 +52,7 @@ public class SettingsController {
 
   @PostMapping("/settings")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String saveSettings(@Valid SettingsForm form) {
     UserSettingsDto settings = new UserSettingsDto(form.getLanguage(), form.getSkin(), form.getNumProbes(),
         form.getBodiesSortOrder(), form.getBodiesSortDirection(), form.isNumberInputScrollingEnabled(),

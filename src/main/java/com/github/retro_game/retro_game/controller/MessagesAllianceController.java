@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.SendAllianceMessageForm;
 import com.github.retro_game.retro_game.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
@@ -32,6 +33,7 @@ public class MessagesAllianceController {
 
   @GetMapping("/messages/alliance")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String messages(@RequestParam(name = "body") long bodyId,
                          @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Range(min = 1, max = 1000) int size,
@@ -50,6 +52,7 @@ public class MessagesAllianceController {
 
   @GetMapping("/messages/alliance/send")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "alliance") long allianceId,
                      Model model) {
@@ -60,6 +63,7 @@ public class MessagesAllianceController {
 
   @PostMapping("/messages/alliance/send")
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
   public String doSend(@Valid SendAllianceMessageForm form) {
     allianceMessagesService.send(form.getBody(), form.getAlliance(), form.getMessage());
     return "redirect:/messages/alliance?body=" + form.getBody();

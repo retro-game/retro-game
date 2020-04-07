@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.dto.UnitKindDto;
@@ -27,6 +28,7 @@ public class DetailsController {
 
   @GetMapping("/details/building")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String buildingDetails(@RequestParam(name = "body") long bodyId, @RequestParam BuildingKindDto kind,
                                 Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -40,6 +42,7 @@ public class DetailsController {
 
   @GetMapping("/details/technology")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String technologyDetails(@RequestParam(name = "body") long bodyId, @RequestParam TechnologyKindDto kind,
                                   Model model) {
     model.addAttribute("bodyId", bodyId);
@@ -50,6 +53,7 @@ public class DetailsController {
 
   @GetMapping("/details/unit")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String unitDetails(@RequestParam(name = "body") long bodyId, @RequestParam UnitKindDto kind, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);

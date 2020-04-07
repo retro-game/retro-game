@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.PhalanxService;
@@ -30,6 +31,7 @@ public class GalaxyController {
 
   @GetMapping("/galaxy")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
   public String galaxy(@RequestParam(name = "body") long bodyId,
                        @RequestParam @Range(min = 1, max = 5) int galaxy,
                        @RequestParam @Range(min = 1, max = 500) int system,
