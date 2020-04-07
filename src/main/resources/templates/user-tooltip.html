@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="user-tooltip(bodyId, userId, userName)" data-tooltip data-tooltip-html
+      th:data-tooltip-title="
+        '<table>' +
+          '<tr>' +
+            '<th>' + ${userName} + '</th>' +
+          '</tr>' +
+          '<tr>' +
+            '<td>' +
+              '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${userId})} + '\'>' + #{sendMessage} + '</a></p>' +
+              '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${userId})} + '\'>' + #{statistics} + '</a></p>' +
+            '</td>' +
+          '</tr>' +
+        '</table>'"
+      th:text="${userName}"></span>
+</body>
+</html>

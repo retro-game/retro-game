@@ -30,19 +30,7 @@
       <td th:text="#{owner}">Owner</td>
       <td th:if="${alliance.ownerName == null}">-</td>
       <td th:unless="${alliance.ownerName == null}">
-        <span data-tooltip data-tooltip-html th:data-tooltip-title="
-                '<table>' +
-                  '<tr>' +
-                    '<th>' + ${alliance.ownerName} + '</th>' +
-                  '</tr>' +
-                  '<tr>' +
-                    '<td>' +
-                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${alliance.ownerId})} + '\'>' + #{sendMessage} + '</a></p>' +
-                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${alliance.ownerId})} + '\'>' + #{statistics} + '</a></p>' +
-                    '</td>' +
-                  '</tr>' +
-                '</table>'"
-              th:text="${alliance.ownerName}"></span>
+        <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${alliance.ownerId}, ${alliance.ownerName})"></span>
       </td>
     </tr>
     <tr>

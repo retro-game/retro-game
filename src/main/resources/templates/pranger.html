@@ -15,19 +15,7 @@
     </tr>
     <tr th:each="entry : ${pranger}">
       <td>
-        <span data-tooltip data-tooltip-html th:data-tooltip-title="
-                '<table>' +
-                  '<tr>' +
-                    '<th>' + ${entry.userName} + '</th>' +
-                  '</tr>' +
-                  '<tr>' +
-                    '<td>' +
-                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${entry.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
-                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${entry.userId})} + '\'>' + #{statistics} + '</a></p>' +
-                    '</td>' +
-                  '</tr>' +
-                '</table>'"
-              th:text="${entry.userName}"></span>
+        <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${entry.userId}, ${entry.userName})"></span>
       </td>
       <td th:text="${#dates.format(entry.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
       <td th:text="${#dates.format(entry.until, 'yyyy-MM-dd HH:mm:ss')}"></td>

@@ -17,19 +17,7 @@
     <tr th:each="entry,iter : ${members}">
       <td th:text="${iter.index + 1}"></td>
       <td>
-        <span data-tooltip data-tooltip-html th:data-tooltip-title="
-                '<table>' +
-                  '<tr>' +
-                    '<th>' + ${entry.userName} + '</th>' +
-                  '</tr>' +
-                  '<tr>' +
-                    '<td>' +
-                      '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${entry.userId})} + '\'>' + #{sendMessage} + '</a></p>' +
-                      '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${entry.userId})} + '\'>' + #{statistics} + '</a></p>' +
-                    '</td>' +
-                  '</tr>' +
-                '</table>'"
-              th:text="${entry.userName}"></span>
+        <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${entry.userId}, ${entry.userName})"></span>
       </td>
       <td th:text="${#dates.format(entry.joinedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
       <td th:text="${entry.rank}"></td>
