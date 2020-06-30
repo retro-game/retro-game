@@ -2,7 +2,7 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.cache.BodyInfoCache;
 import com.github.retro_game.retro_game.cache.CacheObserver;
-import com.github.retro_game.retro_game.cache.UserBodiesCache;
+import com.github.retro_game.retro_game.cache.UserInfoCache;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
@@ -52,7 +52,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   private final int fieldsPerLunarBaseLevel;
   private final CacheObserver cacheObserver;
   private final BodyInfoCache bodyInfoCache;
-  private final UserBodiesCache userBodiesCache;
+  private final UserInfoCache userInfoCache;
   private final BodyRepository bodyRepository;
   private final UserRepository userRepository;
   private BuildingsServiceInternal buildingsServiceInternal;
@@ -78,7 +78,7 @@ class BodyServiceImpl implements BodyServiceInternal {
                          @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
                          CacheObserver cacheObserver,
                          BodyInfoCache bodyInfoCache,
-                         UserBodiesCache userBodiesCache,
+                         UserInfoCache userInfoCache,
                          BodyRepository bodyRepository,
                          UserRepository userRepository) {
     this.homeworldDiameter = homeworldDiameter;
@@ -99,7 +99,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
     this.cacheObserver = cacheObserver;
     this.bodyInfoCache = bodyInfoCache;
-    this.userBodiesCache = userBodiesCache;
+    this.userInfoCache = userInfoCache;
     this.bodyRepository = bodyRepository;
     this.userRepository = userRepository;
   }
@@ -368,7 +368,8 @@ class BodyServiceImpl implements BodyServiceInternal {
     var userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    var bodiesIds = userBodiesCache.get(userId);
+    var userInfo = userInfoCache.get(userId);
+    var bodiesIds = userInfo.getBodiesIds();
     var bodies = new ArrayList<>(bodyInfoCache.getAll(bodiesIds).values());
 
     var keyExtractors = new BodyKeyExtractors<>(BodyInfoDto::getId, BodyInfoDto::getCoordinates, BodyInfoDto::getName);

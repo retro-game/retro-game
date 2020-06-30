@@ -2,8 +2,8 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 <span th:fragment="user-tooltip(bodyId, userId, userName)"
-      th:with="bodies=${@userBodiesCache.get(userId)},
-               coords=${#lists.isEmpty(bodies) ? null : @bodyInfoCache.get(bodies.get(0)).coordinates},
+      th:with="userInfo=${@userInfoCache.get(userId)},
+               coords=${userInfo.homeworldId.isPresent() ? @bodyInfoCache.get(userInfo.homeworldId.getAsLong()).coordinates : null},
                galaxyLink=@{/galaxy(body=${bodyId},galaxy=${coords?.galaxy},system=${coords?.system},position=${coords?.position},kind=${coords?.kind})},
                sendMessageLink=@{/messages/private/send(body=${bodyId},recipient=${userId})},
                statisticsLink=@{/statistics/summary(body=${bodyId},user=${userId})}"
