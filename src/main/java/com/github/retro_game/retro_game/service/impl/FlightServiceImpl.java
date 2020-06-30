@@ -154,24 +154,21 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       if (arriving) {
         events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, own, FlightEventKindDto.ARRIVING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.ARRIVING));
       }
 
       if (holding) {
         events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, own, FlightEventKindDto.HOLDING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.HOLDING));
       }
 
       if (own && ((mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK)
           || flight.getArrivalAt() == null)) {
         events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, true, FlightEventKindDto.RETURNING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, true, FlightEventKindDto.RETURNING));
       }
     }
 
@@ -204,23 +201,20 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       if (arriving && (!isStart || flight.getMission() != Mission.DEPLOYMENT)) {
         events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, own, FlightEventKindDto.ARRIVING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.ARRIVING));
       }
 
       if (holding && !isStart) {
         events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, own, FlightEventKindDto.HOLDING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.HOLDING));
       }
 
       if (isStart && mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK) {
         events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
-            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
-            resources, units, own, FlightEventKindDto.RETURNING));
+            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
+            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.RETURNING));
       }
     }
 

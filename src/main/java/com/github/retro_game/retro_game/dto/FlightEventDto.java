@@ -9,34 +9,37 @@ public class FlightEventDto {
   private final long id;
   private final Date at;
   private final long startUserId;
-  private final String startUserName;
-  private final String startBodyName;
+  private final long startBodyId;
   private final CoordinatesDto startCoordinates;
+
+  @Nullable
   private final Long targetUserId;
-  private final String targetUserName;
-  private final String targetBodyName;
+
+  @Nullable
+  private final Long targetBodyId;
+
   private final CoordinatesDto targetCoordinates;
+
+  @Nullable
   private final Long partyId;
+
   private final MissionDto mission;
   private final ResourcesDto resources;
   private final Map<UnitKindDto, Integer> units;
   private final boolean own;
   private final FlightEventKindDto kind;
 
-  public FlightEventDto(long id, Date at, long startUserId, String startUserName, String startBodyName,
-                        CoordinatesDto startCoordinates, @Nullable Long targetUserId, @Nullable String targetUserName,
-                        @Nullable String targetBodyName, CoordinatesDto targetCoordinates, @Nullable Long partyId,
-                        MissionDto mission, ResourcesDto resources, Map<UnitKindDto, Integer> units, boolean own,
-                        FlightEventKindDto kind) {
+  public FlightEventDto(long id, Date at, long startUserId, long startBodyId, CoordinatesDto startCoordinates,
+                        @Nullable Long targetUserId, @Nullable Long targetBodyId, CoordinatesDto targetCoordinates,
+                        @Nullable Long partyId, MissionDto mission, ResourcesDto resources,
+                        Map<UnitKindDto, Integer> units, boolean own, FlightEventKindDto kind) {
     this.id = id;
     this.at = at;
     this.startUserId = startUserId;
-    this.startUserName = startUserName;
-    this.startBodyName = startBodyName;
+    this.startBodyId = startBodyId;
     this.startCoordinates = startCoordinates;
     this.targetUserId = targetUserId;
-    this.targetUserName = targetUserName;
-    this.targetBodyName = targetBodyName;
+    this.targetBodyId = targetBodyId;
     this.targetCoordinates = targetCoordinates;
     this.partyId = partyId;
     this.mission = mission;
@@ -58,34 +61,29 @@ public class FlightEventDto {
     return startUserId;
   }
 
-  public String getStartUserName() {
-    return startUserName;
-  }
-
-  public String getStartBodyName() {
-    return startBodyName;
+  public long getStartBodyId() {
+    return startBodyId;
   }
 
   public CoordinatesDto getStartCoordinates() {
     return startCoordinates;
   }
 
+  @Nullable
   public Long getTargetUserId() {
     return targetUserId;
   }
 
-  public String getTargetUserName() {
-    return targetUserName;
-  }
-
-  public String getTargetBodyName() {
-    return targetBodyName;
+  @Nullable
+  public Long getTargetBodyId() {
+    return targetBodyId;
   }
 
   public CoordinatesDto getTargetCoordinates() {
     return targetCoordinates;
   }
 
+  @Nullable
   public Long getPartyId() {
     return partyId;
   }
