@@ -15,7 +15,15 @@
       </tr>
       <tr>
         <td th:text="#{recipient}">Recipient</td>
-        <td th:text="${recipientName}"></td>
+        <td th:with="userInfo=${@userInfoCache.get(recipientId)}">
+          <span th:text="${userInfo.name}"></span>
+          <th:block th:if="${userInfo.homeworldId.isPresent()}"
+                    th:with="c=${@bodyInfoCache.get(userInfo.homeworldId.getAsLong()).coordinates}">
+            [<a
+              th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+              th:title="#{goToGalaxy}" th:text="${c}">1-2-3-P</a>]
+          </th:block>
+        </td>
       </tr>
       <tr>
         <td>

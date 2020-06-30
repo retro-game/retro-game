@@ -9,7 +9,6 @@ import com.github.retro_game.retro_game.dto.PrivateMessageDto;
 import com.github.retro_game.retro_game.dto.PrivateMessageKindDto;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.PrivateMessageService;
-import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
 import org.hibernate.validator.constraints.Range;
@@ -29,13 +28,11 @@ import java.util.List;
 public class MessagesPrivateController {
   private final MessagesSummaryService messagesSummaryService;
   private final PrivateMessageService privateMessageService;
-  private final UserService userService;
 
   public MessagesPrivateController(MessagesSummaryService messagesSummaryService,
-                                   PrivateMessageService privateMessageService, UserService userService) {
+                                   PrivateMessageService privateMessageService) {
     this.messagesSummaryService = messagesSummaryService;
     this.privateMessageService = privateMessageService;
-    this.userService = userService;
   }
 
   @GetMapping("/messages/private")
@@ -68,10 +65,6 @@ public class MessagesPrivateController {
                      Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("recipientId", recipientId);
-
-    String recipientName = userService.getName(recipientId);
-    model.addAttribute("recipientName", recipientName);
-
     return "messages-private-send";
   }
 
