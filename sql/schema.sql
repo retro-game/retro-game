@@ -566,42 +566,33 @@ create index pranger_at_idx
 -- Flight view
 
 create view flight_view as (
-     select f.id,
-            f.start_user_id,
-            su.name as start_user_name,
-            f.start_body_id,
-            sb.galaxy as start_galaxy,
-            sb.system as start_system,
-            sb.position as start_position,
-            sb.kind as start_kind,
-            sb.name as start_body_name,
-            f.target_user_id,
-            tu.name as target_user_name,
-            f.target_body_id,
-            tb.name as target_body_name,
-            f.target_galaxy,
-            f.target_system,
-            f.target_position,
-            f.target_kind,
-            f.party_id,
-            f.departure_at,
-            f.arrival_at,
-            f.return_at,
-            f.hold_until,
-            f.mission,
-            f.metal,
-            f.crystal,
-            f.deuterium,
-            f.units
-       from flights f
-       join users su
-         on su.id = f.start_user_id
-       join bodies sb
-         on sb.id = f.start_body_id
-  left join users tu
-         on tu.id = f.target_user_id
-  left join bodies tb
-         on tb.id = f.target_body_id
+  select f.id,
+         f.start_user_id,
+         f.start_body_id,
+         sb.galaxy as start_galaxy,
+         sb.system as start_system,
+         sb.position as start_position,
+         sb.kind as start_kind,
+         sb.name as start_body_name,
+         f.target_user_id,
+         f.target_body_id,
+         f.target_galaxy,
+         f.target_system,
+         f.target_position,
+         f.target_kind,
+         f.party_id,
+         f.departure_at,
+         f.arrival_at,
+         f.return_at,
+         f.hold_until,
+         f.mission,
+         f.metal,
+         f.crystal,
+         f.deuterium,
+         f.units
+    from flights f
+    join bodies sb
+      on sb.id = f.start_body_id
 );
 
 -- Galaxy

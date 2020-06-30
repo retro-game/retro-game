@@ -20,14 +20,8 @@ public class FlightView {
   @Column(name = "start_user_id", nullable = false, insertable = false, updatable = false)
   private long startUserId;
 
-  @Column(name = "start_user_name", nullable = false, insertable = false, updatable = false)
-  private String startUserName;
-
   @Column(name = "start_body_id", nullable = false, insertable = false, updatable = false)
   private long startBodyId;
-
-  @Column(name = "start_body_name", nullable = false, insertable = false, updatable = false)
-  private String startBodyName;
 
   @Embedded
   @AttributeOverrides({
@@ -41,14 +35,8 @@ public class FlightView {
   @Column(name = "target_user_id", insertable = false, updatable = false)
   private Long targetUserId;
 
-  @Column(name = "target_user_name", insertable = false, updatable = false)
-  private String targetUserName;
-
   @Column(name = "target_body_id", insertable = false, updatable = false)
   private Long targetBodyId;
-
-  @Column(name = "target_body_name", insertable = false, updatable = false)
-  private String targetBodyName;
 
   @Embedded
   @AttributeOverrides({
@@ -100,16 +88,8 @@ public class FlightView {
     return startUserId;
   }
 
-  public String getStartUserName() {
-    return startUserName;
-  }
-
   public long getStartBodyId() {
     return startBodyId;
-  }
-
-  public String getStartBodyName() {
-    return startBodyName;
   }
 
   public Coordinates getStartCoordinates() {
@@ -120,16 +100,8 @@ public class FlightView {
     return targetUserId;
   }
 
-  public String getTargetUserName() {
-    return targetUserName;
-  }
-
   public Long getTargetBodyId() {
     return targetBodyId;
-  }
-
-  public String getTargetBodyName() {
-    return targetBodyName;
   }
 
   public Coordinates getTargetCoordinates() {
