@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.dto.PhalanxFlightEventDto;
+import com.github.retro_game.retro_game.dto.FlightEventDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
@@ -71,7 +71,7 @@ class PhalanxServiceImpl implements PhalanxService {
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
-  public List<PhalanxFlightEventDto> scan(long bodyId, int galaxy, int system, int position) {
+  public List<FlightEventDto> scan(long bodyId, int galaxy, int system, int position) {
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
     Coordinates coordinates = new Coordinates(galaxy, system, position, CoordinatesKind.PLANET);

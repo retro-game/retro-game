@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.dto.PhalanxFlightEventDto;
+import com.github.retro_game.retro_game.dto.FlightEventDto;
 import com.github.retro_game.retro_game.entity.Body;
 import com.github.retro_game.retro_game.entity.User;
 import com.github.retro_game.retro_game.service.FlightService;
@@ -13,5 +13,5 @@ interface FlightServiceInternal extends EventHandler, FlightService {
 
   boolean existsByUser(User user);
 
-  List<PhalanxFlightEventDto> getPhalanxFlightEvents(int galaxy, int system, int position);
+  List<FlightEventDto> getPhalanxFlightEvents(int galaxy, int system, int position);
 }

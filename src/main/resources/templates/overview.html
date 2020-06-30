@@ -38,57 +38,7 @@
     </tr>
     <tr th:each="event : ${flightEvents}">
       <td th:data-timer="${event.at.time / 1000}" th:text="${#dates.format(event.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
-      <td colspan="3" th:class="${'event ' + (event.own ? 'own-' : 'foreign-') + #strings.toLowerCase(event.mission)}"
-          th:with="
-            sc=${event.startCoordinates},
-            tc=${event.targetCoordinates},
-            startLink=@{/galaxy(body=${bodyId},galaxy=${sc.galaxy},system=${sc.system},position=${sc.position},kind=${sc.kind})},
-            targetLink=@{/galaxy(body=${bodyId},galaxy=${tc.galaxy},system=${tc.system},position=${tc.position},kind=${tc.kind})},
-            start=${event.startBodyName} + ' <a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${sc} + ']</a>',
-            target=${event.targetBodyName != null ? event.targetBodyName + ' ' : ''} + '<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
-            mission=#{${'mission.' + event.mission}},
-            r=${event.resources},
-            withResources=${r.metal > 0 || r.crystal > 0 || r.deuterium > 0},
-            resources=${
-              '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(
-                '<p>' + #messages.msg('metal') + ': <strong>' + #numbers.formatInteger(r.metal, 1, 'DEFAULT') + '</strong></p>' +
-                '<p>' + #messages.msg('crystal') + ': <strong>' + #numbers.formatInteger(r.crystal, 1, 'DEFAULT') + '</strong></p>' +
-                '<p>' + #messages.msg('deuterium') + ': <strong>' + #numbers.formatInteger(r.deuterium, 1, 'DEFAULT') + '</strong></p>'
-              ) + '''>' + @formatterService.prefixedNumber(r.metal + r.crystal + r.deuterium) + '</mark>'},
-            units='<mark>' + ${@formatterService.formatUnits(event.units)} + '</mark>',
-            sendMessageLink=@{/messages/private/send(body=${bodyId},recipient=${event.startUserId})},
-            statisticsLink=@{/statistics/summary(body=${bodyId},user=${event.startUserId})},
-            user=${
-              '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(
-                '<table>' +
-                  '<tr>' +
-                    '<th><mark>' + event.startUserName + '</mark></th>' +
-                  '</tr>' +
-                  '<tr>' +
-                    '<td>' +
-                      '<p><a href=''' + sendMessageLink + '''>' + #messages.msg('sendMessage') + '</a></p>' +
-                      '<p><a href=''' + statisticsLink + '''>' + #messages.msg('statistics') + '</a></p>' +
-                    '</td>' +
-                  '</tr>' +
-                '</table>'
-              ) + '''>' + event.startUserName + '</mark>'},
-            partyLink=@{/party(body=${bodyId},party=${event.partyId})},
-            party='<a href=\'' + ${#strings.escapeXml(partyLink)} + '\'>#' + ${event.partyId} + '</a>',
-            kind=${event.kind}">
-        <div th:if="${event.own}"
-             th:utext="${#messages.msg('eventOwnFormat.' + kind, start, target, units)}"
-             th:remove="tag"></div>
-        <div th:unless="${event.own}"
-             th:utext="${#messages.msgWithParams('eventForeignFormat.' + kind, { start, target, units, user })}"
-             th:remove="tag"></div>
-        <div th:if="${withResources}"
-             th:utext="${#messages.msg('eventMissionWithResourcesFormat.' + kind, mission, resources)}" th:remove="tag">
-        </div>
-        <div th:unless="${withResources}" th:utext="${#messages.msg('eventMissionFormat.' + kind, mission)}"
-             th:remove="tag">
-        </div>
-        <div th:if="${event.partyId}" th:utext="#{eventPartyFormat(${party})}" th:remove="tag"></div>
-      </td>
+      <td colspan="3" th:insert="flight-event :: flight-event(${bodyId}, ${event}, true)"></td>
     </tr>
     <tr>
       <td th:if="${bodies.associatedBody != null}" class="overview-body" th:with="body=${bodies.associatedBody}">

@@ -289,11 +289,11 @@ strong {
 .tooltip {
   background-color: #344566;
   border: 1px #234 solid;
+  color: #eee;
   padding: .25rem;
 }
 
 .tooltip p {
-  color: #eee;
   margin: 0;
   padding-bottom: .25rem;
 }

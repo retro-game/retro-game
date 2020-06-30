@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface FlightService {
-  List<OverviewFlightEventDto> getOverviewFlightEvents(long bodyId);
+  List<FlightEventDto> getOverviewFlightEvents(long bodyId);
 
   List<FlightDto> getFlights(long bodyId);
 

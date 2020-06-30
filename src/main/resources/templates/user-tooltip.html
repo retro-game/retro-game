@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<span th:fragment="user-tooltip(bodyId, userId, userName)" data-tooltip data-tooltip-html
-      th:data-tooltip-title="
+<span th:fragment="user-tooltip(bodyId, userId, userName)"
+      th:with="bodies=${@userBodiesCache.get(userId)},
+               coords=${#lists.isEmpty(bodies) ? null : @bodyInfoCache.get(bodies.get(0)).coordinates},
+               galaxyLink=@{/galaxy(body=${bodyId},galaxy=${coords?.galaxy},system=${coords?.system},position=${coords?.position},kind=${coords?.kind})},
+               sendMessageLink=@{/messages/private/send(body=${bodyId},recipient=${userId})},
+               statisticsLink=@{/statistics/summary(body=${bodyId},user=${userId})}"
+      data-tooltip data-tooltip-html th:data-tooltip-title="
         '<table>' +
           '<tr>' +
-            '<th>' + ${userName} + '</th>' +
+            '<th>' + ${userName} + (${coords != null} ? ' [<a href=\'' + ${#strings.escapeXml(galaxyLink)} + '\'>' + ${coords} + '</a>]' : '') + '</th>' +
           '</tr>' +
           '<tr>' +
             '<td>' +
-              '<p><a href=\'' + @{/messages/private/send(body=${bodyId},recipient=${userId})} + '\'>' + #{sendMessage} + '</a></p>' +
-              '<p><a href=\'' + @{/statistics/summary(body=${bodyId},user=${userId})} + '\'>' + #{statistics} + '</a></p>' +
+              '<p><a href=\'' + ${#strings.escapeXml(sendMessageLink)}  + '\'>' + #{sendMessage} + '</a></p>' +
+              '<p><a href=\'' + ${#strings.escapeXml(statisticsLink)} + '\'>' + #{statistics} + '</a></p>' +
             '</td>' +
           '</tr>' +
         '</table>'"

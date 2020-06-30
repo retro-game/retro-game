@@ -126,7 +126,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   @Override
   @Transactional(readOnly = true)
-  public List<OverviewFlightEventDto> getOverviewFlightEvents(long bodyId) {
+  public List<FlightEventDto> getOverviewFlightEvents(long bodyId) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
@@ -134,7 +134,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     List<FlightView> flights = flightViewRepository.findAllByStartUserIdOrTargetUserIdOrPartyIdIn(user.getId(),
         user.getId(), partiesIds);
 
-    List<OverviewFlightEventDto> events = new ArrayList<>();
+    List<FlightEventDto> events = new ArrayList<>();
     for (FlightView flight : flights) {
       boolean own = flight.getStartUserId() == userId;
       boolean arriving = flight.getArrivalAt() != null && flight.getArrivalAt().after(now);
@@ -153,14 +153,14 @@ class FlightServiceImpl implements FlightServiceInternal {
       var units = convertUnitsForFlightEvent(flight.getUnits());
 
       if (arriving) {
-        events.add(new OverviewFlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
+        events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
             flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
             flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
             resources, units, own, FlightEventKindDto.ARRIVING));
       }
 
       if (holding) {
-        events.add(new OverviewFlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
+        events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
             flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
             flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
             resources, units, own, FlightEventKindDto.HOLDING));
@@ -168,27 +168,27 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       if (own && ((mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK)
           || flight.getArrivalAt() == null)) {
-        events.add(new OverviewFlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
+        events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
             flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
             flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
             resources, units, true, FlightEventKindDto.RETURNING));
       }
     }
 
-    events.sort(Comparator.comparing(OverviewFlightEventDto::getAt).thenComparing(OverviewFlightEventDto::getId));
+    events.sort(Comparator.comparing(FlightEventDto::getAt).thenComparing(FlightEventDto::getId));
     return events;
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<PhalanxFlightEventDto> getPhalanxFlightEvents(int galaxy, int system, int position) {
+  public List<FlightEventDto> getPhalanxFlightEvents(int galaxy, int system, int position) {
     long userId = CustomUser.getCurrentUserId();
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     Coordinates coordinates = new Coordinates(galaxy, system, position, CoordinatesKind.PLANET);
     List<FlightView> flights = flightViewRepository.findAllByStartCoordinatesOrTargetCoordinates(coordinates,
         coordinates);
 
-    List<PhalanxFlightEventDto> events = new ArrayList<>();
+    List<FlightEventDto> events = new ArrayList<>();
     for (FlightView flight : flights) {
       boolean own = flight.getStartUserId() == userId;
       boolean arriving = flight.getArrivalAt() != null && flight.getArrivalAt().after(now);
@@ -199,28 +199,32 @@ class FlightServiceImpl implements FlightServiceInternal {
       CoordinatesDto startCoordinates = Converter.convert(flight.getStartCoordinates());
       CoordinatesDto targetCoordinates = Converter.convert(flight.getTargetCoordinates());
       MissionDto mission = Converter.convert(flight.getMission());
+      var resources = Converter.convert(flight.getResources());
       var units = convertUnitsForFlightEvent(flight.getUnits());
 
       if (arriving && (!isStart || flight.getMission() != Mission.DEPLOYMENT)) {
-        events.add(new PhalanxFlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetBodyName(),
-            targetCoordinates, flight.getPartyId(), mission, units, own, FlightEventKindDto.ARRIVING));
+        events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
+            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
+            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
+            resources, units, own, FlightEventKindDto.ARRIVING));
       }
 
       if (holding && !isStart) {
-        events.add(new PhalanxFlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetBodyName(),
-            targetCoordinates, flight.getPartyId(), mission, units, own, FlightEventKindDto.HOLDING));
+        events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
+            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
+            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
+            resources, units, own, FlightEventKindDto.HOLDING));
       }
 
       if (isStart && mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK) {
-        events.add(new PhalanxFlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
-            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetBodyName(),
-            targetCoordinates, flight.getPartyId(), mission, units, own, FlightEventKindDto.RETURNING));
+        events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
+            flight.getStartUserName(), flight.getStartBodyName(), startCoordinates, flight.getTargetUserId(),
+            flight.getTargetUserName(), flight.getTargetBodyName(), targetCoordinates, flight.getPartyId(), mission,
+            resources, units, own, FlightEventKindDto.RETURNING));
       }
     }
 
-    events.sort(Comparator.comparing(PhalanxFlightEventDto::getAt).thenComparing(PhalanxFlightEventDto::getId));
+    events.sort(Comparator.comparing(FlightEventDto::getAt).thenComparing(FlightEventDto::getId));
     return events;
   }
 
