@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.battleengine.BattleEngine;
 import com.github.retro_game.retro_game.battleengine.BattleOutcome;
 import com.github.retro_game.retro_game.battleengine.Combatant;
 import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
+import com.github.retro_game.retro_game.cache.BodyInfoCache;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.Item;
@@ -42,6 +43,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private final int maxPlanets;
   private final int fleetSpeed;
   private final BattleEngine battleEngine;
+  private final BodyInfoCache bodyInfoCache;
   private final BodyRepository bodyRepository;
   private final DebrisFieldRepository debrisFieldRepository;
   private final FlightRepository flightRepository;
@@ -60,7 +62,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   FlightServiceImpl(@Value("${retro-game.astrophysics-based-colonization}") boolean astrophysicsBasedColonization,
                     @Value("${retro-game.max-planets}") int maxPlanets,
                     @Value("${retro-game.fleet-speed}") int fleetSpeed,
-                    BattleEngine battleEngine, BodyRepository bodyRepository,
+                    BattleEngine battleEngine, BodyInfoCache bodyInfoCache, BodyRepository bodyRepository,
                     DebrisFieldRepository debrisFieldRepository, EventRepository eventRepository,
                     FlightRepository flightRepository, FlightViewRepository flightViewRepository,
                     PartyRepository partyRepository, UserRepository userRepository) {
@@ -68,6 +70,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     this.maxPlanets = maxPlanets;
     this.fleetSpeed = fleetSpeed;
     this.battleEngine = battleEngine;
+    this.bodyInfoCache = bodyInfoCache;
     this.bodyRepository = bodyRepository;
     this.debrisFieldRepository = debrisFieldRepository;
     this.eventRepository = eventRepository;
@@ -223,24 +226,33 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public List<FlightDto> getFlights(long bodyId) {
-    long userId = CustomUser.getCurrentUserId();
-    User user = userRepository.getOne(userId);
-    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    List<FlightView> flights = flightViewRepository.findAllByStartUserId(user.getId());
-    List<FlightDto> list = new ArrayList<>();
-    for (FlightView flight : flights) {
-      boolean recallable = flight.getMission() != Mission.MISSILE_ATTACK && flight.getArrivalAt() != null &&
+    var userId = CustomUser.getCurrentUserId();
+    var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+    var flights = flightViewRepository.findAllByStartUserId(userId);
+    var list = new ArrayList<FlightDto>();
+    for (var flight : flights) {
+      var startBodyId = flight.getStartBodyId();
+      var startBodyInfo = bodyInfoCache.get(startBodyId);
+      var startBodyName = startBodyInfo.getName();
+      var startCoordinates = startBodyInfo.getCoordinates();
+
+      var targetBodyId = flight.getTargetBodyId();
+      var targetBodyName = targetBodyId != null ? bodyInfoCache.get(targetBodyId).getName() : null;
+      var targetCoordinates = Converter.convert(flight.getTargetCoordinates());
+
+      var units = convertUnitsForFlightEvent(flight.getUnits());
+
+      var recallable = flight.getMission() != Mission.MISSILE_ATTACK && flight.getArrivalAt() != null &&
           (flight.getArrivalAt().after(now) ||
               (flight.getMission() == Mission.HOLD && flight.getHoldUntil().after(now)));
-      boolean partyCreatable = recallable && flight.getPartyId() == null &&
+      var partyCreatable = recallable && flight.getPartyId() == null &&
           (flight.getMission() == Mission.ATTACK || flight.getMission() == Mission.DESTROY);
-      var units = convertUnitsForFlightEvent(flight.getUnits());
-      list.add(new FlightDto(flight.getId(), flight.getStartBodyName(), Converter.convert(flight.getStartCoordinates()),
-          flight.getTargetBodyName(), Converter.convert(flight.getTargetCoordinates()), flight.getPartyId(),
-          Converter.convert(flight.getMission()), flight.getDepartureAt(), flight.getArrivalAt(), flight.getReturnAt(),
-          Converter.convert(flight.getResources()), units, recallable, partyCreatable));
+
+      var dto = new FlightDto(flight.getId(), startBodyName, startCoordinates, targetBodyName, targetCoordinates,
+          flight.getPartyId(), Converter.convert(flight.getMission()), flight.getDepartureAt(), flight.getArrivalAt(),
+          flight.getReturnAt(), Converter.convert(flight.getResources()), units, recallable, partyCreatable);
+      list.add(dto);
     }
     return list;
   }
