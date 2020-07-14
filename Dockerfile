@@ -1,4 +1,4 @@
-FROM alpine:3.11 AS builder
+FROM alpine:3.12 AS builder
 WORKDIR /retro-game-src
 COPY . .
 RUN \
@@ -20,7 +20,7 @@ RUN \
   # Build the game.
   mvn -B package
 
-FROM alpine:3.11
+FROM alpine:3.12
 WORKDIR /retro-game
 COPY --from=0 /retro-game-src/build/libBattleEngine.so .
 COPY --from=0 /retro-game-src/target/retro-game-*.jar retro-game.jar
