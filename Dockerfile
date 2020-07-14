@@ -12,11 +12,8 @@ RUN \
     musl-dev \
     openjdk11-jdk && \
   # Build the battle engine.
-  mkdir build && \
-  cd build && \
-  JAVA_HOME=/usr/lib/jvm/java-11-openjdk cmake -DCMAKE_BUILD_TYPE=Release ../battle-engine && \
-  make && \
-  cd .. && \
+  JAVA_HOME=/usr/lib/jvm/java-11-openjdk cmake -B build -DCMAKE_BUILD_TYPE=Release battle-engine && \
+  cmake --build build && \
   # Build the game.
   mvn -B package
 
