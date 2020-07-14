@@ -15,7 +15,7 @@ services:
       - ./config/application.properties:/retro-game/config/application.properties
 
   postgres:
-    image: postgres:12.1-alpine
+    image: postgres:12.3-alpine
     restart: always
     ports:
       - "5432:5432"
@@ -26,7 +26,7 @@ services:
       - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   redis:
-    image: redis:5.0-alpine
+    image: redis:6.0-alpine
     restart: always
     ports:
       - "6379:6379"
