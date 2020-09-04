@@ -397,6 +397,14 @@ strong {
   color: #5f5;
 }
 
+.requirement-not-met {
+  color: red;
+}
+
+.requirement-met {
+  color: #8f0;
+}
+
 .no-capacity, .no-energy {
   color: red;
 }

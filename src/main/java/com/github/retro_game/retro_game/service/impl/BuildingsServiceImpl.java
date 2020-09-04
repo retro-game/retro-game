@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service
+@Service("buildingsService")
 class BuildingsServiceImpl implements BuildingsServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(BuildingsServiceImpl.class);
   private final int buildingQueueCapacity;
@@ -245,6 +245,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     buildings.sort(Comparator.comparing(BuildingDto::getKind));
 
     return new BuildingsAndQueuePairDto(buildings, queue);
+  }
+
+  @Override
+  public int getLevel(long bodyId, BuildingKindDto kind) {
+    Body body = bodyServiceInternal.getUpdated(bodyId);
+    BuildingKind k = Converter.convert(kind);
+
+    return body.getBuildingLevel(k);
   }
 
   @Override
