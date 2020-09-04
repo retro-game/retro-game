@@ -30,7 +30,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
+@Service("technologyService")
 class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
   private final int technologyQueueCapacity;
