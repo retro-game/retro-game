@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(BattleEngine C)
 
 option(BATTLE_ENGINE_ENABLE_FAST_MATH_OPT "Enable fast math (-ffast-math)" ON)
+option(BATTLE_ENGINE_ENABLE_ARCH_NATIVE_OPT "Enable optimizations for native arch (-march=native)" OFF)
 option(BATTLE_ENGINE_ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BATTLE_ENGINE_ENABLE_MEMSAN "Enable Memory Sanitizer" OFF)
 option(BATTLE_ENGINE_ENABLE_UBSAN "Enable Undefined Behavior Sanitizer" OFF)
@@ -17,6 +18,10 @@ if(CMAKE_C_COMPILER_ID MATCHES Clang OR CMAKE_COMPILER_IS_GNUCC)
 
   if(BATTLE_ENGINE_ENABLE_FAST_MATH_OPT)
     target_compile_options(BattleEngine PRIVATE -ffast-math)
+  endif()
+
+  if(BATTLE_ENGINE_ENABLE_ARCH_NATIVE_OPT)
+    target_compile_options(BattleEngine PRIVATE -march=native)
   endif()
 
   if(BATTLE_ENGINE_ENABLE_ASAN)
