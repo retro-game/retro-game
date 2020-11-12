@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.3.1.RELEASE</version>
+    <version>2.3.5.RELEASE</version>
     <relativePath/>
   </parent>
 
@@ -28,12 +28,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>29.0-jre</version>
+      <version>30.0-jre</version>
     </dependency>
     <dependency>
       <groupId>com.vladmihalcea</groupId>
       <artifactId>hibernate-types-52</artifactId>
-      <version>2.9.12</version>
+      <version>2.10.0</version>
     </dependency>
     <dependency>
       <groupId>io.vavr</groupId>
@@ -43,17 +43,17 @@
     <dependency>
       <groupId>nz.net.ultraq.thymeleaf</groupId>
       <artifactId>thymeleaf-layout-dialect</artifactId>
-      <version>2.4.1</version>
+      <version>2.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.10</version>
+      <version>3.11</version>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.2.14</version>
+      <version>42.2.18</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -86,7 +86,7 @@
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-data-redis</artifactId>
-      <version>2.3.0.RELEASE</version>
+      <version>2.3.1.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>org.thymeleaf.extras</groupId>
