@@ -64,13 +64,13 @@ struct unit_characteristics {
 
 /* Unit group = units with the same kind. */
 struct unit_group_stats {
-  long times_fired;
-  long times_was_shot;
-  long shield_damage_dealt;
-  long hull_damage_dealt;
-  long shield_damage_taken;
-  long hull_damage_taken;
-  long num_remaining_units;
+  jlong times_fired;
+  jlong times_was_shot;
+  jlong shield_damage_dealt;
+  jlong hull_damage_dealt;
+  jlong shield_damage_taken;
+  jlong hull_damage_taken;
+  jlong num_remaining_units;
 };
 
 struct combatant {
@@ -341,9 +341,9 @@ jobjectArray create_combatants_outcomes(struct jni *jni, const struct combatant 
 }
 
 jobject create_combatant_outcome(struct jni *jni, const struct combatant *combatant, size_t num_rounds) {
-  size_t length = num_rounds * num_kinds * (sizeof(*combatant->stats) / sizeof(long));
+  size_t length = num_rounds * num_kinds * (sizeof(*combatant->stats) / sizeof(jlong));
   jlongArray stats = (*jni->env)->NewLongArray(jni->env, (jsize)length);
-  (*jni->env)->SetLongArrayRegion(jni->env, stats, 0, (jsize)length, (long *)combatant->stats);
+  (*jni->env)->SetLongArrayRegion(jni->env, stats, 0, (jsize)length, (const jlong *)combatant->stats);
   return (*jni->env)->NewObject(jni->env, jni->combatant_outcome.class, jni->combatant_outcome.constructor, num_kinds,
                                 stats);
 }
@@ -479,18 +479,18 @@ void fire(struct party *restrict attackers_party, struct party *restrict defende
           float max_shield = target_characteristics->shield * (1.0f + 0.1f * defender->shielding_technology);
           float shield_damage = 0.01f * floorf(100.0f * damage / max_shield) * max_shield;
           target->shield -= shield_damage;
-          shooter_stats->shield_damage_dealt += (long)shield_damage;
-          target_stats->shield_damage_taken += (long)shield_damage;
+          shooter_stats->shield_damage_dealt += (jlong)shield_damage;
+          target_stats->shield_damage_taken += (jlong)shield_damage;
         } else {
-          shooter_stats->shield_damage_dealt += (long)target->shield;
-          target_stats->shield_damage_taken += (long)target->shield;
+          shooter_stats->shield_damage_dealt += (jlong)target->shield;
+          target_stats->shield_damage_taken += (jlong)target->shield;
           target->shield = 0.0f;
           if (hull_damage > hull) {
             hull_damage = hull;
           }
           hull -= hull_damage;
-          shooter_stats->hull_damage_dealt += (long)hull_damage;
-          target_stats->hull_damage_taken += (long)hull_damage;
+          shooter_stats->hull_damage_dealt += (jlong)hull_damage;
+          target_stats->hull_damage_taken += (jlong)hull_damage;
         }
 
         if (hull != 0.0f) {
