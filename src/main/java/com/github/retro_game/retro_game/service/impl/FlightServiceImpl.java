@@ -128,104 +128,6 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public List<FlightEventDto> getOverviewFlightEvents(long bodyId) {
-    long userId = CustomUser.getCurrentUserId();
-    User user = userRepository.getOne(userId);
-    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    Set<Long> partiesIds = user.getParties().stream().map(Party::getId).collect(Collectors.toSet());
-    List<FlightView> flights = flightViewRepository.findAllByStartUserIdOrTargetUserIdOrPartyIdIn(user.getId(),
-        user.getId(), partiesIds);
-
-    List<FlightEventDto> events = new ArrayList<>();
-    for (FlightView flight : flights) {
-      boolean own = flight.getStartUserId() == userId;
-      boolean arriving = flight.getArrivalAt() != null && flight.getArrivalAt().after(now);
-      boolean holding = flight.getArrivalAt() != null && flight.getMission() == Mission.HOLD &&
-          flight.getHoldUntil().after(now);
-
-      // Somebody else's returning flights shouldn't be visible.
-      if (!own && !arriving && !holding) {
-        continue;
-      }
-
-      CoordinatesDto startCoordinates = Converter.convert(flight.getStartCoordinates());
-      CoordinatesDto targetCoordinates = Converter.convert(flight.getTargetCoordinates());
-      MissionDto mission = Converter.convert(flight.getMission());
-      ResourcesDto resources = Converter.convert(flight.getResources());
-      var units = convertUnitsForFlightEvent(flight.getUnits());
-
-      if (arriving) {
-        events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.ARRIVING));
-      }
-
-      if (holding) {
-        events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.HOLDING));
-      }
-
-      if (own && ((mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK)
-          || flight.getArrivalAt() == null)) {
-        events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, true, FlightEventKindDto.RETURNING));
-      }
-    }
-
-    events.sort(Comparator.comparing(FlightEventDto::getAt).thenComparing(FlightEventDto::getId));
-    return events;
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<FlightEventDto> getPhalanxFlightEvents(int galaxy, int system, int position) {
-    long userId = CustomUser.getCurrentUserId();
-    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    Coordinates coordinates = new Coordinates(galaxy, system, position, CoordinatesKind.PLANET);
-    List<FlightView> flights = flightViewRepository.findAllByStartCoordinatesOrTargetCoordinates(coordinates,
-        coordinates);
-
-    List<FlightEventDto> events = new ArrayList<>();
-    for (FlightView flight : flights) {
-      boolean own = flight.getStartUserId() == userId;
-      boolean arriving = flight.getArrivalAt() != null && flight.getArrivalAt().after(now);
-      boolean holding = flight.getArrivalAt() != null && flight.getMission() == Mission.HOLD &&
-          flight.getHoldUntil().after(now);
-      boolean isStart = coordinates.equals(flight.getStartCoordinates());
-
-      CoordinatesDto startCoordinates = Converter.convert(flight.getStartCoordinates());
-      CoordinatesDto targetCoordinates = Converter.convert(flight.getTargetCoordinates());
-      MissionDto mission = Converter.convert(flight.getMission());
-      var resources = Converter.convert(flight.getResources());
-      var units = convertUnitsForFlightEvent(flight.getUnits());
-
-      if (arriving && (!isStart || flight.getMission() != Mission.DEPLOYMENT)) {
-        events.add(new FlightEventDto(flight.getId(), flight.getArrivalAt(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.ARRIVING));
-      }
-
-      if (holding && !isStart) {
-        events.add(new FlightEventDto(flight.getId(), flight.getHoldUntil(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.HOLDING));
-      }
-
-      if (isStart && mission != MissionDto.DEPLOYMENT && mission != MissionDto.MISSILE_ATTACK) {
-        events.add(new FlightEventDto(flight.getId(), flight.getReturnAt(), flight.getStartUserId(),
-            flight.getStartBodyId(), startCoordinates, flight.getTargetUserId(), flight.getTargetBodyId(),
-            targetCoordinates, flight.getPartyId(), mission, resources, units, own, FlightEventKindDto.RETURNING));
-      }
-    }
-
-    events.sort(Comparator.comparing(FlightEventDto::getAt).thenComparing(FlightEventDto::getId));
-    return events;
-  }
-
-  @Override
   public List<FlightDto> getFlights(long bodyId) {
     var userId = CustomUser.getCurrentUserId();
     var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
@@ -241,7 +143,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       var targetBodyName = targetBodyId != null ? bodyInfoCache.get(targetBodyId).getName() : null;
       var targetCoordinates = Converter.convert(flight.getTargetCoordinates());
 
-      var units = convertUnitsForFlightEvent(flight.getUnits());
+      var units = FlightUtils.convertUnitsWithPositiveCount(flight.getUnits());
 
       var recallable = flight.getMission() != Mission.MISSILE_ATTACK && flight.getArrivalAt() != null &&
           (flight.getArrivalAt().after(now) ||
@@ -255,19 +157,6 @@ class FlightServiceImpl implements FlightServiceInternal {
       list.add(dto);
     }
     return list;
-  }
-
-  private static EnumMap<UnitKindDto, Integer> convertUnitsForFlightEvent(Map<UnitKind, Integer> units) {
-    return units.entrySet().stream()
-        .filter(e -> e.getValue() > 0)
-        .collect(Collectors.toMap(
-            e -> Converter.convert(e.getKey()),
-            Map.Entry::getValue,
-            (a, b) -> {
-              throw new IllegalStateException();
-            },
-            () -> new EnumMap<>(UnitKindDto.class)
-        ));
   }
 
   @Override

@@ -15,17 +15,17 @@ import java.util.Date;
 @Controller
 public class OverviewController {
   private final BodyService bodyService;
-  private final FlightService flightService;
+  private final FlightEventsService flightEventsService;
   private final MessagesSummaryService messagesSummaryService;
   private final ReportService reportService;
   private final StatisticsService statisticsService;
   private final UserService userService;
 
-  public OverviewController(BodyService bodyService, FlightService flightService,
+  public OverviewController(BodyService bodyService, FlightEventsService flightEventsService,
                             MessagesSummaryService messagesSummaryService, ReportService reportService,
                             StatisticsService statisticsService, UserService userService) {
     this.bodyService = bodyService;
-    this.flightService = flightService;
+    this.flightEventsService = flightEventsService;
     this.messagesSummaryService = messagesSummaryService;
     this.reportService = reportService;
     this.statisticsService = statisticsService;
@@ -45,7 +45,7 @@ public class OverviewController {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("serverTime", Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond())));
     model.addAttribute("userName", userService.getCurrentUserName());
-    model.addAttribute("flightEvents", flightService.getOverviewFlightEvents(bodyId));
+    model.addAttribute("flightEvents", flightEventsService.getOverviewFlightEvents(bodyId));
     model.addAttribute("bodies", bodyService.getOverviewBodies(bodyId));
     model.addAttribute("summary", statisticsService.getCurrentUserSummary(bodyId));
     return "overview";

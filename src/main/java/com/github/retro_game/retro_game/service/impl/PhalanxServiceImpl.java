@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.dto.FlightEventDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
+import com.github.retro_game.retro_game.service.FlightEventsService;
 import com.github.retro_game.retro_game.service.PhalanxService;
 import com.github.retro_game.retro_game.service.exception.BodyDoesntExistException;
 import com.github.retro_game.retro_game.service.exception.NotEnoughDeuteriumException;
@@ -27,7 +28,7 @@ class PhalanxServiceImpl implements PhalanxService {
   private final int phalanxScanCost;
   private final BodyRepository bodyRepository;
   private BodyServiceInternal bodyServiceInternal;
-  private FlightServiceInternal flightServiceInternal;
+  private FlightEventsService flightEventsService;
 
   public PhalanxServiceImpl(@Value("${retro-game.phalanx-scan-cost}") int phalanxScanCost,
                             BodyRepository bodyRepository) {
@@ -41,8 +42,8 @@ class PhalanxServiceImpl implements PhalanxService {
   }
 
   @Autowired
-  public void setFlightServiceInternal(FlightServiceInternal flightServiceInternal) {
-    this.flightServiceInternal = flightServiceInternal;
+  public void setFlightEventsService(FlightEventsService flightEventsService) {
+    this.flightEventsService = flightEventsService;
   }
 
   @PostConstruct
@@ -100,6 +101,6 @@ class PhalanxServiceImpl implements PhalanxService {
 
     logger.info("Phalanx scanning: userId={} bodyId={} targetCoordinates={}-{}-{}-P", CustomUser.getCurrentUserId(),
         body.getId(), galaxy, system, position);
-    return flightServiceInternal.getPhalanxFlightEvents(galaxy, system, position);
+    return flightEventsService.getPhalanxFlightEvents(galaxy, system, position);
   }
 }
