@@ -7,3 +7,7 @@ target/
 # IntelliJ
 *.iml
 .idea/
+
+# Skins
+src/main/resources/public/static/skins/*
+!src/main/resources/public/static/skins/Empty
