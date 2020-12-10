@@ -79,13 +79,13 @@
         </p>
         <p th:with="cost=${building.cost}">
           <span th:text="#{metal}">Metal</span>:
-          <strong th:class="${r.metal < cost.metal ? 'requirement-not-met' : ''}"
+          <strong th:class="${r.metal < cost.metal ? 'requirement-not-met' : 'requirement-met'}"
                   th:text="${#numbers.formatInteger(cost.metal, 1, 'DEFAULT')}">200</strong>
           <span th:text="#{crystal}">Crystal</span>:
-          <strong th:class="${r.crystal < cost.crystal ? 'requirement-not-met' : ''}"
+          <strong th:class="${r.crystal < cost.crystal ? 'requirement-not-met' : 'requirement-met'}"
                   th:text="${#numbers.formatInteger(cost.crystal, 1, 'DEFAULT')}">50</strong>
           <span th:text="#{deuterium}">Deuterium</span>:
-          <strong th:class="${r.deuterium < cost.deuterium ? 'requirement-not-met' : ''}"
+          <strong th:class="${r.deuterium < cost.deuterium ? 'requirement-not-met' : 'requirement-met'}"
                   th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
           <th:block th:if="${building.requiredEnergy > 0}">
             <span th:text="#{energy}">Energy</span>:
