@@ -37,7 +37,7 @@
       <th th:text="#{name}">Name</th>
       <th th:text="#{points}">Points</th>
     </tr>
-    <tr th:each="e : ${ranking.entries}">
+    <tr th:each="e : ${ranking.entries}" th:class="${currentUserId == e.userId ? 'current' : ''}">
       <td th:text="${e.rank}"></td>
       <td>
         <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${e.userId}, ${e.userName})"></span>
