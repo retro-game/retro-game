@@ -16,24 +16,25 @@ import javax.validation.constraints.NotNull;
 @Controller
 @Validated
 public class RankingController {
-    private final StatisticsService statisticsService;
-    private final UserService userService;
+  private final StatisticsService statisticsService;
+  private final UserService userService;
 
-    public RankingController(StatisticsService statisticsService, UserService userService) {
-        this.statisticsService = statisticsService;
-        this.userService = userService;
-    }
+  public RankingController(StatisticsService statisticsService, UserService userService) {
+    this.statisticsService = statisticsService;
+    this.userService = userService;
+  }
 
-    @GetMapping("/ranking")
-    @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
-    @Activity(bodies = "#bodyId")
-    public String ranking(
-            @RequestParam(name = "body") long bodyId,
-            @RequestParam(name = "kind") @NotNull StatisticsKindDto kind,
-            Model model) {
-        model.addAttribute("bodyId", bodyId);
-        model.addAttribute("currentUserId", userService.getCurrentId());
-        model.addAttribute("ranking", statisticsService.getLatestRanking(bodyId, kind));
-        return "ranking";
-    }
+  @GetMapping("/ranking")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
+  public String ranking(
+      @RequestParam(name = "body") long bodyId,
+      @RequestParam(name = "kind") @NotNull StatisticsKindDto kind,
+      Model model
+  ) {
+    model.addAttribute("bodyId", bodyId);
+    model.addAttribute("currentUserId", userService.getCurrentId());
+    model.addAttribute("ranking", statisticsService.getLatestRanking(bodyId, kind));
+    return "ranking";
+  }
 }
