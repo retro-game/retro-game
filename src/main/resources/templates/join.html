@@ -11,7 +11,7 @@
 <div class="container">
   <div>
     <div>
-      <form th:action="@{/join}" method="post" th:object="${joinForm}">
+      <form th:action="@{/join}" method="post" th:object="${joinForm}" autocomplete="on">
         <table>
           <tr>
             <th th:colspan="${#fields.hasErrors('*') ? 3 : 2}" th:text="#{join}">Join</th>
