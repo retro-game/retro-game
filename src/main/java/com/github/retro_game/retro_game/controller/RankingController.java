@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.StatisticsKindDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,18 +17,23 @@ import javax.validation.constraints.NotNull;
 @Validated
 public class RankingController {
   private final StatisticsService statisticsService;
+  private final UserService userService;
 
-  public RankingController(StatisticsService statisticsService) {
+  public RankingController(StatisticsService statisticsService, UserService userService) {
     this.statisticsService = statisticsService;
+    this.userService = userService;
   }
 
   @GetMapping("/ranking")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String ranking(@RequestParam(name = "body") long bodyId,
-                        @RequestParam(name = "kind") @NotNull StatisticsKindDto kind,
-                        Model model) {
+  public String ranking(
+      @RequestParam(name = "body") long bodyId,
+      @RequestParam(name = "kind") @NotNull StatisticsKindDto kind,
+      Model model
+  ) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("currentUserId", userService.getCurrentId());
     model.addAttribute("ranking", statisticsService.getLatestRanking(bodyId, kind));
     return "ranking";
   }

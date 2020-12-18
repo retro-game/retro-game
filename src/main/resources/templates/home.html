@@ -27,7 +27,7 @@
           <td th:text="#{successfulRegistration}">Your registration was successful, you can sign in now!</td>
         </tr>
       </table>
-      <form th:action="@{/}" method="post">
+      <form th:action="@{/}" method="post" autocomplete="on">
         <table>
           <tr>
             <th colspan="2" th:text="#{signIn}">Sign in</th>
@@ -37,7 +37,7 @@
               <label for="email" th:text="#{email}">Email</label>
             </td>
             <td>
-              <input id="email" name="email" type="email" autocomplete="off" autofocus required>
+              <input id="email" name="email" type="email" autofocus required>
             </td>
           </tr>
           <tr>

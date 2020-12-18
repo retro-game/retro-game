@@ -83,6 +83,6 @@ public class ItemTimeUtils {
     seconds /= 1 + shipyardLevel;
     seconds >>= naniteFactoryLevel;
     seconds /= unitConstructionSpeed;
-    return seconds;
+    return Math.max(seconds, 1);  // unit construction always have to take at least 1 sec
   }
 }

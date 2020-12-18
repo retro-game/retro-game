@@ -175,6 +175,7 @@ ul {
  */
 
 table {
+  background-color: #344566;
   border-collapse: collapse; /* 1 */
   max-width: 100%;
   width: 100%;
@@ -193,13 +194,16 @@ th {
 }
 
 td {
-  background-color: #344566;
   font-weight: normal;
   text-align: center;
 }
 
 td.highlight {
   border: 2px #c00 solid;
+}
+
+.current {
+  background-color: #677899;
 }
 
 /**
