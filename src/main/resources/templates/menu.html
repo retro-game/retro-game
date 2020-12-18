@@ -46,7 +46,8 @@
         <a th:href="@{/empire(body=${bodyId})}" th:text="#{empire}">Empire</a>
       </li>
       <li>
-        <a th:href="@{/alliance(body=${bodyId})}" th:text="#{alliance}">Alliance</a>
+        <a th:href="@{/alliance(body=${bodyId})}" th:with="summary=${@allianceService.getCurrentUserAlliance(bodyId)}"
+           th:text="#{alliance} + ${summary?.numApplications > 0 ? ' (' + summary?.numApplications + ')' : ''}">Alliance</a>
       </li>
       <li>
         <a th:href="@{/reports(body=${bodyId})}" th:with="summary=${@reportService.getSummary(bodyId)}"

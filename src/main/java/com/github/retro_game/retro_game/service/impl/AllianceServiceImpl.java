@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Service("allianceService")
 class AllianceServiceImpl implements AllianceServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(AllianceServiceImpl.class);
   private final AllianceRepository allianceRepository;
