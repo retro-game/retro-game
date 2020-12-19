@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+
+    <link th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+            rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+
+    <table>
+        <tr><th>Internal error</th></tr>
+
+        <tr>
+            <td>Internal server error has occurred. If you believe this is a bug, please report it on <a href="https://github.com/retro-game/retro-game">Github</a> or <a href="https://discord.gg/FJ6rK4V">Discord</a>.</td>
+        </tr>
+    </table>
+
+</div>
+
+</body>
+</html>
