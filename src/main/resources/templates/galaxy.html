@@ -1,156 +1,175 @@
 <!DOCTYPE html>
-<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+<html
+        lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        xmlns:th="http://www.thymeleaf.org"
+>
 <head>
-  <title th:text="#{galaxy}">Galaxy</title>
+    <title th:text="#{galaxy}">Galaxy</title>
 </head>
 <body>
 <div layout:fragment="content">
-  <div th:replace="galaxy-navigation :: galaxy-navigation"></div>
-  <table th:with="onVacation=${@userService.isOnVacation()}">
-    <tr>
-      <th width="30" th:text="#{slot}">Slot</th>
-      <th width="30" th:text="#{planet}">Planet</th>
-      <th width="120" th:text="#{planetName}">Planet name</th>
-      <th width="30" th:text="#{moon}">Moon</th>
-      <th width="80" th:text="#{debris}">Debris</th>
-      <th width="120" th:text="#{userName}">User name</th>
-      <th width="80" th:text="#{alliance}">Alliance</th>
-      <th width="30" th:text="#{actions}">Actions</th>
-    </tr>
-    <tr th:each="i : ${#numbers.sequence(1, 15)}" th:with="slot=${slots.get(i)}">
-      <th:block th:if="${slot}">
-        <td th:text="${i}"></td>
-        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET ? 'highlight' : ''}">
-          <img
-              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
-              data-tooltip data-tooltip-html th:data-tooltip-title="
+    <div th:replace="galaxy-navigation :: galaxy-navigation"></div>
+    <table th:with="onVacation=${@userService.isOnVacation()}">
+        <tr>
+            <th width="30" th:text="#{slot}">Slot</th>
+            <th width="30" th:text="#{planet}">Planet</th>
+            <th width="120" th:text="#{planetName}">Planet name</th>
+            <th width="30" th:text="#{moon}">Moon</th>
+            <th width="80" th:text="#{debris}">Debris</th>
+            <th width="120" th:text="#{userName}">User name</th>
+            <th width="80" th:text="#{alliance}">Alliance</th>
+            <th width="30" th:text="#{actions}">Actions</th>
+        </tr>
+        <tr th:each="i : ${#numbers.sequence(1, 15)}" th:with="slot=${slots.get(i)}">
+            <th:block th:if="${slot}">
+                <td th:text="${i}"></td>
+                <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET ? 'highlight' : ''}">
+                    <img
+                            th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planet.type},image=${slot.planet.image})}"
+                            data-tooltip data-tooltip-html th:data-tooltip-title="
                 '<table>' +
                   '<tr>' +
-                    '<th colspan=2>' + ${slot.planetName} + '</th>' +
+                    '<th colspan=2>' + ${slot.planet.name} + '</th>' +
                   '</tr>' +
                   '<tr>' +
-                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})} + '\' width=55 height=55></td>' +
+                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planet.type},image=${slot.planet.image})} + '\' width=55 height=55></td>' +
                     '<td>' +
                       (${slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='DEPLOYMENT')} + '\'>' + #{mission.DEPLOYMENT} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
+                      '<p><a href=\'' + @{/flights/send-missiles(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='MISSILE_ATTACK')} + '\'>' + #{mission.MISSILE_ATTACK} + '</a></p>' +
                       (${!onVacation && systemWithinRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
                     '</td>' +
                   '</tr>' +
-                '</table>'" width="30" height="30">
-        </td>
-        <td>
-          <span th:text="${slot.planetName}"></span>
-          <th:block th:if="${slot.activity < 60}">
-            <span th:if="${slot.activity == 0}">(*)</span>
-            <span th:unless="${slot.activity == 0}" th:text="'(' + ${slot.activity} + ')'">(42)</span>
-          </th:block>
-        </td>
-        <td th:if="${slot.moonName}"
-            th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON ? 'highlight' : ''}">
-          <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})}"
-               data-tooltip data-tooltip-html th:data-tooltip-title="
+                '</table>'" width="30" height="30"
+                    >
+                </td>
+                <td>
+                    <span th:text="${slot.planet.name}"></span>
+                    <th:block th:if="${slot.planet.activity < 60}">
+                        <span th:if="${slot.planet.activity == 0}">(*)</span>
+                        <span th:unless="${slot.planet.activity == 0}" th:text="'(' + ${slot.planet.activity} + ')'">(42)</span>
+                    </th:block>
+                </td>
+                <td
+                        th:if="${slot.moon?.name}"
+                        th:class="${position == i && slot.body.isMoon() ? 'highlight' : ''}"
+                >
+                    <img
+                            th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moon?.image})}"
+                            data-tooltip data-tooltip-html th:data-tooltip-title="
                 '<table>' +
                   '<tr>' +
-                    '<th colspan=2>' + ${slot.moonName} + '</th>' +
+                    '<th colspan=2>' + ${slot.moon?.name} + '</th>' +
                   '</tr>' +
                   '<tr>' +
-                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})} + '\' width=55 height=55></td>' +
+                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moon?.image})} + '\' width=55 height=55></td>' +
                     '<td>' +
                       (${slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='DEPLOYMENT')} + '\'>' + #{mission.DEPLOYMENT} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='DESTROY')} + '\'>' + #{mission.DESTROY} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
+                      '<p><a href=\'' + @{/flights/send-missiles(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='MISSILE_ATTACK')} + '\'>' + #{mission.MISSILE_ATTACK} + '</a></p>' +
                     '</td>' +
                   '</tr>' +
-                '</table>'" width="25" height="25">
-        </td>
-        <td th:unless="${slot.moonName}"></td>
-        <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).DEBRIS_FIELD ? 'highlight' : ''}">
-          <a th:if="${slot.debrisMetal >= 0 || slot.debrisCrystal >= 0}"
-             th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='DEBRIS_FIELD',mission='HARVEST')}"
-             th:title="#{sendFleet}">
-            <span th:text="${#numbers.formatInteger(slot.debrisMetal, 1, 'DEFAULT')}"></span>
-            <br>
-            <span th:text="${#numbers.formatInteger(slot.debrisCrystal, 1, 'DEFAULT')}"></span>
-          </a>
-        </td>
-        <td>
-          <span th:classappend="${slot.banned ? 'banned' :
-                                  (slot.onVacation ? 'vacation' :
-                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB ? 'noob' :
-                                  (slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG ? 'strong' :
-                                  (slot.longInactive ? 'long-inactive' :
-                                  (slot.shortInactive ? 'short-inactive' : '')))))}">
-            <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${slot.userId}, ${slot.userName})"></span>
-            (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
-            <span th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
+                '</table>'" width="25" height="25"
+                    >
+                </td>
+                <td th:unless="${slot.moon?.name}"></td>
+                <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).DEBRIS_FIELD ? 'highlight' : ''}">
+                    <a
+                            th:if="${slot.debris.showInOverview()}"
+                            th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='DEBRIS_FIELD',mission='HARVEST')}"
+                            th:title="#{sendFleet}"
+                    >
+                        <span th:text="${#numbers.formatInteger(slot.debris.metal, 1, 'DEFAULT')}"></span>
+                        <br>
+                        <span th:text="${#numbers.formatInteger(slot.debris.crystal, 1, 'DEFAULT')}"></span>
+                    </a>
+                </td>
+                <td>
+                    <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${slot.player.userId}, ${slot.player.userName})"></span>
+                    (<span th:text="${#numbers.formatInteger(slot.player.rank, 1, 'DEFAULT')}">1</span>)
+                    <span th:if="${slot.showStatus()}">
               (
-              <span th:if="${slot.banned}" class="banned">b</span>
-              <span th:if="${slot.onVacation}" class="vacation">v</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB}" class="noob">n</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG}" class="strong">s</span>
-              <span th:if="${slot.shortInactive}" class="short-inactive">i</span>
-              <span th:if="${slot.longInactive}" class="long-inactive">I</span>
+              <span th:if="${slot.player.banned}" class="banned">b</span>
+              <span th:if="${slot.player.onVacation}" class="vacation">v</span>
+              <span
+                      th:if="${slot.player.isNoob()}"
+                      class="noob"
+              >n</span>
+              <span
+                      th:if="${slot.player.isStronger()}"
+                      class="strong"
+              >s</span>
+              <span th:if="${slot.player.inactiveShort}" class="short-inactive">i</span>
+              <span th:if="${slot.player.inactiveLong}" class="long-inactive">I</span>
               )
             </span>
-          </span>
-        </td>
-        <td>
-          <a th:if="${slot.allianceId != null}" th:href="@{/alliance/view(body=${bodyId},alliance=${slot.allianceId})}"
-             th:text="${slot.allianceTag}"></a>
-        </td>
-        <td>
-          <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
-                  data-kind="PLANET" th:title="#{spyPlanet}"
-                  th:disabled="${onVacation || slot.onVacation || slot.own ||
-                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL}">
-            P
-          </button>
-          <button data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
-                  data-kind="MOON" th:title="#{spyMoon}"
-                  th:disabled="${onVacation || slot.onVacation || slot.own || slot.moonName == null ||
-                                 slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL}">
-            M
-          </button>
-        </td>
-      </th:block>
-      <th:block th:unless="${slot}">
-        <td>
-          <a th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='COLONIZATION',units[COLONY_SHIP]=1)}"
-             th:title="#{mission.COLONIZATION}" th:text="${i}"></a>
-        </td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-      </th:block>
-    </tr>
-    <tr>
-      <th colspan="7">
-        <span th:text="#{time}">Time</span>:
-        <span th:text="${#dates.format(time, 'yyyy-MM-dd HH:mm:ss')}">2006-06-06 03:00:00</span>
-      </th>
-      <th id="galaxy-reload">
-        <form>
-          <input name="body" type="hidden" th:value="${bodyId}">
-          <input name="galaxy" type="hidden" th:value="${galaxy}">
-          <input name="system" type="hidden" th:value="${system}">
-          <button th:title="#{keyboardShortcutSpace}" th:text="#{reload}">Reload</button>
-        </form>
-      </th>
-    </tr>
-  </table>
-  <table id="reports">
-  </table>
-  <input id="num-probes" type="hidden" th:value="${numProbes}">
-  <script th:src="@{/static/js/galaxy.js?{v}(v=${version})}"></script>
+                </td>
+                <td>
+                    <a
+                            th:if="${slot.player.alliance?.id != null}"
+                            th:href="@{/alliance/view(body=${bodyId},alliance=${slot.player.alliance?.id})}"
+                            th:text="${slot.player.alliance?.tag}"
+                    ></a>
+                </td>
+                <td>
+                    <button
+                            th:if="${!slot.own}"
+                            data-spy th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
+                            data-kind="PLANET" th:title="#{spyPlanet}"
+                            th:disabled="${onVacation || slot.espionageDisabled()}"
+                    >
+                        P
+                    </button>
+                    <button
+                            th:if="${!slot.own}"
+                            th:data-galaxy="${galaxy}" th:data-system="${system}" th:data-position="${i}"
+                            data-kind="MOON" th:title="#{spyMoon}"
+                            th:disabled="${onVacation || slot.espionageDisabled()}"
+                    >
+                        M
+                    </button>
+                </td>
+            </th:block>
+            <th:block th:unless="${slot}">
+                <td>
+                    <a
+                            th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='COLONIZATION',units[COLONY_SHIP]=1)}"
+                            th:title="#{mission.COLONIZATION}" th:text="${i}"
+                    ></a>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </th:block>
+        </tr>
+        <tr>
+            <th colspan="7">
+                <span th:text="#{time}">Time</span>:
+                <span th:text="${#dates.format(time, 'yyyy-MM-dd HH:mm:ss')}">2006-06-06 03:00:00</span>
+            </th>
+            <th id="galaxy-reload">
+                <form>
+                    <input name="body" type="hidden" th:value="${bodyId}">
+                    <input name="galaxy" type="hidden" th:value="${galaxy}">
+                    <input name="system" type="hidden" th:value="${system}">
+                    <button th:title="#{keyboardShortcutSpace}" th:text="#{reload}">Reload</button>
+                </form>
+            </th>
+        </tr>
+    </table>
+    <table id="reports">
+    </table>
+    <input id="num-probes" type="hidden" th:value="${numProbes}">
+    <script th:src="@{/static/js/galaxy.js?{v}(v=${version})}"></script>
 </div>
 </body>
 </html>

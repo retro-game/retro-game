@@ -5,7 +5,7 @@ import com.github.retro_game.retro_game.service.UserService;
 
 import java.util.Date;
 
-interface UserServiceInternal extends UserService {
+public interface UserServiceInternal extends UserService {
   boolean checkCurrentUserPassword(String password);
 
   boolean isOnVacation(User user);

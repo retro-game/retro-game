@@ -17,7 +17,7 @@
             <td>
               <form id="galaxy-prev">
                 <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
-                <input name="galaxy" type="hidden" th:value="(${galaxy} + 5 - 2) % 5 + 1">
+                <input name="galaxy" type="hidden" th:value="${@galaxyService.previousGalaxy(galaxy)}">
                 <input name="system" type="hidden" th:value="${system}">
                 <button th:title="#{keyboardShortcutDownArrow}">←</button>
               </form>
@@ -32,7 +32,7 @@
             <td>
               <form id="galaxy-next">
                 <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
-                <input name="galaxy" type="hidden" th:value="${galaxy} % 5 + 1">
+                <input name="galaxy" type="hidden" th:value="${@galaxyService.nextGalaxy(galaxy)}">
                 <input name="system" type="hidden" th:value="${system}">
                 <button th:title="#{keyboardShortcutUpArrow}">→</button>
               </form>
@@ -48,7 +48,7 @@
               <form id="system-prev">
                 <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
                 <input name="galaxy" type="hidden" th:value="${galaxy}">
-                <input name="system" type="hidden" th:value="(${system} + 500 - 2) % 500 + 1">
+                <input name="system" type="hidden" th:value="${@galaxyService.previousSystem(system)}">
                 <button th:title="#{keyboardShortcutLeftArrow}">←</button>
               </form>
             </td>
@@ -63,7 +63,7 @@
               <form id="system-next">
                 <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
                 <input name="galaxy" type="hidden" th:value="${galaxy}">
-                <input name="system" type="hidden" th:value="${system} % 500 + 1">
+                <input name="system" type="hidden" th:value="${@galaxyService.nextSystem(system)}">
                 <button th:title="#{keyboardShortcutRightArrow}">→</button>
               </form>
             </td>
