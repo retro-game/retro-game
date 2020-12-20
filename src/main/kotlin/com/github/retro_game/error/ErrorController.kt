@@ -9,3 +9,4 @@ class ErrorController {
     @GetMapping("/error")
     fun error() = "error"
 }
+
