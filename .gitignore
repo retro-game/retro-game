@@ -6,7 +6,8 @@ target/
 
 # IntelliJ
 *.iml
-.idea/
+.idea/*
+!.idea/codeStyles
 
 # Skins
 src/main/resources/public/static/skins/*
