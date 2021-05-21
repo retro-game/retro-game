@@ -974,9 +974,11 @@ class FlightServiceImpl implements FlightServiceInternal {
     long executionTime = 0;
     int numRounds = 0;
 
+    var bodyGroups = getUnitsForFight(body.getUnits());
+
     // When there is no units on the target body, we must skip the fight, as the battle engine cannot handle combatants
     // without units.
-    var fight = body.getTotalUnitsCount() != 0 || !defendersFlights.isEmpty();
+    var fight = !bodyGroups.isEmpty() || !defendersFlights.isEmpty();
     if (fight) {
       // Prepare input for the battle engine.
 
@@ -993,7 +995,7 @@ class FlightServiceImpl implements FlightServiceInternal {
             groups);
       }
 
-      defenders = new Combatant[defendersFlights.size() + (body.getUnits().isEmpty() ? 0 : 1)];
+      defenders = new Combatant[defendersFlights.size() + (bodyGroups.isEmpty() ? 0 : 1)];
       for (int i = 0; i < defendersFlights.size(); i++) {
         Flight f = defendersFlights.get(i);
         User u = f.getStartUser();
@@ -1005,15 +1007,14 @@ class FlightServiceImpl implements FlightServiceInternal {
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
             groups);
       }
-      if (!body.getUnits().isEmpty()) {
+      if (!bodyGroups.isEmpty()) {
         User u = flight.getTargetUser();
-        var groups = getUnitsForFight(body.getUnits());
         defenders[defenders.length - 1] = new Combatant(u.getId(),
             flight.getTargetCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            groups);
+            bodyGroups);
       }
 
       // Fight!
@@ -1080,7 +1081,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       debrisCrystal += dt._4;
 
       // Defender's body.
-      if (!body.getUnits().isEmpty()) {
+      if (!bodyGroups.isEmpty()) {
         CombatantOutcome outcome = defendersOutcomes[defendersOutcomes.length - 1];
         for (var entry : body.getUnits().entrySet()) {
           UnitKind kind = entry.getKey();
