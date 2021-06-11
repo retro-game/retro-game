@@ -9,10 +9,10 @@ import java.util.Date;
 import java.util.List;
 
 interface ReportServiceInternal extends ReportService {
-  CombatReport createCombatReport(Date at, Combatant[] attackers, Combatant[] defenders, BattleOutcome battleOutcome,
-                                  BattleResult result, Resources attackersLoss, Resources defendersLoss,
-                                  Resources plunder, long debrisMetal, long debrisCrystal, double moonChance,
-                                  boolean moonGiven, int seed, long executionTime);
+  CombatReport createCombatReport(Date at, List<Combatant> attackers, List<Combatant> defenders,
+                                  BattleOutcome battleOutcome, BattleResult result, Resources attackersLoss,
+                                  Resources defendersLoss, Resources plunder, long debrisMetal, long debrisCrystal,
+                                  double moonChance, boolean moonGiven, int seed, long executionTime);
 
   void createSimplifiedCombatReport(User user, boolean isAttacker, Date at, User enemy, Coordinates coordinates,
                                     BattleResult result, int numRounds, Resources attackersLoss,

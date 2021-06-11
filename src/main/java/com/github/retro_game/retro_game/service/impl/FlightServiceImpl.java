@@ -960,8 +960,8 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     List<Flight> defendersFlights = getHoldingFlights(body, flight.getArrivalAt());
 
-    Combatant[] attackers = null;
-    Combatant[] defenders = null;
+    ArrayList<Combatant> attackers = null;
+    ArrayList<Combatant> defenders = null;
     BattleOutcome battleOutcome = null;
     BattleResult result = BattleResult.ATTACKERS_WIN;
     Resources attackersLoss = new Resources();
@@ -982,39 +982,43 @@ class FlightServiceImpl implements FlightServiceInternal {
     if (fight) {
       // Prepare input for the battle engine.
 
-      attackers = new Combatant[attackersFlights.size()];
-      for (int i = 0; i < attackers.length; i++) {
-        Flight f = attackersFlights.get(i);
-        User u = f.getStartUser();
+      attackers = new ArrayList<>(attackersFlights.size());
+      for (var f : attackersFlights) {
+        var u = f.getStartUser();
         var groups = getUnitsForFight(f.getUnits());
-        attackers[i] = new Combatant(u.getId(),
+        attackers.add(new Combatant(
+            u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            groups);
+            groups
+        ));
       }
 
-      defenders = new Combatant[defendersFlights.size() + (bodyGroups.isEmpty() ? 0 : 1)];
-      for (int i = 0; i < defendersFlights.size(); i++) {
-        Flight f = defendersFlights.get(i);
+      defenders = new ArrayList<>(defendersFlights.size() + (bodyGroups.isEmpty() ? 0 : 1));
+      for (var f : defendersFlights) {
         User u = f.getStartUser();
         var groups = getUnitsForFight(f.getUnits());
-        defenders[i] = new Combatant(u.getId(),
+        defenders.add(new Combatant(
+            u.getId(),
             f.getStartBody().getCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            groups);
+            groups
+        ));
       }
       if (!bodyGroups.isEmpty()) {
         User u = flight.getTargetUser();
-        defenders[defenders.length - 1] = new Combatant(u.getId(),
+        defenders.add(new Combatant(
+            u.getId(),
             flight.getTargetCoordinates(),
             u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
             u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            bodyGroups);
+            bodyGroups
+        ));
       }
 
       // Fight!
@@ -1030,22 +1034,22 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       // Helper for flights.
       final int nRounds = numRounds; // fucking java
-      Function<Tuple2<List<Flight>, CombatantOutcome[]>, Tuple4<Integer, Resources, Long, Long>> handleFlights =
+      Function<Tuple2<List<Flight>, List<CombatantOutcome>>, Tuple4<Integer, Resources, Long, Long>> handleFlights =
           (pair) -> {
             List<Flight> flights = pair._1;
-            CombatantOutcome[] outcomes = pair._2;
+            var outcomes = pair._2;
             int totalRemaining = 0;
             Resources loss = new Resources();
             long metal = 0;
             long crystal = 0;
             for (int i = 0; i < flights.size(); i++) {
               Flight f = flights.get(i);
-              CombatantOutcome outcome = outcomes[i];
+              CombatantOutcome outcome = outcomes.get(i);
               for (var entry : f.getUnits().entrySet()) {
                 UnitKind kind = entry.getKey();
                 var count = entry.getValue();
 
-                int remaining = (int) outcome.getNumRemainingUnits(nRounds - 1, kind.ordinal());
+                int remaining = (int) outcome.getNthRoundUnitGroupsStats(nRounds - 1).get(kind).getNumRemainingUnits();
                 totalRemaining += remaining;
                 int diff = count - remaining;
                 assert diff >= 0;
@@ -1064,14 +1068,14 @@ class FlightServiceImpl implements FlightServiceInternal {
           };
 
       // Attackers' flights.
-      CombatantOutcome[] attackersOutcomes = battleOutcome.getAttackersOutcomes();
+      var attackersOutcomes = battleOutcome.getAttackersOutcomes();
       Tuple4<Integer, Resources, Long, Long> at = handleFlights.apply(Tuple.of(attackersFlights, attackersOutcomes));
       int attackersTotalRemaining = at._1;
       attackersLoss = at._2;
       debrisMetal += at._3;
       debrisCrystal += at._4;
 
-      CombatantOutcome[] defendersOutcomes = battleOutcome.getDefendersOutcomes();
+      var defendersOutcomes = battleOutcome.getDefendersOutcomes();
 
       // Defenders' flights.
       Tuple4<Integer, Resources, Long, Long> dt = handleFlights.apply(Tuple.of(defendersFlights, defendersOutcomes));
@@ -1082,7 +1086,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       // Defender's body.
       if (!bodyGroups.isEmpty()) {
-        CombatantOutcome outcome = defendersOutcomes[defendersOutcomes.length - 1];
+        CombatantOutcome outcome = defendersOutcomes.get(defendersOutcomes.size() - 1);
         for (var entry : body.getUnits().entrySet()) {
           UnitKind kind = entry.getKey();
           var count = entry.getValue();
@@ -1093,7 +1097,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
           boolean isDefense = UnitItem.getDefense().containsKey(kind);
 
-          int remaining = (int) outcome.getNumRemainingUnits(numRounds - 1, kind.ordinal());
+          int remaining = (int) outcome.getNthRoundUnitGroupsStats(numRounds - 1).get(kind).getNumRemainingUnits();
           defendersTotalRemaining += remaining;
           int diff = count - remaining;
           assert diff >= 0;
@@ -1377,13 +1381,13 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   // Prepares units for a fight. The battle engine should not have groups with 0 units. Missiles don't participate in
   // a fight.
-  private static EnumMap<UnitKind, Integer> getUnitsForFight(Map<UnitKind, Integer> units) {
+  private static EnumMap<UnitKind, Long> getUnitsForFight(Map<UnitKind, Integer> units) {
     return units.entrySet().stream()
         .filter(e -> e.getValue() > 0 &&
             e.getKey() != UnitKind.ANTI_BALLISTIC_MISSILE && e.getKey() != UnitKind.INTERPLANETARY_MISSILE)
         .collect(Collectors.toMap(
             Map.Entry::getKey,
-            Map.Entry::getValue,
+            entry -> (long) entry.getValue(),
             (a, b) -> {
               throw new IllegalStateException();
             },

@@ -1,11 +1,16 @@
 package com.github.retro_game.retro_game.battleengine;
 
-public class BattleOutcome {
-  private final int numRounds;
-  private final CombatantOutcome[] attackersOutcomes;
-  private final CombatantOutcome[] defendersOutcomes;
+import java.util.List;
 
-  public BattleOutcome(int numRounds, CombatantOutcome[] attackersOutcomes, CombatantOutcome[] defendersOutcomes) {
+public final class BattleOutcome {
+  private final int numRounds;
+  private final List<CombatantOutcome> attackersOutcomes;
+  private final List<CombatantOutcome> defendersOutcomes;
+
+  public BattleOutcome(int numRounds, List<CombatantOutcome> attackersOutcomes,
+                       List<CombatantOutcome> defendersOutcomes) {
+    assert attackersOutcomes.stream().allMatch(o -> o.getUnitGroupsStats().size() == numRounds);
+    assert defendersOutcomes.stream().allMatch(o -> o.getUnitGroupsStats().size() == numRounds);
     this.numRounds = numRounds;
     this.attackersOutcomes = attackersOutcomes;
     this.defendersOutcomes = defendersOutcomes;
@@ -15,11 +20,11 @@ public class BattleOutcome {
     return numRounds;
   }
 
-  public CombatantOutcome[] getAttackersOutcomes() {
+  public List<CombatantOutcome> getAttackersOutcomes() {
     return attackersOutcomes;
   }
 
-  public CombatantOutcome[] getDefendersOutcomes() {
+  public List<CombatantOutcome> getDefendersOutcomes() {
     return defendersOutcomes;
   }
 }

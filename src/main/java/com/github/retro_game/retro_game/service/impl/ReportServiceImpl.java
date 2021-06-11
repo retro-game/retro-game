@@ -35,7 +35,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Service("reportService")
@@ -105,7 +104,7 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @Override
   @Transactional
-  public CombatReport createCombatReport(Date at, Combatant[] attackers, Combatant[] defenders,
+  public CombatReport createCombatReport(Date at, List<Combatant> attackers, List<Combatant> defenders,
                                          BattleOutcome battleOutcome, BattleResult result, Resources attackersLoss,
                                          Resources defendersLoss, Resources plunder, long debrisMetal,
                                          long debrisCrystal, double moonChance, boolean moonGiven, int seed,
@@ -124,8 +123,8 @@ class ReportServiceImpl implements ReportServiceInternal {
       assert numRounds >= 1 && numRounds <= 256;
       stream.writeByte(numRounds - 1);
 
-      CombatantOutcome[] attackersOutcomes = battleOutcome.getAttackersOutcomes();
-      CombatantOutcome[] defendersOutcomes = battleOutcome.getDefendersOutcomes();
+      var attackersOutcomes = battleOutcome.getAttackersOutcomes();
+      var defendersOutcomes = battleOutcome.getDefendersOutcomes();
       for (int round = 0; round < numRounds; round++) {
         storeCombatantsOutcomes(stream, attackers, attackersOutcomes, round);
         storeCombatantsOutcomes(stream, defenders, defendersOutcomes, round);
@@ -193,8 +192,8 @@ class ReportServiceImpl implements ReportServiceInternal {
     }
   }
 
-  private void storeCombatants(DataOutputStream stream, Combatant[] combatants) throws IOException {
-    int numCombatants = combatants.length;
+  private void storeCombatants(DataOutputStream stream, List<Combatant> combatants) throws IOException {
+    int numCombatants = combatants.size();
     assert numCombatants >= 1 && numCombatants <= 256;
     stream.writeByte(numCombatants - 1);
     for (Combatant combatant : combatants) {
@@ -225,14 +224,16 @@ class ReportServiceImpl implements ReportServiceInternal {
     stream.writeByte(combatant.getShieldingTechnology());
     stream.writeByte(combatant.getArmorTechnology());
 
-    int[] unitGroups = combatant.getUnitGroups();
-    assert unitGroups.length >= 1 && unitGroups.length <= 256;
-    stream.writeByte((int) Arrays.stream(unitGroups).filter(i -> i != 0).count() - 1);
-    for (int i = 0; i < unitGroups.length; i++) {
-      if (unitGroups[i] != 0) {
-        assert unitGroups[i] > 0;
-        stream.writeByte(i);
-        stream.writeInt(unitGroups[i]);
+    var unitGroups = combatant.getUnitGroups();
+    assert UnitKind.values().length <= Byte.MAX_VALUE;
+    stream.writeByte((int) unitGroups.values().stream().filter(i -> i != 0).count() - 1);
+    for (var entry : unitGroups.entrySet()) {
+      var kind = entry.getKey();
+      var count = entry.getValue();
+      if (count != 0) {
+        assert count > 0;
+        stream.writeByte(kind.ordinal());
+        stream.writeLong(count);
       }
     }
   }
@@ -257,7 +258,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     Map<UnitKindDto, CombatReportUnitGroupDto> unitGroups = new EnumMap<>(UnitKindDto.class);
     for (int i = 0; i < numGroups; i++) {
       UnitKind kind = UnitKind.values()[stream.readUnsignedByte()];
-      int numUnits = stream.readInt();
+      long numUnits = stream.readLong();
       assert numUnits > 0;
 
       UnitItem item = UnitItem.getAll().get(kind);
@@ -272,11 +273,11 @@ class ReportServiceImpl implements ReportServiceInternal {
         unitGroups);
   }
 
-  private void storeCombatantsOutcomes(DataOutputStream stream, Combatant[] combatants, CombatantOutcome[] outcomes,
-                                       int round) throws IOException {
-    int[] numActiveGroups = Arrays.stream(outcomes)
-        .mapToInt(o -> (int) IntStream.range(0, o.getNumKinds())
-            .filter(kind -> o.wasActive(round, kind))
+  private void storeCombatantsOutcomes(DataOutputStream stream, List<Combatant> combatants,
+                                       List<CombatantOutcome> outcomes, int round) throws IOException {
+    int[] numActiveGroups = outcomes.stream()
+        .mapToInt(outcome -> (int) outcome.getNthRoundUnitGroupsStats(round).values().stream()
+            .filter(s -> s.getTimesFired() > 0)
             .count())
         .toArray();
 
@@ -286,25 +287,29 @@ class ReportServiceImpl implements ReportServiceInternal {
     assert numActiveCombatants >= 1 && numActiveCombatants <= 256;
     stream.writeByte(numActiveCombatants - 1);
 
-    for (int i = 0; i < outcomes.length; i++) {
+    for (int i = 0; i < outcomes.size(); i++) {
       if (numActiveGroups[i] != 0) {
-        stream.writeLong(combatants[i].getUserId());
+        var combatant = combatants.get(i);
+        stream.writeLong(combatant.getUserId());
 
         assert numActiveGroups[i] <= 256;
         stream.writeByte(numActiveGroups[i] - 1);
 
-        CombatantOutcome outcome = outcomes[i];
-        assert outcome.getNumKinds() <= 256;
-        for (int kind = 0; kind < outcome.getNumKinds(); kind++) {
-          if (outcome.wasActive(round, kind)) {
-            stream.writeByte(kind);
-            stream.writeLong(outcome.getTimesFired(round, kind));
-            stream.writeLong(outcome.getTimesWasShot(round, kind));
-            stream.writeLong(outcome.getShieldDamageDealt(round, kind));
-            stream.writeLong(outcome.getHullDamageDealt(round, kind));
-            stream.writeLong(outcome.getShieldDamageTaken(round, kind));
-            stream.writeLong(outcome.getHullDamageTaken(round, kind));
-            stream.writeLong(outcome.getNumRemainingUnits(round, kind));
+        var outcome = outcomes.get(i);
+        var unitGroupsStats = outcome.getNthRoundUnitGroupsStats(round);
+        for (var entry : unitGroupsStats.entrySet()) {
+          var kind = entry.getKey();
+          var stats = entry.getValue();
+          var active = stats.getTimesFired() > 0;
+          if (active) {
+            stream.writeByte(kind.ordinal());
+            stream.writeLong(stats.getTimesFired());
+            stream.writeLong(stats.getTimesWasShot());
+            stream.writeLong((long) stats.getShieldDamageDealt());
+            stream.writeLong((long) stats.getHullDamageDealt());
+            stream.writeLong((long) stats.getShieldDamageTaken());
+            stream.writeLong((long) stats.getHullDamageTaken());
+            stream.writeLong(stats.getNumRemainingUnits());
           }
         }
       }
