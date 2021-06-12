@@ -6,7 +6,7 @@ RUN \
   apk update && \
   apk --no-cache add \
     cmake \
-    gcc \
+    g++ \
     make \
     maven \
     musl-dev \
