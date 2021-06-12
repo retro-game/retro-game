@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [11, 12, 13]
+        java: [11, 15]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -20,22 +20,32 @@ jobs:
       run: mvn -B package
 
   build-battle-engine:
-    name: Build battle engine (${{ matrix.os }}) (JDK ${{ matrix.java }})
+    name: Build battle engine (${{ matrix.build }}) (JDK ${{ matrix.java }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [11, 12, 13]
-        build: [macos, ubuntu, windows]
+        java: [11, 15]
+        build: [macos-clang, ubuntu-clang, ubuntu-gcc, windows-cl, windows-gcc]
         include:
-        - build: macos
+        - build: macos-clang
           os: macos-latest
-          cc: clang
-        - build: ubuntu
+          cxx: clang++
+          gen: Unix Makefiles
+        - build: ubuntu-clang
           os: ubuntu-latest
-          cc: gcc
-        - build: windows
+          cxx: clang++
+          gen: Unix Makefiles
+        - build: ubuntu-gcc
+          os: ubuntu-latest
+          cxx: g++
+          gen: Unix Makefiles
+        - build: windows-cl
           os: windows-latest
-          cc: gcc
+          gen: Visual Studio 16 2019
+        - build: windows-gcc
+          os: windows-latest
+          cxx: g++
+          gen: Unix Makefiles
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -45,10 +55,10 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Configure
       env:
-        CC: ${{ matrix.cc }}
-      run: cmake -S battle-engine -B build -G "Unix Makefiles"
+        CXX: ${{ matrix.cxx }}
+      run: cmake -S battle-engine -B build -G "${{ matrix.gen }}" -DCMAKE_BUILD_TYPE=Release
     - name: Build
-      run: make -C build
+      run: cmake --build build --config release
 
   build-docker-image:
     name: Build docker image
