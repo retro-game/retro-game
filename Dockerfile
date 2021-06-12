@@ -15,7 +15,7 @@ RUN \
   JAVA_HOME=/usr/lib/jvm/java-11-openjdk cmake -B build -DCMAKE_BUILD_TYPE=Release battle-engine && \
   cmake --build build && \
   # Build the game.
-  mvn -B package
+  mvn -B -DskipTests package
 
 FROM alpine:3.12
 WORKDIR /retro-game

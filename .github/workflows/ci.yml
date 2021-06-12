@@ -17,7 +17,7 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build with Maven
-      run: mvn -B package
+      run: mvn -B -DskipTests package
 
   build-battle-engine:
     name: Build battle engine (${{ matrix.build }}) (JDK ${{ matrix.java }})
