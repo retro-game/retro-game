@@ -25,8 +25,7 @@ struct Random {
   static constexpr std::uint32_t max{modulus - 1u};
 
   static constexpr std::uint32_t next(std::uint32_t r) {
-    return static_cast<std::uint64_t>(r) * static_cast<std::uint64_t>(multiplier) %
-           static_cast<std::uint64_t>(modulus);
+    return static_cast<std::uint32_t>(static_cast<std::uint64_t>(r) * multiplier % modulus);
   }
 };
 
@@ -43,8 +42,10 @@ struct Random {
 
 // The JNI types must be defined as follows, otherwise our code might break.
 static_assert(std::is_same_v<jfloat, float>);
-static_assert(std::is_same_v<jint, int>);
-static_assert(std::is_same_v<jlong, long>);
+static_assert(std::numeric_limits<jint>::is_integer && std::numeric_limits<jint>::is_signed &&
+              sizeof(jint) == sizeof(std::int32_t));
+static_assert(std::numeric_limits<jlong>::is_integer && std::numeric_limits<jlong>::is_signed &&
+              sizeof(jlong) == sizeof(std::int64_t));
 
 struct Jni {
   JNIEnv *env;
@@ -333,13 +334,15 @@ struct Jni {
 
   // Long
 
-  long Long_longValue(jobject obj) const { return env->CallLongMethod(obj, long_.longValue); }
+  std::int64_t Long_longValue(jobject obj) const {
+    return env->CallLongMethod(obj, long_.longValue);
+  }
 
   // List
 
   jobject List_iterator(jobject obj) const { return env->CallObjectMethod(obj, list.iterator); }
 
-  int List_size(jobject obj) const { return env->CallIntMethod(obj, list.size); }
+  std::int32_t List_size(jobject obj) const { return env->CallIntMethod(obj, list.size); }
 
   // ArrayList
 
@@ -385,7 +388,9 @@ struct Jni {
 
   // UnitKind
 
-  int UnitKind_ordinal(jobject obj) const { return env->CallIntMethod(obj, unitKind.ordinal); }
+  std::int32_t UnitKind_ordinal(jobject obj) const {
+    return env->CallIntMethod(obj, unitKind.ordinal);
+  }
 
   jobjectArray UnitKind_values() const {
     return static_cast<jobjectArray>(env->CallStaticObjectMethod(unitKind.clazz, unitKind.values));
@@ -411,15 +416,15 @@ struct Jni {
 
   // Combatant
 
-  int Combatant_getWeaponsTechnology(jobject obj) const {
+  std::int32_t Combatant_getWeaponsTechnology(jobject obj) const {
     return env->CallIntMethod(obj, combatant.getWeaponsTechnology);
   }
 
-  int Combatant_getShieldingTechnology(jobject obj) const {
+  std::int32_t Combatant_getShieldingTechnology(jobject obj) const {
     return env->CallIntMethod(obj, combatant.getShieldingTechnology);
   }
 
-  int Combatant_getArmorTechnology(jobject obj) const {
+  std::int32_t Combatant_getArmorTechnology(jobject obj) const {
     return env->CallIntMethod(obj, combatant.getArmorTechnology);
   }
 
@@ -443,9 +448,10 @@ struct Jni {
 
   // UnitGroupStats
 
-  jobject UnitGroupStats_init(long numRemainingUnits, long timesFired, long timesWasShot,
-                              float shieldDamageDealt, float hullDamageDealt,
-                              float shieldDamageTaken, float hullDamageTaken) const {
+  jobject UnitGroupStats_init(std::int64_t numRemainingUnits, std::int64_t timesFired,
+                              std::int64_t timesWasShot, float shieldDamageDealt,
+                              float hullDamageDealt, float shieldDamageTaken,
+                              float hullDamageTaken) const {
     return env->NewObject(unitGroupStats.clazz, unitGroupStats.init, numRemainingUnits, timesFired,
                           timesWasShot, shieldDamageDealt, hullDamageDealt, shieldDamageTaken,
                           hullDamageTaken);
@@ -462,7 +468,7 @@ struct UnitAttributes {
   float armor;
 
   // A mapping: unit kind -> the number of rapid fire against that kind.
-  unsigned *rapidFire;
+  std::uint32_t *rapidFire;
 };
 
 // Initialized by initUnitsAttributes().
@@ -511,7 +517,7 @@ struct Party {
 // Initializes units' attributes.
 // initUnitsAttributes() should be called only once during the initialization of battle engine.
 bool initUnitsAttributes(const Jni &jni, jobjectArray unitsAttributesArray) {
-  int len = jni.env->GetArrayLength(unitsAttributesArray);
+  std::int32_t len = jni.env->GetArrayLength(unitsAttributesArray);
   assert(len >= 0);
   if (len > std::numeric_limits<std::uint8_t>::max()) {
     std::fputs("BattleEngine: Too many unit kinds\n", stderr);
@@ -525,7 +531,7 @@ bool initUnitsAttributes(const Jni &jni, jobjectArray unitsAttributesArray) {
     return false;
   }
 
-  std::unique_ptr<unsigned[]> rapidFire(new (std::nothrow) unsigned[numKinds * numKinds]);
+  std::unique_ptr<std::uint32_t[]> rapidFire(new (std::nothrow) std::uint32_t[numKinds * numKinds]);
   if (!rapidFire) {
     std::fputs("BattleEngine: Allocating memory for rapidFire failed\n", stderr);
     return false;
@@ -545,9 +551,9 @@ bool initUnitsAttributes(const Jni &jni, jobjectArray unitsAttributesArray) {
       return false;
     }
 
-    int *rapidFireArray = jni.env->GetIntArrayElements(rapidFireField, /*isCopy=*/nullptr);
+    jint *rapidFireArray = jni.env->GetIntArrayElements(rapidFireField, /*isCopy=*/nullptr);
     bool valid =
-        std::all_of(rapidFireArray, rapidFireArray + numKinds, [](int n) { return n >= 0; });
+        std::all_of(rapidFireArray, rapidFireArray + numKinds, [](jint n) { return n >= 0; });
     if (valid)
       std::copy_n(rapidFireArray, numKinds, rf);
     jni.env->ReleaseIntArrayElements(rapidFireField, rapidFireArray, /*mode=*/0);
@@ -570,9 +576,9 @@ bool initUnitsAttributes(const Jni &jni, jobjectArray unitsAttributesArray) {
 }
 
 std::optional<Combatant> loadCombatant(const Jni &jni, jobject combatantObj) {
-  int weaponsTechnology = jni.Combatant_getWeaponsTechnology(combatantObj);
-  int shieldingTechnology = jni.Combatant_getShieldingTechnology(combatantObj);
-  int armorTechnology = jni.Combatant_getArmorTechnology(combatantObj);
+  std::int32_t weaponsTechnology = jni.Combatant_getWeaponsTechnology(combatantObj);
+  std::int32_t shieldingTechnology = jni.Combatant_getShieldingTechnology(combatantObj);
+  std::int32_t armorTechnology = jni.Combatant_getArmorTechnology(combatantObj);
   if (weaponsTechnology < 0 || shieldingTechnology < 0 || armorTechnology < 0) {
     std::fputs("BattleEngine: Combat technologies cannot be negative\n", stderr);
     return {};
@@ -613,17 +619,17 @@ std::optional<Combatant> loadCombatant(const Jni &jni, jobject combatantObj) {
       return {};
     }
 
-    int kind = jni.UnitKind_ordinal(keyObj);
+    std::int32_t kind = jni.UnitKind_ordinal(keyObj);
     assert(kind >= 0);
     if (kind > g_numKinds) {
       std::fprintf(stderr, "BattleEngine: Unit kind out of bounds: kind=%i numKinds=%u\n", kind,
                    g_numKinds);
       return {};
     }
-    auto k = static_cast<unsigned>(kind);
+    auto k = static_cast<std::uint32_t>(kind);
 
-    long count = jni.Long_longValue(valueObj);
-    if (count < 0l) {
+    std::int64_t count = jni.Long_longValue(valueObj);
+    if (count < 0) {
       std::fputs("BattleEngine: Unit count cannot be negative\n", stderr);
       return {};
     }
@@ -641,16 +647,16 @@ std::optional<Combatant> loadCombatant(const Jni &jni, jobject combatantObj) {
   }
 
   return Combatant{
-      .weaponsTechnology = static_cast<float>(weaponsTechnology),
-      .shieldingTechnology = static_cast<float>(shieldingTechnology),
-      .armorTechnology = static_cast<float>(armorTechnology),
-      .unitGroups = std::move(unitGroups),
-      .stats = std::move(stats),
+      /* .weaponsTechnology = */ static_cast<float>(weaponsTechnology),
+      /* .shieldingTechnology = */ static_cast<float>(shieldingTechnology),
+      /* .armorTechnology = */ static_cast<float>(armorTechnology),
+      /* .unitGroups = */ std::move(unitGroups),
+      /* .stats = */ std::move(stats),
   };
 }
 
 std::optional<Combatants> loadCombatants(const Jni &jni, jobject combatantsList) {
-  int size = jni.List_size(combatantsList);
+  std::int32_t size = jni.List_size(combatantsList);
   assert(size >= 0);
 
   // Each unit has an uint8_t field representing its owner, and thus we cannot handle more than 256
@@ -671,7 +677,7 @@ std::optional<Combatants> loadCombatants(const Jni &jni, jobject combatantsList)
   jobject iteratorObj = jni.List_iterator(combatantsList);
   assert(iteratorObj);
 
-  std::uint8_t i = 0;
+  std::uint8_t i = 0u;
   while (jni.Iterator_hasNext(iteratorObj)) {
     jobject combatantObj = jni.Iterator_next(iteratorObj);
     assert(combatantObj);
@@ -685,8 +691,8 @@ std::optional<Combatants> loadCombatants(const Jni &jni, jobject combatantsList)
   assert(i == numCombatants);
 
   return Combatants{
-      .combatants = std::move(combatants),
-      .num = numCombatants,
+      /* .combatants = */ std::move(combatants),
+      /* .num = */ numCombatants,
   };
 }
 
@@ -707,12 +713,12 @@ std::optional<Party> createParty(Combatants &combatants) {
 
   // Initialize each unit. We don't initialize shields here, we will do it in restoreShields().
   auto *u = units.get();
-  for (std::uint8_t i = 0; i < combatants.num; ++i) {
+  for (std::uint8_t i = 0u; i < combatants.num; ++i) {
     const Combatant &combatant = cs[i];
-    for (std::uint8_t kind = 0; kind < g_numKinds; ++kind) {
+    for (std::uint8_t kind = 0u; kind < g_numKinds; ++kind) {
       float maxHull =
           0.1f * g_unitsAttributes[kind].armor * (1.0f + 0.1f * combatant.armorTechnology);
-      for (std::uint64_t j = 0; j < combatant.unitGroups[kind]; ++j) {
+      for (std::uint64_t j = 0u; j < combatant.unitGroups[kind]; ++j) {
         u->hull = maxHull;
         u->kind = kind;
         u->combatantId = i;
@@ -722,14 +728,14 @@ std::optional<Party> createParty(Combatants &combatants) {
   }
 
   return Party{
-      .units = std::move(units),
-      .numAlive = totalUnits,
+      /* .units = */ std::move(units),
+      /* .numAlive = */ totalUnits,
   };
 }
 
 void restoreShields(const Combatants &combatants, Party &party) {
   const Combatant *cs = combatants.combatants.get();
-  for (std::uint64_t i = 0; i < party.numAlive; ++i) {
+  for (std::uint64_t i = 0u; i < party.numAlive; ++i) {
     Unit &unit = party.units[i];
     const Combatant &combatant = cs[unit.combatantId];
     unit.shield =
@@ -750,7 +756,7 @@ void fire(Combatants &attackers, Combatants &defenders, Party &attackersParty,
   std::uint64_t numTargets = defendersParty.numAlive;
 
   // Each shooter fires at one or more random targets.
-  for (std::uint64_t i = 0; i < numShooters; ++i) {
+  for (std::uint64_t i = 0u; i < numShooters; ++i) {
     const Unit &shooter = shooters[i];
     std::uint8_t shooterKind = shooter.kind;
     const UnitAttributes &shooterAttrs = g_unitsAttributes[shooterKind];
@@ -831,8 +837,8 @@ void fire(Combatants &attackers, Combatants &defenders, Party &attackersParty,
 void updateUnits(Combatants &combatants, Party &party, unsigned round) {
   Combatant *cs = combatants.combatants.get();
   Unit *units = party.units.get();
-  std::uint64_t n = 0;
-  for (std::uint64_t i = 0; i < party.numAlive; ++i) {
+  std::uint64_t n = 0u;
+  for (std::uint64_t i = 0u; i < party.numAlive; ++i) {
     Unit &unit = units[i];
     if (unit.hull != 0.0f) {
       units[n++] = unit;
@@ -843,7 +849,8 @@ void updateUnits(Combatants &combatants, Party &party, unsigned round) {
   party.numAlive = n;
 }
 
-jobject createCombatantOutcome(const Jni &jni, const Combatant &combatant, unsigned numRounds) {
+jobject createCombatantOutcome(const Jni &jni, const Combatant &combatant,
+                               std::uint32_t numRounds) {
   const UnitGroupStats *stats = combatant.stats.get();
 
   jobject combatantStatsObj = jni.ArrayList_init(static_cast<int>(numRounds));
@@ -859,9 +866,12 @@ jobject createCombatantOutcome(const Jni &jni, const Combatant &combatant, unsig
       assert(kindObj);
 
       const auto *s = &stats[round * g_numKinds + kind];
-      auto numRemainingUnits = static_cast<long>(s->numRemainingUnits);
-      auto timesFired = static_cast<long>(s->timesFired);
-      auto timesWasShot = static_cast<long>(s->timesWasShot);
+      assert(s->numRemainingUnits > 0);
+      auto numRemainingUnits = static_cast<std::int64_t>(s->numRemainingUnits);
+      assert(s->timesFired > 0);
+      auto timesFired = static_cast<std::int64_t>(s->timesFired);
+      assert(s->timesWasShot > 0);
+      auto timesWasShot = static_cast<std::int64_t>(s->timesWasShot);
       jobject statsObj =
           jni.UnitGroupStats_init(numRemainingUnits, timesFired, timesWasShot, s->shieldDamageDealt,
                                   s->hullDamageDealt, s->shieldDamageTaken, s->hullDamageTaken);
@@ -879,10 +889,11 @@ jobject createCombatantOutcome(const Jni &jni, const Combatant &combatant, unsig
   return outcomeObj;
 }
 
-jobject createCombatantOutcomes(const Jni &jni, const Combatants &combatants, unsigned numRounds) {
+jobject createCombatantOutcomes(const Jni &jni, const Combatants &combatants,
+                                std::uint32_t numRounds) {
   jobject outcomesObj = jni.ArrayList_init(combatants.num);
   assert(outcomesObj);
-  for (std::uint8_t i = 0; i < combatants.num; ++i) {
+  for (std::uint8_t i = 0u; i < combatants.num; ++i) {
     const Combatant &combatant = combatants.combatants[i];
     jobject outcomeObj = createCombatantOutcome(jni, combatant, numRounds);
     assert(outcomeObj);
@@ -892,12 +903,11 @@ jobject createCombatantOutcomes(const Jni &jni, const Combatants &combatants, un
 }
 
 jobject createBattleOutcome(const Jni &jni, const Combatants &attackers,
-                            const Combatants &defenders, unsigned numRounds) {
-  static_assert(maxRounds <= std::numeric_limits<int>::max());
-  auto nRounds = static_cast<int>(numRounds);
+                            const Combatants &defenders, std::uint32_t numRounds) {
   jobject attackersOutcomes = createCombatantOutcomes(jni, attackers, numRounds);
   jobject defendersOutcomes = createCombatantOutcomes(jni, defenders, numRounds);
-  jobject battleOutcome = jni.BattleOutcome_init(nRounds, attackersOutcomes, defendersOutcomes);
+  jobject battleOutcome = jni.BattleOutcome_init(static_cast<std::int32_t>(numRounds),
+                                                 attackersOutcomes, defendersOutcomes);
   assert(battleOutcome);
   return battleOutcome;
 }
@@ -927,7 +937,7 @@ jobject fight(const Jni &jni, jobject attackersList, jobject defendersList, jint
   if (!defendersParty)
     return nullptr;
 
-  unsigned round = 0u;
+  std::uint32_t round = 0u;
   while (round < maxRounds && attackersParty->numAlive > 0u && defendersParty->numAlive > 0u) {
     restoreShields(*attackers, *attackersParty);
     restoreShields(*defenders, *defendersParty);
@@ -941,7 +951,7 @@ jobject fight(const Jni &jni, jobject attackersList, jobject defendersList, jint
     ++round;
   }
 
-  unsigned numRounds = round;
+  std::uint32_t numRounds = round;
   return createBattleOutcome(jni, *attackers, *defenders, numRounds);
 }
 
