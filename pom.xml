@@ -43,7 +43,7 @@
     <dependency>
       <groupId>nz.net.ultraq.thymeleaf</groupId>
       <artifactId>thymeleaf-layout-dialect</artifactId>
-      <version>2.5.3</version>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
