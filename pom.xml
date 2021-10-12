@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.2</version>
+    <version>2.5.5</version>
     <relativePath/>
   </parent>
 
@@ -28,17 +28,17 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>30.1.1-jre</version>
+      <version>31.0.1-jre</version>
     </dependency>
     <dependency>
       <groupId>com.vladmihalcea</groupId>
       <artifactId>hibernate-types-52</artifactId>
-      <version>2.12.0</version>
+      <version>2.13.0</version>
     </dependency>
     <dependency>
       <groupId>io.vavr</groupId>
       <artifactId>vavr</artifactId>
-      <version>0.10.3</version>
+      <version>0.10.4</version>
     </dependency>
     <dependency>
       <groupId>nz.net.ultraq.thymeleaf</groupId>
@@ -53,7 +53,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.2.22</version>
+      <version>42.2.24</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -91,7 +91,7 @@
     <dependency>
       <groupId>org.springframework.session</groupId>
       <artifactId>spring-session-data-redis</artifactId>
-      <version>2.5.1</version>
+      <version>2.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
