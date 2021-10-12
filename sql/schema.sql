@@ -458,29 +458,29 @@ create index other_reports_user_id_deleted_at_idx
 
 -- Reports trigger on user name updates
 
-create function reports_update_target_user_name() returns trigger as $$
-begin
-  update simplified_combat_reports
-     set enemy_name = NEW.name
-   where enemy_id = NEW.id;
-
-  update espionage_reports
-     set enemy_name = NEW.name
-   where enemy_id = NEW.id;
-
-  update transport_reports
-     set partner_name = NEW.name
-   where partner_id = NEW.id;
-
-  return null;
-end;
-$$ language plpgsql;
-
-create trigger reports_update_target_user_name_trigger
-  after update on users
-  for each row
-  when (OLD.name != NEW.name)
-  execute procedure reports_update_target_user_name();
+--create function reports_update_target_user_name() returns trigger as $$
+--begin
+--  update simplified_combat_reports
+--     set enemy_name = NEW.name
+--   where enemy_id = NEW.id;
+--
+--  update espionage_reports
+--     set enemy_name = NEW.name
+--   where enemy_id = NEW.id;
+--
+--  update transport_reports
+--     set partner_name = NEW.name
+--   where partner_id = NEW.id;
+--
+--  return null;
+--end;
+--$$ language plpgsql;
+--
+--create trigger reports_update_target_user_name_trigger
+--  after update on users
+--  for each row
+--  when (OLD.name != NEW.name)
+--  execute procedure reports_update_target_user_name();
 
 -- Private messages
 

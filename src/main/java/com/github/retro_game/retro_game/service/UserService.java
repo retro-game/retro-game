@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public interface UserService {
-  void create(String email, String name, String password);
+  long create(String email, String name, String password);
 
   boolean existsByEmailIgnoreCase(String email);
 

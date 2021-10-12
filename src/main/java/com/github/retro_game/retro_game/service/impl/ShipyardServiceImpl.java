@@ -282,6 +282,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       entry.setKey(key);
       entry.setKind(k);
       entry.setCount(count);
+      queue.add(entry);
       shipyardQueueEntryRepository.save(entry);
     }
 

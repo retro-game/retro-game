@@ -76,7 +76,7 @@ public class Body implements Serializable {
   @OneToMany(mappedBy = "key.body")
   @OrderBy("key.sequence")
   @Fetch(FetchMode.SUBSELECT)
-  private List<ShipyardQueueEntry> shipyardQueue;
+  private List<ShipyardQueueEntry> shipyardQueue = new ArrayList<>();
 
   public EnumMap<BuildingKind, Integer> getBuildings() {
     return ItemsSerialization.deserializeItems(BuildingKind.class, buildingsArray);

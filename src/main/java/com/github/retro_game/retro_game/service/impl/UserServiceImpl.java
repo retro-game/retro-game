@@ -70,7 +70,7 @@ class UserServiceImpl implements UserServiceInternal {
 
   @Override
   @Transactional(isolation = Isolation.SERIALIZABLE)
-  public void create(String email, String name, String password) {
+  public long create(String email, String name, String password) {
     // Make the first user an admin.
     int roles = UserRole.USER;
     if (userRepository.count() == 0) {
@@ -102,6 +102,8 @@ class UserServiceImpl implements UserServiceInternal {
     user.setForcedVacation(false);
     user.setTechnologies(Collections.emptyMap());
     userRepository.save(user);
+
+    return user.getId();
   }
 
   @Override
