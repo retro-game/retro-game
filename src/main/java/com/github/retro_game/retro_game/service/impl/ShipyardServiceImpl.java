@@ -244,9 +244,9 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
           .mapToInt(e -> {
             switch (e.getKind()) {
               case ANTI_BALLISTIC_MISSILE:
-                return 1;
+                return e.getCount();
               case INTERPLANETARY_MISSILE:
-                return 2;
+                return e.getCount() * 2;
               default:
                 return 0;
             }
