@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 
 @SpringBootTest
-public class BattleEngineTests {
+public class BattleEngineUnitTest {
   @Autowired
   private BattleEngine battleEngine;
 

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 
 @SpringBootTest
-public class BattleEngineTests {
+public class BattleEngineDifferentialTest {
   private static final long RANDOM_SEED = 42L;
   private static final int NUM_BATTLES = 1000;
   private final JavaBattleEngine javaBattleEngine = new JavaBattleEngine();
