@@ -55,7 +55,7 @@
             <img th:src="@{/static/skins/{skin}/resources/METAL.gif(skin=${skin})}">
             <p th:text="#{metal}">Metal</p>
             <p th:class="${r.metal >= c.metal ? 'no-capacity' : ''}"
-               th:text="${#numbers.formatDecimal(r.metal, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+               th:text="${#numbers.formatInteger(r.metal, 1, 'DEFAULT')}"></p>
           </div>
           <div data-tooltip data-tooltip-html
                th:data-tooltip-title="
@@ -64,7 +64,7 @@
             <img th:src="@{/static/skins/{skin}/resources/CRYSTAL.gif(skin=${skin})}">
             <p th:text="#{crystal}">Crystal</p>
             <p th:class="${r.crystal >= c.crystal ? 'no-capacity' : ''}"
-               th:text="${#numbers.formatDecimal(r.crystal, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+               th:text="${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')}"></p>
           </div>
           <div data-tooltip data-tooltip-html
                th:data-tooltip-title="
@@ -73,7 +73,7 @@
             <img th:src="@{/static/skins/{skin}/resources/DEUTERIUM.gif(skin=${skin})}">
             <p th:text="#{deuterium}">Deuterium</p>
             <p th:class="${r.deuterium >= c.deuterium ? 'no-capacity' : ''}"
-               th:text="${#numbers.formatDecimal(r.deuterium, 1, 'DEFAULT', 2, 'DEFAULT')}"></p>
+               th:text="${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')}"></p>
           </div>
           <div data-tooltip data-tooltip-html
                th:data-tooltip-title="'<p>' + #{requiredEnergy} + ': <strong>' + ${#numbers.formatInteger(p.usedEnergy, 1, 'DEFAULT')} + '</strong></p>'">
