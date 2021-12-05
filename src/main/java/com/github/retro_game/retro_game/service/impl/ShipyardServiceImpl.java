@@ -98,7 +98,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       }
 
       queue.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, entry.getSequence(), Converter.convert(cost),
-          Date.from(Instant.ofEpochSecond(finishAt)), requiredTime));
+          Date.from(Instant.ofEpochSecond(finishAt))));
     }
 
     Map<UnitKind, UnitItem> items;

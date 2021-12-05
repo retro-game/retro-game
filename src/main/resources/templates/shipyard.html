@@ -12,7 +12,6 @@
       <th th:text="#{unit}">Unit</th>
       <th th:text="#{count}">Count</th>
       <th th:text="#{finishAt}">Finish at</th>
-      <th th:text="#{requiredTime}">Required time</th>
     </tr>
     <tr th:each="entry,iter : ${pair.queue}">
       <td th:text="${iter.index} + 1"></td>
@@ -26,8 +25,8 @@
             '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.crystal, 1, 'DEFAULT')} + '</strong></p>' +
             '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(entry.cost.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
           th:text="${#numbers.formatInteger(entry.count, 1, 'DEFAULT')}"></td>
-      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
-      <td th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
+      <td th:data-timer="${entry.finishAt.time / 1000}"
+          th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
     </tr>
   </table>
   <table th:with="onVacation=${@userService.isOnVacation()},r=${@bodyService.getResources(bodyId)}">
