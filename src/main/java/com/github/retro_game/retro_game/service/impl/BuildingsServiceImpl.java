@@ -205,8 +205,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         }
 
         queue.add(new BuildingQueueEntryDto(Converter.convert(kind), entry.getKey(), levelFrom, levelTo,
-            Converter.convert(cost), requiredEnergy, Date.from(Instant.ofEpochSecond(finishAt)), requiredTime,
-            downMovable, upMovable, cancelable));
+            Converter.convert(cost), requiredEnergy, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable,
+            cancelable));
 
         if (action == BuildingQueueAction.CONSTRUCT) {
           state.construct(kind);

@@ -12,7 +12,6 @@
       <th th:text="#{building}">Building</th>
       <th th:text="#{level}">Level</th>
       <th th:text="#{finishAt}">Finish at</th>
-      <th th:text="#{requiredTime}">Required time</th>
       <th th:text="#{actions}">Actions</th>
     </tr>
     <tr th:each="entry,iter : ${pair.queue}">
@@ -31,8 +30,8 @@
         →
         <span th:text="${entry.levelTo}">2</span>
       </td>
-      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
-      <td th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
+      <td th:data-timer="${entry.finishAt.time / 1000}"
+          th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
       <td class="queue-entry-actions">
         <form th:action="@{/buildings/move-up}" method="post">
           <input name="body" type="hidden" th:value="${bodyId}">
