@@ -161,8 +161,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
         queue.add(new TechnologyQueueEntryDto(Converter.convert(kind), entry.getKey(), level, Converter.convert(cost),
             requiredEnergy, entryBody.getId(), entryBody.getName(), Converter.convert(entryBody.getCoordinates()),
-            effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), requiredTime, downMovable, upMovable,
-            cancelable));
+            effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable, cancelable));
 
         futureTechs.put(kind, futureTechs.get(kind) + 1);
 

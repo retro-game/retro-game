@@ -13,7 +13,6 @@
       <th th:text="#{level}">Level</th>
       <th th:text="#{planet}">Planet</th>
       <th th:text="#{finishAt}">Finish at</th>
-      <th th:text="#{requiredTime}">Required time</th>
       <th th:text="#{actions}">Actions</th>
     </tr>
     <tr th:each="entry,iter : ${pair.queue}">
@@ -37,10 +36,8 @@
            th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
            th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
       </td>
-      <td th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
-      <td data-tooltip data-tooltip-html
-          th:data-tooltip-title="'<p>' + #{effectiveLabLevel} + ': <strong>' + ${entry.effectiveLabLevel} + '</strong></p>'"
-          th:text="${@formatterService.formatTime(entry.requiredTime)}"></td>
+      <td th:data-timer="${entry.finishAt.time / 1000}"
+          th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
       <td class="queue-entry-actions">
         <form th:action="@{/technologies/move-up}" method="post">
           <input name="body" type="hidden" th:value="${bodyId}">
@@ -92,8 +89,9 @@
                   th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
           <th:block th:if="${technology.requiredEnergy > 0}">
             <span th:text="#{energy}">Energy</span>:
-            <strong th:class="${production.totalEnergy < technology.requiredEnergy ? 'requirement-not-met' : 'requirement-met'}"
-                    th:text="${#numbers.formatInteger(technology.requiredEnergy, 1, 'DEFAULT')}">200</strong>
+            <strong
+                th:class="${production.totalEnergy < technology.requiredEnergy ? 'requirement-not-met' : 'requirement-met'}"
+                th:text="${#numbers.formatInteger(technology.requiredEnergy, 1, 'DEFAULT')}">200</strong>
           </th:block>
         </p>
         <p>
