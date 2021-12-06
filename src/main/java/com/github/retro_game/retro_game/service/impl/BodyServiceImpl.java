@@ -200,6 +200,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setProductionFactors(new ProductionFactors());
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
+    body.setBuildingQueue(Collections.emptySortedMap());
     body = bodyRepository.save(body);
     var bodyId = body.getId();
 
@@ -226,6 +227,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setProductionFactors(new ProductionFactors());
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
+    body.setBuildingQueue(Collections.emptySortedMap());
     body = bodyRepository.save(body);
 
     cacheObserver.notifyBodyCreated(user.getId());

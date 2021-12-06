@@ -77,7 +77,7 @@ public class FlightView {
   private int[] unitsArray;
 
   public EnumMap<UnitKind, Integer> getUnits() {
-    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+    return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
   }
 
   public long getId() {

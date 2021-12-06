@@ -127,21 +127,12 @@ create table bodies (
   last_jump_at timestamptz,
   buildings int[] not null check (array_length(buildings, 1) = 18),
   units int[] not null check (array_length(units, 1) = 23),
+  building_queue int[] not null,
   unique (galaxy, system, position, kind)
 );
 
 create index bodies_user_id_idx on bodies (user_id);
 create index bodies_upper_name_idx on bodies (upper(name) text_pattern_ops);
-
--- Building queue
-
-create table building_queue (
-  body_id bigint references bodies not null,
-  sequence int not null,
-  kind int not null,
-  action int not null,
-  primary key (body_id, sequence)
-);
 
 -- Technologies
 

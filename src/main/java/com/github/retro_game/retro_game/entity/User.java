@@ -118,11 +118,11 @@ public class User {
   }
 
   public EnumMap<TechnologyKind, Integer> getTechnologies() {
-    return ItemsSerialization.deserializeItems(TechnologyKind.class, technologiesArray);
+    return SerializationUtils.deserializeItems(TechnologyKind.class, technologiesArray);
   }
 
   public void setTechnologies(Map<TechnologyKind, Integer> technologies) {
-    technologiesArray = ItemsSerialization.serializeItems(TechnologyKind.class, technologies);
+    technologiesArray = SerializationUtils.serializeItems(TechnologyKind.class, technologies);
   }
 
   public int getTechnologyLevel(TechnologyKind kind) {

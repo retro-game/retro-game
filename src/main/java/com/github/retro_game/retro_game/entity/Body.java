@@ -67,11 +67,9 @@ public class Body implements Serializable {
   @Type(type = "int-array")
   private int[] unitsArray;
 
-  @OneToMany(mappedBy = "key.body")
-  @MapKey(name = "key.sequence")
-  @OrderBy("key.sequence")
-  @Fetch(FetchMode.SUBSELECT)
-  private SortedMap<Integer, BuildingQueueEntry> buildingQueue;
+  @Column(name = "building_queue", nullable = false)
+  @Type(type = "int-array")
+  private int[] buildingQueueArray;
 
   @OneToMany(mappedBy = "key.body")
   @OrderBy("key.sequence")
@@ -79,11 +77,11 @@ public class Body implements Serializable {
   private List<ShipyardQueueEntry> shipyardQueue = new ArrayList<>();
 
   public EnumMap<BuildingKind, Integer> getBuildings() {
-    return ItemsSerialization.deserializeItems(BuildingKind.class, buildingsArray);
+    return SerializationUtils.deserializeItems(BuildingKind.class, buildingsArray);
   }
 
   public void setBuildings(Map<BuildingKind, Integer> buildings) {
-    buildingsArray = ItemsSerialization.serializeItems(BuildingKind.class, buildings);
+    buildingsArray = SerializationUtils.serializeItems(BuildingKind.class, buildings);
   }
 
   public int getBuildingLevel(BuildingKind kind) {
@@ -100,11 +98,11 @@ public class Body implements Serializable {
   }
 
   public EnumMap<UnitKind, Integer> getUnits() {
-    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+    return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
   }
 
   public void setUnits(Map<UnitKind, Integer> units) {
-    unitsArray = ItemsSerialization.serializeItems(UnitKind.class, units);
+    unitsArray = SerializationUtils.serializeItems(UnitKind.class, units);
   }
 
   public int getUnitsCount(UnitKind kind) {
@@ -122,6 +120,33 @@ public class Body implements Serializable {
 
   public int getTotalUnitsCount() {
     return Arrays.stream(unitsArray).sum();
+  }
+
+  public SortedMap<Integer, BuildingQueueEntry> getBuildingQueue() {
+    assert buildingQueueArray.length % 3 == 0;
+    var numEntries = buildingQueueArray.length / 3;
+    var queue = new TreeMap<Integer, BuildingQueueEntry>();
+    for (var i = 0; i < numEntries; i++) {
+      var sequence = buildingQueueArray[3 * i];
+      var k = buildingQueueArray[3 * i + 1];
+      var kind = BuildingKind.values()[k];
+      var a = buildingQueueArray[3 * i + 2];
+      var action = BuildingQueueAction.values()[a];
+      queue.put(sequence, new BuildingQueueEntry(kind, action));
+    }
+    return queue;
+  }
+
+  public void setBuildingQueue(SortedMap<Integer, BuildingQueueEntry> queue) {
+    var array = new int[queue.size() * 3];
+    var i = 0;
+    for (var entry : queue.entrySet()) {
+      array[3 * i] = entry.getKey();
+      array[3 * i + 1] = entry.getValue().kind().ordinal();
+      array[3 * i + 2] = entry.getValue().action().ordinal();
+      i++;
+    }
+    buildingQueueArray = array;
   }
 
   public long getId() {
@@ -222,10 +247,6 @@ public class Body implements Serializable {
 
   public void setLastJumpAt(Date lastJumpAt) {
     this.lastJumpAt = lastJumpAt;
-  }
-
-  public SortedMap<Integer, BuildingQueueEntry> getBuildingQueue() {
-    return buildingQueue;
   }
 
   public List<ShipyardQueueEntry> getShipyardQueue() {

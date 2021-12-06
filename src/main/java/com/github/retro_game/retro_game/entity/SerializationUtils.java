@@ -3,7 +3,7 @@ package com.github.retro_game.retro_game.entity;
 import java.util.EnumMap;
 import java.util.Map;
 
-class ItemsSerialization {
+class SerializationUtils {
   static <K extends Enum<K>> EnumMap<K, Integer> deserializeItems(Class<K> clazz, int[] array) {
     var enumConstants = clazz.getEnumConstants();
     assert enumConstants.length == array.length;

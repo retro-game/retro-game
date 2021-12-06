@@ -1,5 +1,7 @@
 -- @formatter:off
 
+begin;
+
 drop view flight_view;
 
 create view flight_view as (
@@ -31,3 +33,34 @@ create view flight_view as (
     join bodies sb
       on sb.id = f.start_body_id
 );
+
+alter table bodies add column building_queue int[];
+
+update bodies
+   set building_queue = tmp3.q
+  from (
+      select body_id,
+             array_agg(i) as q
+        from (
+          select body_id,
+                 unnest(a) as i
+            from (
+                select body_id,
+                       array[sequence, kind, action] as a
+                  from building_queue
+              order by body_id, sequence
+            ) tmp
+        ) tmp2
+    group by body_id
+  ) tmp3
+where bodies.id = tmp3.body_id;
+
+update bodies
+   set building_queue = '{}'::int[]
+ where building_queue is null;
+
+alter table bodies alter column building_queue set not null;
+
+drop table building_queue;
+
+commit;

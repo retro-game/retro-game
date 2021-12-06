@@ -8,7 +8,6 @@ import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
 import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
-import com.github.retro_game.retro_game.repository.BuildingQueueEntryRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.service.exception.*;
 import io.vavr.Tuple;
@@ -36,7 +35,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   private final int fieldsPerLunarBaseLevel;
   private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
-  private final BuildingQueueEntryRepository buildingQueueEntryRepository;
   private final EventRepository eventRepository;
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
@@ -56,11 +54,11 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       maxFields = bodyServiceInternal.getMaxFields(body, buildings);
       if (queue != null) {
         for (BuildingQueueEntry entry : queue.values()) {
-          if (entry.getAction() == BuildingQueueAction.CONSTRUCT) {
-            construct(entry.getKind());
+          if (entry.action() == BuildingQueueAction.CONSTRUCT) {
+            construct(entry.kind());
           } else {
-            assert entry.getAction() == BuildingQueueAction.DESTROY;
-            destroy(entry.getKind());
+            assert entry.action() == BuildingQueueAction.DESTROY;
+            destroy(entry.kind());
           }
         }
       }
@@ -88,15 +86,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   public BuildingsServiceImpl(@Value("${retro-game.building-queue-capacity}") int buildingQueueCapacity,
                               @Value("${retro-game.fields-per-terraformer-level}") int fieldsPerTerraformerLevel,
                               @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
-                              ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
-                              BuildingQueueEntryRepository buildingQueueEntryRepository,
+                              ItemTimeUtils itemTimeUtils,
+                              BodyRepository bodyRepository,
                               EventRepository eventRepository) {
     this.buildingQueueCapacity = buildingQueueCapacity;
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
     this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
-    this.buildingQueueEntryRepository = buildingQueueEntryRepository;
     this.eventRepository = eventRepository;
   }
 
@@ -144,8 +141,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         next = it.hasNext() ? it.next() : null;
 
         BuildingQueueEntry queueEntry = entry.getValue();
-        BuildingKind kind = queueEntry.getKind();
-        BuildingQueueAction action = queueEntry.getAction();
+        BuildingKind kind = queueEntry.kind();
+        BuildingQueueAction action = queueEntry.action();
 
         int levelFrom = state.buildings.getOrDefault(kind, 0);
         assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
@@ -179,8 +176,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         // Moving down or cancelling the first entry is equivalent to building the second one, which is the reason
         // for checking resources.
         if (first && next != null) {
-          BuildingQueueAction nextAction = next.getValue().getAction();
-          BuildingKind nextKind = next.getValue().getKind();
+          BuildingQueueAction nextAction = next.getValue().action();
+          BuildingKind nextKind = next.getValue().kind();
 
           assert nextAction == BuildingQueueAction.CONSTRUCT || nextAction == BuildingQueueAction.DESTROY;
           int nextLevel = state.buildings.getOrDefault(nextKind, 0) +
@@ -272,16 +269,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
   @Override
   public Optional<OngoingBuildingDto> getOngoingBuilding(Body body) {
-    SortedMap<Integer, BuildingQueueEntry> buildingQueue = body.getBuildingQueue();
+    var buildingQueue = body.getBuildingQueue();
     if (buildingQueue.isEmpty()) {
       return Optional.empty();
     }
-    BuildingQueueEntry first = buildingQueue.get(buildingQueue.firstKey());
+    var first = buildingQueue.get(buildingQueue.firstKey());
     assert first != null;
-    BuildingKind kind = first.getKind();
-    BuildingQueueAction action = first.getAction();
-    var level = body.getBuildingLevel(kind) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
-    return Optional.of(new OngoingBuildingDto(kind, level));
+    var level = body.getBuildingLevel(first.kind()) + (first.action() == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    return Optional.of(new OngoingBuildingDto(first.kind(), level));
   }
 
   @Override
@@ -292,17 +287,16 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void construct(long bodyId, BuildingKindDto kind) {
-    BuildingKind k = Converter.convert(kind);
+    var k = Converter.convert(kind);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var queue = body.getBuildingQueue();
 
-    Body body = bodyServiceInternal.getUpdated(bodyId);
-
-    SortedMap<Integer, BuildingQueueEntry> queue = body.getBuildingQueue();
     if (queue.size() >= buildingQueueCapacity) {
       logger.warn("Constructing building failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
     }
 
-    State state = new State(body, queue);
+    var state = new State(body, queue);
     if (state.usedFields >= state.maxFields) {
       logger.warn("Constructing building failed, no more free fields: bodyId={} kind={}", bodyId, k);
       throw new NoMoreFreeFieldsException();
@@ -315,15 +309,13 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       throw new RequirementsNotMetException();
     }
 
-    BuildingQueueEntryKey key = new BuildingQueueEntryKey();
-    key.setBody(body);
+    var sequenceNumber = 1;
     if (!queue.isEmpty()) {
-      int sequenceNumber = queue.lastKey() + 1;
-      key.setSequence(sequenceNumber);
+      sequenceNumber = queue.lastKey() + 1;
       logger.info("Constructing building successful, appending to queue: bodyId={} kind={} sequenceNumber={}",
           bodyId, k, sequenceNumber);
     } else {
-      int level = state.buildings.getOrDefault(k, 0) + 1;
+      var level = state.buildings.getOrDefault(k, 0) + 1;
 
       var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
@@ -334,7 +326,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.warn("Constructing building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
@@ -342,61 +334,53 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       }
 
       logger.info("Constructing building successful, creating a new event: bodyId={} kind={}", bodyId, k);
-      Date now = body.getUpdatedAt();
-      long requiredTime = getConstructionTime(cost, state.buildings);
-      Date startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
-      Event event = new Event();
+      var now = body.getUpdatedAt();
+      var requiredTime = getConstructionTime(cost, state.buildings);
+      var startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
+      var event = new Event();
       event.setAt(startAt);
       event.setKind(EventKind.BUILDING_QUEUE);
       event.setParam(bodyId);
       eventScheduler.schedule(event);
-
-      key.setSequence(1);
     }
 
-    BuildingQueueEntry entry = new BuildingQueueEntry();
-    entry.setKey(key);
-    entry.setKind(k);
-    entry.setAction(BuildingQueueAction.CONSTRUCT);
-    buildingQueueEntryRepository.save(entry);
+    var entry = new BuildingQueueEntry(k, BuildingQueueAction.CONSTRUCT);
+    queue.put(sequenceNumber, entry);
+    body.setBuildingQueue(queue);
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void destroy(long bodyId, BuildingKindDto kind) {
-    BuildingKind k = Converter.convert(kind);
-
-    Body body = bodyServiceInternal.getUpdated(bodyId);
+    var k = Converter.convert(kind);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var queue = body.getBuildingQueue();
 
     if (k == BuildingKind.TERRAFORMER || k == BuildingKind.LUNAR_BASE) {
       logger.warn("Destroying building failed, cannot destroy this building: bodyId={} kind={}", bodyId, k);
       throw new WrongBuildingKindException();
     }
 
-    SortedMap<Integer, BuildingQueueEntry> queue = body.getBuildingQueue();
     if (queue.size() >= buildingQueueCapacity) {
       logger.warn("Destroying building failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
     }
 
-    State state = new State(body, queue);
+    var state = new State(body, queue);
     if (state.buildings.getOrDefault(k, 0) == 0) {
       logger.warn("Destroying building failed, the building is already going to be fully destroyed: bodyId={} kind={}",
           bodyId, k);
       throw new BuildingAlreadyDestroyedException();
     }
 
-    BuildingQueueEntryKey key = new BuildingQueueEntryKey();
-    key.setBody(body);
-
+    var sequenceNumber = 1;
     if (!queue.isEmpty()) {
-      int sequenceNumber = queue.lastKey() + 1;
-      key.setSequence(sequenceNumber);
+      sequenceNumber = queue.lastKey() + 1;
       logger.info("Destroying building successful, appending to queue: bodyId={} kind={} sequenceNumber={}",
           bodyId, k, sequenceNumber);
     } else {
       assert state.buildings.containsKey(k);
-      int level = state.buildings.get(k) - 1;
+      var level = state.buildings.get(k) - 1;
       assert level >= 0;
 
       var cost = ItemCostUtils.getCost(k, level);
@@ -408,7 +392,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.warn("Destroying building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
@@ -416,40 +400,36 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       }
 
       logger.info("Destroying building successful, create a new event: bodyId={} kind={}", bodyId, k);
-      Date now = body.getUpdatedAt();
-      long requiredTime = getDestructionTime(cost, state.buildings);
-      Date startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
-      Event event = new Event();
+      var now = body.getUpdatedAt();
+      var requiredTime = getDestructionTime(cost, state.buildings);
+      var startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
+      var event = new Event();
       event.setAt(startAt);
       event.setKind(EventKind.BUILDING_QUEUE);
       event.setParam(bodyId);
       eventScheduler.schedule(event);
-
-      key.setSequence(1);
     }
 
-    BuildingQueueEntry entry = new BuildingQueueEntry();
-    entry.setKey(key);
-    entry.setKind(k);
-    entry.setAction(BuildingQueueAction.DESTROY);
-    buildingQueueEntryRepository.save(entry);
+    var entry = new BuildingQueueEntry(k, BuildingQueueAction.DESTROY);
+    queue.put(sequenceNumber, entry);
+    body.setBuildingQueue(queue);
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveDown(long bodyId, int sequenceNumber) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var queue = body.getBuildingQueue();
 
-    SortedMap<Integer, BuildingQueueEntry> queue = body.getBuildingQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Moving down entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, BuildingQueueEntry> head = queue.headMap(sequenceNumber);
-    SortedMap<Integer, BuildingQueueEntry> tail = queue.tailMap(sequenceNumber);
-    State state = new State(body, head);
+    var head = queue.headMap(sequenceNumber);
+    var tail = queue.tailMap(sequenceNumber);
+    var state = new State(body, head);
 
     if (!canSwapTop(state, tail)) {
       logger.warn("Moving down entry in building queue failed, cannot swap top: bodyId={} sequenceNumber={}",
@@ -459,9 +439,11 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
     // canSwapTop == true implies tail.size >= 2.
     assert tail.size() >= 2;
-    Iterator<BuildingQueueEntry> it = tail.values().iterator();
-    BuildingQueueEntry entry = it.next();
-    BuildingQueueEntry next = it.next();
+    var it = tail.entrySet().iterator();
+    var entry = it.next().getValue();
+    var n = it.next();
+    var next = n.getValue();
+    var nextSeq = n.getKey();
 
     if (!head.isEmpty()) {
       // The entry is not the first in the queue, just swap it with the next.
@@ -471,18 +453,18 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     } else {
       // The first entry.
 
-      BuildingKind firstKind = entry.getKind();
-      BuildingQueueAction firstAction = entry.getAction();
+      var firstKind = entry.kind();
+      var firstAction = entry.action();
       assert firstAction == BuildingQueueAction.CONSTRUCT || firstAction == BuildingQueueAction.DESTROY;
-      int firstLevel = state.buildings.getOrDefault(firstKind, 0) +
+      var firstLevel = state.buildings.getOrDefault(firstKind, 0) +
           (firstAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert firstLevel >= 0;
       var firstCost = ItemCostUtils.getCost(firstKind, firstLevel);
 
-      BuildingKind secondKind = next.getKind();
-      BuildingQueueAction secondAction = next.getAction();
+      var secondKind = next.kind();
+      var secondAction = next.action();
       assert secondAction == BuildingQueueAction.CONSTRUCT || secondAction == BuildingQueueAction.DESTROY;
-      int secondLevel = state.buildings.getOrDefault(secondKind, 0) +
+      var secondLevel = state.buildings.getOrDefault(secondKind, 0) +
           (secondAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert secondLevel >= 0;
       var secondCost = ItemCostUtils.getCost(secondKind, secondLevel);
@@ -497,7 +479,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(secondKind, secondLevel);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.warn("Moving down entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
@@ -512,49 +494,47 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         throw new RequirementsNotMetException();
       }
 
-      Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
-      if (!eventOptional.isPresent()) {
+      var eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
+      if (eventOptional.isEmpty()) {
         logger.error("Moving down entry in building queue failed, the event is not present: bodyId={}" +
                 " sequenceNumber={}",
             bodyId, sequenceNumber);
         throw new MissingEventException();
       }
-      Event event = eventOptional.get();
+      var event = eventOptional.get();
 
-      long requiredTime = secondAction == BuildingQueueAction.CONSTRUCT ?
+      var requiredTime = secondAction == BuildingQueueAction.CONSTRUCT ?
           getConstructionTime(secondCost, state.buildings) : getDestructionTime(secondCost, state.buildings);
 
       logger.info("Moving down entry in building queue successful, the entry is the first, adding an event for the" +
               " next entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
-      Date now = body.getUpdatedAt();
-      Date at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
+      var now = body.getUpdatedAt();
+      var at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
       event.setAt(at);
       eventScheduler.schedule(event);
     }
 
     // Swap.
-    BuildingKind kind = entry.getKind();
-    BuildingQueueAction action = entry.getAction();
-    entry.setKind(next.getKind());
-    entry.setAction(next.getAction());
-    next.setKind(kind);
-    next.setAction(action);
+    queue.put(sequenceNumber, next);
+    queue.put(nextSeq, entry);
+
+    body.setBuildingQueue(queue);
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void moveUp(long bodyId, int sequenceNumber) {
-    Body body = bodyRepository.getOne(bodyId);
+    var body = bodyRepository.getOne(bodyId);
+    var queue = body.getBuildingQueue();
 
-    SortedMap<Integer, BuildingQueueEntry> queue = body.getBuildingQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Moving up entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, BuildingQueueEntry> head = queue.headMap(sequenceNumber);
+    var head = queue.headMap(sequenceNumber);
     if (head.isEmpty()) {
       logger.warn("Moving up entry in building queue failed, the entry is first: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
@@ -568,18 +548,18 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void cancel(long bodyId, int sequenceNumber) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var queue = body.getBuildingQueue();
 
-    SortedMap<Integer, BuildingQueueEntry> queue = body.getBuildingQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Cancelling entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, BuildingQueueEntry> head = queue.headMap(sequenceNumber);
-    SortedMap<Integer, BuildingQueueEntry> tail = queue.tailMap(sequenceNumber);
-    State state = new State(body, head);
+    var head = queue.headMap(sequenceNumber);
+    var tail = queue.tailMap(sequenceNumber);
+    var state = new State(body, head);
 
     if (!canRemoveTop(state, tail)) {
       logger.warn("Cancelling entry in building queue failed, cannot remove top: bodyId={} sequenceNumber={}",
@@ -592,40 +572,42 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       logger.info("Cancelling entry in building queue successful, the entry isn't the first: bodyId={}" +
               " sequenceNumber={}",
           bodyId, sequenceNumber);
-      BuildingQueueEntry entry = queue.remove(sequenceNumber);
-      buildingQueueEntryRepository.delete(entry);
+      queue.remove(sequenceNumber);
     } else {
       // The first entry.
 
-      Iterator<BuildingQueueEntry> it = tail.values().iterator();
-      BuildingQueueEntry entry = it.next();
-      BuildingKind kind = entry.getKind();
-      BuildingQueueAction action = entry.getAction();
+      var it = tail.values().iterator();
+      var entry = it.next();
+      var kind = entry.kind();
+      var action = entry.action();
+
+      it.remove();
 
       assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
-      int level = state.buildings.getOrDefault(kind, 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+      var level = state.buildings.getOrDefault(kind, 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
       assert level >= 0;
 
       var cost = ItemCostUtils.getCost(kind, level);
       body.getResources().add(cost);
 
-      Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
-      if (!eventOptional.isPresent()) {
+      var eventOptional = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
+      if (eventOptional.isEmpty()) {
         logger.error("Cancelling entry in building queue failed, the event is not present: bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
         throw new MissingEventException();
       }
-      Event event = eventOptional.get();
+      var event = eventOptional.get();
 
       if (!it.hasNext()) {
         logger.info("Cancelling entry in building queue successful, queue is empty now: bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
+        assert queue.isEmpty();
         eventRepository.delete(event);
       } else {
         // Get the next item.
-        BuildingQueueEntry next = it.next();
-        kind = next.getKind();
-        action = next.getAction();
+        var next = it.next();
+        kind = next.kind();
+        action = next.action();
 
         assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
         level = state.buildings.getOrDefault(kind, 0) + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
@@ -641,7 +623,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
         if (requiredEnergy > 0) {
-          int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+          var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
           if (requiredEnergy > totalEnergy) {
             logger.warn("Cancelling entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
                 bodyId, sequenceNumber);
@@ -656,35 +638,32 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
           throw new RequirementsNotMetException();
         }
 
-        long requiredTime = action == BuildingQueueAction.CONSTRUCT ? getConstructionTime(cost, state.buildings) :
+        var requiredTime = action == BuildingQueueAction.CONSTRUCT ? getConstructionTime(cost, state.buildings) :
             getDestructionTime(cost, state.buildings);
 
         logger.info("Cancelling entry in building queue successful, the entry is the first, modifying the event:" +
                 " bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
-        Date now = body.getUpdatedAt();
-        Date at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
+        var now = body.getUpdatedAt();
+        var at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
         event.setAt(at);
         eventScheduler.schedule(event);
       }
-
-      it.remove();
-      buildingQueueEntryRepository.delete(entry);
     }
+
+    body.setBuildingQueue(queue);
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
-    long bodyId = event.getParam();
-    Body body = bodyRepository.getOne(bodyId);
-
-    Date at = event.getAt();
+    var bodyId = event.getParam();
+    var body = bodyRepository.getOne(bodyId);
 
     eventRepository.delete(event);
 
-    Collection<BuildingQueueEntry> values = body.getBuildingQueue().values();
-    Iterator<BuildingQueueEntry> it = values.iterator();
+    var queue = body.getBuildingQueue();
+    var it = queue.entrySet().iterator();
 
     // This shouldn't happen.
     if (!it.hasNext()) {
@@ -692,94 +671,88 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       return;
     }
 
-    BuildingQueueEntry entry = it.next();
-    BuildingKind kind = entry.getKind();
+    var n = it.next();
+    var seq = n.getKey();
+    var entry = n.getValue();
 
     it.remove();
-    buildingQueueEntryRepository.delete(entry);
 
-    bodyServiceInternal.updateResources(body, at);
+    bodyServiceInternal.updateResources(body, event.getAt());
 
     // Update buildings.
-    var oldLevel = body.getBuildingLevel(kind);
+    var oldLevel = body.getBuildingLevel(entry.kind());
     assert oldLevel >= 0;
-    var newLevel = oldLevel + (entry.getAction() == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    var newLevel = oldLevel + (entry.action() == BuildingQueueAction.CONSTRUCT ? 1 : -1);
     assert newLevel >= 0;
     logger.info("Handling building queue, updating building level: bodyId={} kind={} oldLevel={} newLevel={}",
-        bodyId, kind, oldLevel, newLevel);
-    body.setBuildingLevel(kind, newLevel);
+        bodyId, entry.kind(), oldLevel, newLevel);
+    body.setBuildingLevel(entry.kind(), newLevel);
 
     // Handle subsequent entries.
 
-    final int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
-
-    final int usedFields = bodyServiceInternal.getUsedFields(body);
-    final int maxFields = bodyServiceInternal.getMaxFields(body);
+    var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+    var usedFields = bodyServiceInternal.getUsedFields(body);
+    var maxFields = bodyServiceInternal.getMaxFields(body);
 
     while (it.hasNext()) {
-      entry = it.next();
-      kind = entry.getKind();
-      BuildingQueueAction action = entry.getAction();
-      int sequenceNumber = entry.getSequence();
+      n = it.next();
+      seq = n.getKey();
+      entry = n.getValue();
+
+      var action = entry.action();
+      var level = body.getBuildingLevel(entry.kind());
+      assert level >= 0;
 
       if (action == BuildingQueueAction.CONSTRUCT && usedFields >= maxFields) {
         logger.info("Handling building queue, removing entry, no more free fields: bodyId={} kind={} sequenceNumber={}",
-            bodyId, kind, sequenceNumber);
+            bodyId, entry.kind(), seq);
         it.remove();
-        buildingQueueEntryRepository.delete(entry);
         continue;
       }
 
-      var level = body.getBuildingLevel(kind);
-      assert level >= 0;
-
       if (action == BuildingQueueAction.DESTROY && level == 0) {
         logger.error("Handling building queue, destroying non-existing building: bodyId={} kind={} sequenceNumber={}",
-            bodyId, kind, sequenceNumber);
+            bodyId, entry.kind(), seq);
         it.remove();
-        buildingQueueEntryRepository.delete(entry);
         continue;
       }
 
       assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
       level += action == BuildingQueueAction.CONSTRUCT ? 1 : -1;
 
-      var cost = ItemCostUtils.getCost(kind, level);
+      var cost = ItemCostUtils.getCost(entry.kind(), level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.info("Handling building queue, removing entry, not enough resources: bodyId={} kind={}" +
                 " sequenceNumber={}",
-            bodyId, kind, sequenceNumber);
+            bodyId, entry.kind(), seq);
         it.remove();
-        buildingQueueEntryRepository.delete(entry);
         continue;
       }
 
-      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(entry.kind(), level);
       if (requiredEnergy > totalEnergy) {
         logger.info("Handling building queue, removing entry, not enough energy: bodyId={} kind={}" +
                 " sequenceNumber={}",
-            bodyId, kind, sequenceNumber);
+            bodyId, entry.kind(), seq);
         it.remove();
-        buildingQueueEntryRepository.delete(entry);
         continue;
       }
 
-      var item = Item.get(kind);
+      var item = Item.get(entry.kind());
       if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
         logger.info("Handling building queue, removing entry, requirements not met: bodyId={} kind={}" +
                 " sequenceNumber={}",
-            bodyId, kind, sequenceNumber);
+            bodyId, entry.kind(), seq);
         it.remove();
-        buildingQueueEntryRepository.delete(entry);
         continue;
       }
 
       logger.info("Handling building queue, creating an event: bodyId={} kind={} action={} level={} sequenceNumber={}",
-          bodyId, kind, action, level, sequenceNumber);
+          bodyId, entry.kind(), action, level, seq);
       body.getResources().sub(cost);
       long requiredTime = action == BuildingQueueAction.CONSTRUCT ? getConstructionTime(cost, body) :
           getDestructionTime(cost, body);
-      Date startAt = Date.from(Instant.ofEpochSecond(at.toInstant().getEpochSecond() + requiredTime));
+      Date startAt = Date.from(Instant.ofEpochSecond(event.getAt().toInstant().getEpochSecond() + requiredTime));
       Event newEvent = new Event();
       newEvent.setAt(startAt);
       newEvent.setKind(EventKind.BUILDING_QUEUE);
@@ -788,6 +761,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       break;
     }
+
+    body.setBuildingQueue(queue);
   }
 
   @Override
@@ -795,7 +770,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   public void deleteBuildingsAndQueue(Body body) {
     Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, body.getId());
     event.ifPresent(eventRepository::delete);
-    buildingQueueEntryRepository.deleteAll(body.getBuildingQueue().values());
   }
 
   private long getConstructionTime(Resources cost, Body body) {
@@ -829,28 +803,28 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
 
     // Get first two items.
-    Iterator<BuildingQueueEntry> it = queue.values().iterator();
-    BuildingQueueEntry first = it.next();
-    BuildingQueueEntry second = it.next();
+    var it = queue.values().iterator();
+    var first = it.next();
+    var second = it.next();
 
     // Check requirements.
     // The second building will always meet requirements when the first action is destroy.
-    if (first.getAction() == BuildingQueueAction.CONSTRUCT) {
-      if (second.getAction() == BuildingQueueAction.CONSTRUCT) {
-        var requirements = Item.get(second.getKind()).getBuildingsRequirements();
-        if (requirements.getOrDefault(first.getKind(), 0) >
-            state.buildings.getOrDefault(first.getKind(), 0)) {
+    if (first.action() == BuildingQueueAction.CONSTRUCT) {
+      if (second.action() == BuildingQueueAction.CONSTRUCT) {
+        var requirements = Item.get(second.kind()).getBuildingsRequirements();
+        if (requirements.getOrDefault(first.kind(), 0) >
+            state.buildings.getOrDefault(first.kind(), 0)) {
           return false;
         }
       } else {
-        assert second.getAction() == BuildingQueueAction.DESTROY;
-        if (!state.buildings.containsKey(second.getKind())) {
+        assert second.action() == BuildingQueueAction.DESTROY;
+        if (!state.buildings.containsKey(second.kind())) {
           return false;
         }
-        var requirements = Item.get(first.getKind()).getBuildingsRequirements();
-        int levelAfterDeconstruction = state.buildings.get(second.getKind()) - 1;
+        var requirements = Item.get(first.kind()).getBuildingsRequirements();
+        int levelAfterDeconstruction = state.buildings.get(second.kind()) - 1;
         assert levelAfterDeconstruction >= 0;
-        if (requirements.getOrDefault(second.getKind(), 0) > levelAfterDeconstruction) {
+        if (requirements.getOrDefault(second.kind(), 0) > levelAfterDeconstruction) {
           return false;
         }
       }
@@ -858,16 +832,16 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
     // Check body's fields.
     // If the second action is destroy, there will be always enough free fields after the swap.
-    if (second.getAction() == BuildingQueueAction.CONSTRUCT) {
-      if (first.getAction() == BuildingQueueAction.DESTROY) {
+    if (second.action() == BuildingQueueAction.CONSTRUCT) {
+      if (first.action() == BuildingQueueAction.DESTROY) {
         // The destruction can free one field and thus we can construct the second one, but after the swap there may not
         // be enough fields to construct it.
         if (state.usedFields >= state.maxFields) {
           return false;
         }
-      } else if ((first.getKind() == BuildingKind.TERRAFORMER ||
-          first.getKind() == BuildingKind.LUNAR_BASE) && second.getKind() != BuildingKind.TERRAFORMER &&
-          second.getKind() != BuildingKind.LUNAR_BASE && state.usedFields + 1 >= state.maxFields) {
+      } else if ((first.kind() == BuildingKind.TERRAFORMER ||
+          first.kind() == BuildingKind.LUNAR_BASE) && second.kind() != BuildingKind.TERRAFORMER &&
+          second.kind() != BuildingKind.LUNAR_BASE && state.usedFields + 1 >= state.maxFields) {
         // After the second one would be built, there won't be free fields anymore, as the second one doesn't increase
         // the max fields like the first one.
         return false;
@@ -882,12 +856,12 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       return false;
     }
 
-    Iterator<BuildingQueueEntry> it = queue.values().iterator();
-    BuildingKind firstKind = it.next().getKind();
+    var it = queue.values().iterator();
+    var firstKind = it.next().kind();
 
-    int usedFields = state.usedFields;
-    int maxFields = state.maxFields;
-    int level = state.buildings.getOrDefault(firstKind, 0);
+    var usedFields = state.usedFields;
+    var maxFields = state.maxFields;
+    var level = state.buildings.getOrDefault(firstKind, 0);
 
     while (it.hasNext()) {
       // Check whether there is enough fields to construct the building. This must be checked, because we may remove
@@ -897,9 +871,9 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       }
       usedFields++;
 
-      BuildingQueueEntry current = it.next();
-      BuildingQueueAction currentAction = current.getAction();
-      BuildingKind currentKind = current.getKind();
+      var current = it.next();
+      var currentAction = current.action();
+      var currentKind = current.kind();
 
       // Increase the max fields.
       // Terraformer and lunar base cannot be destroyed once built.

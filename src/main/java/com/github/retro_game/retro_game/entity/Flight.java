@@ -80,11 +80,11 @@ public class Flight {
   private int[] unitsArray;
 
   public EnumMap<UnitKind, Integer> getUnits() {
-    return ItemsSerialization.deserializeItems(UnitKind.class, unitsArray);
+    return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
   }
 
   public void setUnits(Map<UnitKind, Integer> units) {
-    unitsArray = ItemsSerialization.serializeItems(UnitKind.class, units);
+    unitsArray = SerializationUtils.serializeItems(UnitKind.class, units);
   }
 
   public int getUnitsCount(UnitKind kind) {

@@ -67,9 +67,9 @@ class DetailsServiceImpl implements DetailsService {
     var currentLevel = body.getBuildingLevel(k);
     var futureLevel = currentLevel;
     for (BuildingQueueEntry entry : queue) {
-      if (entry.getKind() == k) {
-        assert entry.getAction() == BuildingQueueAction.CONSTRUCT || entry.getAction() == BuildingQueueAction.DESTROY;
-        futureLevel += entry.getAction() == BuildingQueueAction.CONSTRUCT ? 1 : -1;
+      if (entry.kind() == k) {
+        assert entry.action() == BuildingQueueAction.CONSTRUCT || entry.action() == BuildingQueueAction.DESTROY;
+        futureLevel += entry.action() == BuildingQueueAction.CONSTRUCT ? 1 : -1;
       }
     }
 
