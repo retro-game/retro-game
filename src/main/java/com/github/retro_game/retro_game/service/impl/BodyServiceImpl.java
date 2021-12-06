@@ -201,6 +201,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
     body.setBuildingQueue(Collections.emptySortedMap());
+    body.setShipyardQueue(Collections.emptyList());
     body = bodyRepository.save(body);
     var bodyId = body.getId();
 
@@ -228,6 +229,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
     body.setBuildingQueue(Collections.emptySortedMap());
+    body.setShipyardQueue(Collections.emptyList());
     body = bodyRepository.save(body);
 
     cacheObserver.notifyBodyCreated(user.getId());
@@ -255,6 +257,8 @@ class BodyServiceImpl implements BodyServiceInternal {
     body.setLastJumpAt(at);
     body.setBuildings(Collections.emptyMap());
     body.setUnits(Collections.emptyMap());
+    body.setBuildingQueue(Collections.emptySortedMap());
+    body.setShipyardQueue(Collections.emptyList());
     body = bodyRepository.save(body);
 
     cacheObserver.notifyBodyCreated(user.getId());

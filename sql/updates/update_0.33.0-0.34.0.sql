@@ -2,6 +2,8 @@
 
 begin;
 
+-- Flight view
+
 drop view flight_view;
 
 create view flight_view as (
@@ -34,6 +36,8 @@ create view flight_view as (
       on sb.id = f.start_body_id
 );
 
+-- Building queue
+
 alter table bodies add column building_queue int[];
 
 update bodies
@@ -62,5 +66,36 @@ update bodies
 alter table bodies alter column building_queue set not null;
 
 drop table building_queue;
+
+-- Shipyard queue
+
+alter table bodies add column shipyard_queue int[];
+
+update bodies
+   set shipyard_queue = tmp3.q
+  from (
+      select body_id,
+             array_agg(i) as q
+        from (
+          select body_id,
+                 unnest(a) as i
+            from (
+                select body_id,
+                       array[kind, count] as a
+                  from shipyard_queue
+              order by body_id, sequence
+            ) tmp
+        ) tmp2
+    group by body_id
+  ) tmp3
+where bodies.id = tmp3.body_id;
+
+update bodies
+   set shipyard_queue = '{}'::int[]
+ where shipyard_queue is null;
+
+alter table bodies alter column shipyard_queue set not null;
+
+drop table shipyard_queue;
 
 commit;

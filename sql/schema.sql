@@ -128,6 +128,7 @@ create table bodies (
   buildings int[] not null check (array_length(buildings, 1) = 18),
   units int[] not null check (array_length(units, 1) = 23),
   building_queue int[] not null,
+  shipyard_queue int[] not null,
   unique (galaxy, system, position, kind)
 );
 
@@ -151,16 +152,6 @@ create table technology_queue (
   body_id bigint references bodies not null,
   kind int not null,
   primary key (user_id, sequence)
-);
-
--- Shipyard queue
-
-create table shipyard_queue (
-  body_id bigint references bodies not null,
-  sequence int not null,
-  kind int not null,
-  count int not null,
-  primary key (body_id, sequence)
 );
 
 -- Parties

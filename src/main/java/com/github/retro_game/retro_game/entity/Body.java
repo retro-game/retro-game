@@ -1,8 +1,6 @@
 package com.github.retro_game.retro_game.entity;
 
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -71,83 +69,9 @@ public class Body implements Serializable {
   @Type(type = "int-array")
   private int[] buildingQueueArray;
 
-  @OneToMany(mappedBy = "key.body")
-  @OrderBy("key.sequence")
-  @Fetch(FetchMode.SUBSELECT)
-  private List<ShipyardQueueEntry> shipyardQueue = new ArrayList<>();
-
-  public EnumMap<BuildingKind, Integer> getBuildings() {
-    return SerializationUtils.deserializeItems(BuildingKind.class, buildingsArray);
-  }
-
-  public void setBuildings(Map<BuildingKind, Integer> buildings) {
-    buildingsArray = SerializationUtils.serializeItems(BuildingKind.class, buildings);
-  }
-
-  public int getBuildingLevel(BuildingKind kind) {
-    var index = kind.ordinal();
-    var level = buildingsArray[index];
-    assert level >= 0;
-    return level;
-  }
-
-  public void setBuildingLevel(BuildingKind kind, int level) {
-    assert level >= 0;
-    var index = kind.ordinal();
-    buildingsArray[index] = level;
-  }
-
-  public EnumMap<UnitKind, Integer> getUnits() {
-    return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
-  }
-
-  public void setUnits(Map<UnitKind, Integer> units) {
-    unitsArray = SerializationUtils.serializeItems(UnitKind.class, units);
-  }
-
-  public int getUnitsCount(UnitKind kind) {
-    var index = kind.ordinal();
-    var count = unitsArray[index];
-    assert count >= 0;
-    return count;
-  }
-
-  public void setUnitsCount(UnitKind kind, int count) {
-    assert count >= 0;
-    var index = kind.ordinal();
-    unitsArray[index] = count;
-  }
-
-  public int getTotalUnitsCount() {
-    return Arrays.stream(unitsArray).sum();
-  }
-
-  public SortedMap<Integer, BuildingQueueEntry> getBuildingQueue() {
-    assert buildingQueueArray.length % 3 == 0;
-    var numEntries = buildingQueueArray.length / 3;
-    var queue = new TreeMap<Integer, BuildingQueueEntry>();
-    for (var i = 0; i < numEntries; i++) {
-      var sequence = buildingQueueArray[3 * i];
-      var k = buildingQueueArray[3 * i + 1];
-      var kind = BuildingKind.values()[k];
-      var a = buildingQueueArray[3 * i + 2];
-      var action = BuildingQueueAction.values()[a];
-      queue.put(sequence, new BuildingQueueEntry(kind, action));
-    }
-    return queue;
-  }
-
-  public void setBuildingQueue(SortedMap<Integer, BuildingQueueEntry> queue) {
-    var array = new int[queue.size() * 3];
-    var i = 0;
-    for (var entry : queue.entrySet()) {
-      array[3 * i] = entry.getKey();
-      array[3 * i + 1] = entry.getValue().kind().ordinal();
-      array[3 * i + 2] = entry.getValue().action().ordinal();
-      i++;
-    }
-    buildingQueueArray = array;
-  }
+  @Column(name = "shipyard_queue", nullable = false)
+  @Type(type = "int-array")
+  private int[] shipyardQueueArray;
 
   public long getId() {
     return id;
@@ -249,7 +173,100 @@ public class Body implements Serializable {
     this.lastJumpAt = lastJumpAt;
   }
 
+  public EnumMap<BuildingKind, Integer> getBuildings() {
+    return SerializationUtils.deserializeItems(BuildingKind.class, buildingsArray);
+  }
+
+  public void setBuildings(Map<BuildingKind, Integer> buildings) {
+    buildingsArray = SerializationUtils.serializeItems(BuildingKind.class, buildings);
+  }
+
+  public int getBuildingLevel(BuildingKind kind) {
+    var index = kind.ordinal();
+    var level = buildingsArray[index];
+    assert level >= 0;
+    return level;
+  }
+
+  public void setBuildingLevel(BuildingKind kind, int level) {
+    assert level >= 0;
+    var index = kind.ordinal();
+    buildingsArray[index] = level;
+  }
+
+  public EnumMap<UnitKind, Integer> getUnits() {
+    return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
+  }
+
+  public void setUnits(Map<UnitKind, Integer> units) {
+    unitsArray = SerializationUtils.serializeItems(UnitKind.class, units);
+  }
+
+  public int getUnitsCount(UnitKind kind) {
+    var index = kind.ordinal();
+    var count = unitsArray[index];
+    assert count >= 0;
+    return count;
+  }
+
+  public void setUnitsCount(UnitKind kind, int count) {
+    assert count >= 0;
+    var index = kind.ordinal();
+    unitsArray[index] = count;
+  }
+
+  public int getTotalUnitsCount() {
+    return Arrays.stream(unitsArray).sum();
+  }
+
+  public SortedMap<Integer, BuildingQueueEntry> getBuildingQueue() {
+    assert buildingQueueArray.length % 3 == 0;
+    var numEntries = buildingQueueArray.length / 3;
+    var queue = new TreeMap<Integer, BuildingQueueEntry>();
+    for (var i = 0; i < numEntries; i++) {
+      var sequence = buildingQueueArray[3 * i];
+      var k = buildingQueueArray[3 * i + 1];
+      var kind = BuildingKind.values()[k];
+      var a = buildingQueueArray[3 * i + 2];
+      var action = BuildingQueueAction.values()[a];
+      queue.put(sequence, new BuildingQueueEntry(kind, action));
+    }
+    return queue;
+  }
+
+  public void setBuildingQueue(SortedMap<Integer, BuildingQueueEntry> queue) {
+    var array = new int[queue.size() * 3];
+    var i = 0;
+    for (var entry : queue.entrySet()) {
+      array[3 * i] = entry.getKey();
+      array[3 * i + 1] = entry.getValue().kind().ordinal();
+      array[3 * i + 2] = entry.getValue().action().ordinal();
+      i++;
+    }
+    buildingQueueArray = array;
+  }
+
   public List<ShipyardQueueEntry> getShipyardQueue() {
-    return shipyardQueue;
+    assert shipyardQueueArray.length % 2 == 0;
+    var numEntries = shipyardQueueArray.length / 2;
+    var queue = new ArrayList<ShipyardQueueEntry>(numEntries);
+    for (var i = 0; i < numEntries; i++) {
+      var k = shipyardQueueArray[2 * i];
+      var kind = UnitKind.values()[k];
+      var count = shipyardQueueArray[2 * i + 1];
+      queue.add(new ShipyardQueueEntry(kind, count));
+    }
+    return queue;
+  }
+
+  public void setShipyardQueue(List<ShipyardQueueEntry> queue) {
+    var array = new int[queue.size() * 2];
+    var i = 0;
+    for (var entry : queue) {
+      array[2 * i] = entry.kind().ordinal();
+      array[2 * i + 1] = entry.count();
+      i++;
+    }
+    shipyardQueueArray = array;
   }
 }

@@ -8,7 +8,6 @@ import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
-import com.github.retro_game.retro_game.repository.ShipyardQueueEntryRepository;
 import com.github.retro_game.retro_game.service.exception.*;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -31,17 +30,14 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
   private final EventRepository eventRepository;
-  private final ShipyardQueueEntryRepository shipyardQueueEntryRepository;
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
 
   public ShipyardServiceImpl(ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
-                             EventRepository eventRepository,
-                             ShipyardQueueEntryRepository shipyardQueueEntryRepository) {
+                             EventRepository eventRepository) {
     this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
     this.eventRepository = eventRepository;
-    this.shipyardQueueEntryRepository = shipyardQueueEntryRepository;
   }
 
   @Autowired
@@ -61,13 +57,13 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
     Map<UnitKind, Integer> inQueue = new EnumMap<>(UnitKind.class);
 
-    List<ShipyardQueueEntry> shipyardQueue = body.getShipyardQueue();
-    List<ShipyardQueueEntryDto> queue = new ArrayList<>(shipyardQueue.size());
+    var shipyardQueue = body.getShipyardQueue();
+    var queue = new ArrayList<ShipyardQueueEntryDto>(shipyardQueue.size());
     boolean first = true;
     long finishAt = 0;
     for (ShipyardQueueEntry entry : shipyardQueue) {
-      UnitKind kind = entry.getKind();
-      int count = entry.getCount();
+      UnitKind kind = entry.kind();
+      int count = entry.count();
       assert count >= 1;
 
       inQueue.put(kind, inQueue.getOrDefault(kind, 0) + count);
@@ -97,7 +93,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
         finishAt += requiredTime;
       }
 
-      queue.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, entry.getSequence(), Converter.convert(cost),
+      queue.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, Converter.convert(cost),
           Date.from(Instant.ofEpochSecond(finishAt))));
     }
 
@@ -175,9 +171,9 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   public Map<UnitKind, Tuple2<Integer, Integer>> getCurrentAndFutureCounts(Body body) {
     EnumMap<UnitKind, Integer> inQueue = body.getShipyardQueue().stream()
         .collect(Collectors.toMap(
-            ShipyardQueueEntry::getKind,
-            ShipyardQueueEntry::getCount,
-            (a, b) -> a + b,
+            ShipyardQueueEntry::kind,
+            ShipyardQueueEntry::count,
+            Integer::sum,
             () -> new EnumMap<>(UnitKind.class)
         ));
     return Arrays.stream(UnitKind.values())
@@ -230,7 +226,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
             bodyId, k, count);
         throw new ShieldDomeAlreadyBuiltException();
       }
-      boolean exists = queue.stream().anyMatch(e -> e.getKind() == k);
+      boolean exists = queue.stream().anyMatch(e -> e.kind() == k);
       if (exists) {
         logger.warn("Constructing unit failed, the shield dome is already in the queue: bodyId={} kind={} count={}",
             bodyId, k, count);
@@ -241,15 +237,10 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       int used = body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) +
           2 * body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE);
       used += queue.stream()
-          .mapToInt(e -> {
-            switch (e.getKind()) {
-              case ANTI_BALLISTIC_MISSILE:
-                return e.getCount();
-              case INTERPLANETARY_MISSILE:
-                return e.getCount() * 2;
-              default:
-                return 0;
-            }
+          .mapToInt(e -> switch (e.kind()) {
+            case ANTI_BALLISTIC_MISSILE -> e.count();
+            case INTERPLANETARY_MISSILE -> e.count() * 2;
+            default -> 0;
           })
           .sum();
       used += (k == UnitKind.ANTI_BALLISTIC_MISSILE ? 1 : 2) * count;
@@ -269,22 +260,15 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     }
 
     // Update or add an entry.
-    ShipyardQueueEntry entry;
-    if (last != null && last.getKind() == k) {
+    if (last != null && last.kind() == k) {
       // Add units to last entry.
-      entry = last;
-      entry.setCount(entry.getCount() + count);
+      var entry = new ShipyardQueueEntry(k, last.count() + count);
+      queue.set(queue.size() - 1, entry);
     } else {
-      ShipyardQueueEntryKey key = new ShipyardQueueEntryKey();
-      key.setBody(body);
-      key.setSequence(last == null ? 1 : last.getSequence() + 1);
-      entry = new ShipyardQueueEntry();
-      entry.setKey(key);
-      entry.setKind(k);
-      entry.setCount(count);
+      var entry = new ShipyardQueueEntry(k, count);
       queue.add(entry);
-      shipyardQueueEntryRepository.save(entry);
     }
+    body.setShipyardQueue(queue);
 
     if (last == null) {
       // Add event.
@@ -309,7 +293,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
     eventRepository.delete(event);
 
-    List<ShipyardQueueEntry> queue = body.getShipyardQueue();
+    var queue = body.getShipyardQueue();
 
     // This shouldn't happen.
     if (queue.isEmpty()) {
@@ -320,40 +304,23 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     // Update resources, as the production may increase when we build solar satellites.
     bodyServiceInternal.updateResources(body, at);
 
-    boolean first = true;
-    for (ShipyardQueueEntry entry : queue) {
-      UnitKind kind = entry.getKind();
-      var item = Item.get(kind);
-      long time = getConstructionTime(item.getCost(), body);
+    var first = queue.get(0);
 
-      int numBuilt;
-      if (time == 0) {
-        // All units can be built right now.
-        numBuilt = entry.getCount();
-      } else if (first) {
-        // We have waited for that unit.
-        numBuilt = 1;
-      } else {
-        // Next iteration, we haven't waited yet, we must add an event first.
-        numBuilt = 0;
-      }
-      first = false;
+    // Add units.
+    body.setUnitsCount(first.kind(), body.getUnitsCount(first.kind()) + 1);
 
-      if (numBuilt > 0) {
-        // Add units.
-        var oldCount = body.getUnitsCount(kind);
-        var newCount = oldCount + numBuilt;
-        body.setUnitsCount(kind, newCount);
+    assert first.count() >= 1;
+    if (first.count() == 1) {
+      queue.remove(0);
+    } else {
+      var newFirst = new ShipyardQueueEntry(first.kind(), first.count() - 1);
+      queue.set(0, newFirst);
+    }
+    body.setShipyardQueue(queue);
 
-        int count = entry.getCount() - numBuilt;
-        assert count >= 0;
-        if (count == 0) {
-          shipyardQueueEntryRepository.delete(entry);
-          continue;
-        }
-        entry.setCount(count);
-      }
-
+    if (!queue.isEmpty()) {
+      var item = Item.get(queue.get(0).kind());
+      var time = getConstructionTime(item.getCost(), body);
       // Add event.
       Date startAt = Date.from(Instant.ofEpochSecond(at.toInstant().getEpochSecond() + time));
       Event newEvent = new Event();
@@ -361,7 +328,6 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       newEvent.setKind(EventKind.SHIPYARD_QUEUE);
       newEvent.setParam(bodyId);
       eventScheduler.schedule(newEvent);
-      break;
     }
   }
 
@@ -370,7 +336,6 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   public void deleteUnitsAndQueue(Body body) {
     Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.SHIPYARD_QUEUE, body.getId());
     event.ifPresent(eventRepository::delete);
-    shipyardQueueEntryRepository.deleteAll(body.getShipyardQueue());
   }
 
   private long getConstructionTime(Resources cost, Body body) {
