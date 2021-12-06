@@ -200,14 +200,14 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
     var item = Item.get(k);
     if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
-      logger.warn("Constructing unit failed, requirements not met: bodyId={} kind={} count={}", bodyId, k, count);
+      logger.info("Constructing unit failed, requirements not met: bodyId={} kind={} count={}", bodyId, k, count);
       throw new RequirementsNotMetException();
     }
 
     Resources cost = item.getCost();
     cost.mul(count);
     if (!body.getResources().greaterOrEqual(cost)) {
-      logger.warn("Constructing unit failed, not enough resources: bodyId={} kind={} count={}", bodyId, k, count);
+      logger.info("Constructing unit failed, not enough resources: bodyId={} kind={} count={}", bodyId, k, count);
       throw new NotEnoughResourcesException();
     }
     body.getResources().sub(cost);
@@ -217,18 +217,18 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     if (k == UnitKind.SMALL_SHIELD_DOME || k == UnitKind.LARGE_SHIELD_DOME) {
       // Special case for shield domes.
       if (count > 1) {
-        logger.warn("Constructing unit failed, request to build more than one shield dome: bodyId={} kind={} count={}",
+        logger.info("Constructing unit failed, request to build more than one shield dome: bodyId={} kind={} count={}",
             bodyId, k, count);
         throw new TooManyShieldDomesException();
       }
       if (body.getUnitsCount(k) >= 1) {
-        logger.warn("Constructing unit failed, the shield dome is already built: bodyId={} kind={} count={}",
+        logger.info("Constructing unit failed, the shield dome is already built: bodyId={} kind={} count={}",
             bodyId, k, count);
         throw new ShieldDomeAlreadyBuiltException();
       }
       boolean exists = queue.stream().anyMatch(e -> e.kind() == k);
       if (exists) {
-        logger.warn("Constructing unit failed, the shield dome is already in the queue: bodyId={} kind={} count={}",
+        logger.info("Constructing unit failed, the shield dome is already in the queue: bodyId={} kind={} count={}",
             bodyId, k, count);
         throw new ShieldDomeAlreadyInQueueException();
       }
@@ -246,7 +246,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       used += (k == UnitKind.ANTI_BALLISTIC_MISSILE ? 1 : 2) * count;
       int cap = 10 * body.getBuildingLevel(BuildingKind.MISSILE_SILO);
       if (used > cap) {
-        logger.warn("Constructing unit failed, not enough capacity in missile silo: bodyId={} kind={} count={}",
+        logger.info("Constructing unit failed, not enough capacity in missile silo: bodyId={} kind={} count={}",
             bodyId, k, count);
         throw new NotEnoughCapacityException();
       }
