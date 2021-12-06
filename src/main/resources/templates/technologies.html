@@ -6,6 +6,14 @@
 </head>
 <body>
 <div layout:fragment="content" th:with="production=${@bodyService.getProduction(bodyId)}">
+  <table th:if="${error}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td class="error" th:text="${#messages.msg('technologyQueueError.' + error)}"></td>
+    </tr>
+  </table>
   <table th:unless="${#lists.isEmpty(pair.queue)}">
     <tr>
       <th>#</th>

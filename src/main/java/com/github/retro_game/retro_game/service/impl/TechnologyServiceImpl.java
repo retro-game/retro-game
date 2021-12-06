@@ -213,7 +213,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var queue = user.getTechnologyQueue();
     if (queue.size() >= technologyQueueCapacity) {
-      logger.warn("Researching technology failed, queue is full: bodyId={} kind={}", bodyId, k);
+      logger.info("Researching technology failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
     }
 
@@ -227,7 +227,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     var item = Item.get(k);
     if ((queue.isEmpty() && !ItemRequirementsUtils.meetsBuildingsRequirements(item, body)) ||
         !ItemRequirementsUtils.meetsTechnologiesRequirements(item, futureTechs)) {
-      logger.warn("Researching technology failed, requirements not met: bodyId={} kind={}", bodyId, k);
+      logger.info("Researching technology failed, requirements not met: bodyId={} kind={}", bodyId, k);
       throw new RequirementsNotMetException();
     }
 
@@ -241,7 +241,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
-        logger.warn("Researching technology failed, not enough resources: bodyId={} kind={}", bodyId, k);
+        logger.info("Researching technology failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
@@ -250,7 +250,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
-          logger.warn("Researching technology failed, not enough energy: bodyId={} kind={}", bodyId, k);
+          logger.info("Researching technology failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
         }
       }
@@ -285,7 +285,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Moving down entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
+      logger.info("Moving down entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
@@ -299,7 +299,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canSwapTop(futureTechs, tail)) {
-      logger.warn("Moving down entry in technology queue failed, cannot swap top: userId={} sequenceNumber={}",
+      logger.info("Moving down entry in technology queue failed, cannot swap top: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new CannotMoveException();
     }
@@ -340,7 +340,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       firstBody.getResources().add(firstCost);
       if (!secondBody.getResources().greaterOrEqual(secondCost)) {
-        logger.warn("Moving down entry in technology queue failed, not enough resources: userId={} sequenceNumber={}",
+        logger.info("Moving down entry in technology queue failed, not enough resources: userId={} sequenceNumber={}",
             userId, sequenceNumber);
         throw new NotEnoughResourcesException();
       }
@@ -350,7 +350,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(secondBody).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
-          logger.warn("Moving down entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
+          logger.info("Moving down entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
               userId, sequenceNumber);
           throw new NotEnoughEnergyException();
         }
@@ -397,14 +397,14 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Moving up entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
+      logger.info("Moving up entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
     var head = queue.headMap(sequenceNumber);
     if (head.isEmpty()) {
-      logger.warn("Moving up entry in technology queue failed, the entry is first: bodyId={} sequenceNumber={}",
+      logger.info("Moving up entry in technology queue failed, the entry is first: bodyId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new CannotMoveException();
     }
@@ -421,7 +421,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Cancelling entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
+      logger.info("Cancelling entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
@@ -435,7 +435,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canRemoveTop(futureTechs, tail)) {
-      logger.warn("Cancelling entry in technology queue failed, cannot remove top: userId={} sequenceNumber={}",
+      logger.info("Cancelling entry in technology queue failed, cannot remove top: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new CannotCancelException();
     }
@@ -491,7 +491,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         }
 
         if (!nextBody.getResources().greaterOrEqual(cost)) {
-          logger.warn("Cancelling entry in technology queue failed, not enough resources: userId={} sequenceNumber={}",
+          logger.info("Cancelling entry in technology queue failed, not enough resources: userId={} sequenceNumber={}",
               userId, sequenceNumber);
           throw new NotEnoughResourcesException();
         }
@@ -501,7 +501,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         if (requiredEnergy > 0) {
           int totalEnergy = bodyServiceInternal.getProduction(nextBody).getTotalEnergy();
           if (requiredEnergy > totalEnergy) {
-            logger.warn("Cancelling entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
+            logger.info("Cancelling entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
                 userId, sequenceNumber);
             throw new NotEnoughEnergyException();
           }
