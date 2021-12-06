@@ -965,7 +965,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     }
 
     boolean techQueueEntryExists = user.getTechnologyQueue().values().stream()
-        .anyMatch(e -> e.getBody().getId() == bodyId);
+        .anyMatch(e -> e.bodyId() == bodyId);
     if (techQueueEntryExists) {
       throw new TechnologyQueueEntryExistsException();
     }

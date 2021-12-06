@@ -101,6 +101,7 @@ class UserServiceImpl implements UserServiceInternal {
     user.setFlags(flags);
     user.setForcedVacation(false);
     user.setTechnologies(Collections.emptyMap());
+    user.setTechnologyQueue(Collections.emptySortedMap());
     userRepository.save(user);
 
     return user.getId();

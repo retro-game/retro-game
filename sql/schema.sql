@@ -44,7 +44,8 @@ create table users (
   flags integer not null,
   vacation_until timestamptz,
   forced_vacation boolean not null,
-  technologies int[] not null check (array_length(technologies, 1) = 16)
+  technologies int[] not null check (array_length(technologies, 1) = 16),
+  technology_queue bigint[] not null
 );
 
 create unique index users_upper_name_idx on users (upper(name) text_pattern_ops);
@@ -134,25 +135,6 @@ create table bodies (
 
 create index bodies_user_id_idx on bodies (user_id);
 create index bodies_upper_name_idx on bodies (upper(name) text_pattern_ops);
-
--- Technologies
-
-create table technologies (
-  user_id bigint references users not null,
-  kind int not null,
-  level int not null check (level >= 1),
-  primary key (user_id, kind)
-);
-
--- Technology queue
-
-create table technology_queue (
-  user_id bigint references users not null,
-  sequence int not null,
-  body_id bigint references bodies not null,
-  kind int not null,
-  primary key (user_id, sequence)
-);
 
 -- Parties
 

@@ -1,6 +1,7 @@
 package com.github.retro_game.retro_game.entity;
 
 import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import com.vladmihalcea.hibernate.type.array.LongArrayType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.data.domain.Sort;
@@ -11,6 +12,7 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 @TypeDef(name = "int-array", typeClass = IntArrayType.class)
+@TypeDef(name = "long-array", typeClass = LongArrayType.class)
 public class User {
   @Column(name = "id")
   @Id
@@ -90,15 +92,14 @@ public class User {
   @Type(type = "int-array")
   private int[] technologiesArray;
 
+  @Column(name = "technology_queue", nullable = false)
+  @Type(type = "long-array")
+  private long[] technologyQueueArray;
+
   @OneToMany(mappedBy = "user")
   @MapKey(name = "id")
   @OrderBy("id")
   private SortedMap<Long, Body> bodies;
-
-  @OneToMany(mappedBy = "key.user")
-  @MapKey(name = "key.sequence")
-  @OrderBy("key.sequence")
-  private SortedMap<Integer, TechnologyQueueEntry> technologyQueue;
 
   @JoinTable(
       name = "party_users",
@@ -115,27 +116,6 @@ public class User {
   public boolean hasFlag(int flag) {
     assert (flag & (flag - 1)) == 0;
     return (flags & flag) != 0;
-  }
-
-  public EnumMap<TechnologyKind, Integer> getTechnologies() {
-    return SerializationUtils.deserializeItems(TechnologyKind.class, technologiesArray);
-  }
-
-  public void setTechnologies(Map<TechnologyKind, Integer> technologies) {
-    technologiesArray = SerializationUtils.serializeItems(TechnologyKind.class, technologies);
-  }
-
-  public int getTechnologyLevel(TechnologyKind kind) {
-    var index = kind.ordinal();
-    var level = technologiesArray[index];
-    assert level >= 0;
-    return level;
-  }
-
-  public void setTechnologyLevel(TechnologyKind kind, int level) {
-    assert level >= 0;
-    var index = kind.ordinal();
-    technologiesArray[index] = level;
   }
 
   public long getId() {
@@ -302,12 +282,55 @@ public class User {
     this.forcedVacation = forcedVacation;
   }
 
-  public SortedMap<Long, Body> getBodies() {
-    return bodies;
+  public EnumMap<TechnologyKind, Integer> getTechnologies() {
+    return SerializationUtils.deserializeItems(TechnologyKind.class, technologiesArray);
+  }
+
+  public void setTechnologies(Map<TechnologyKind, Integer> technologies) {
+    technologiesArray = SerializationUtils.serializeItems(TechnologyKind.class, technologies);
+  }
+
+  public int getTechnologyLevel(TechnologyKind kind) {
+    var index = kind.ordinal();
+    var level = technologiesArray[index];
+    assert level >= 0;
+    return level;
+  }
+
+  public void setTechnologyLevel(TechnologyKind kind, int level) {
+    assert level >= 0;
+    var index = kind.ordinal();
+    technologiesArray[index] = level;
   }
 
   public SortedMap<Integer, TechnologyQueueEntry> getTechnologyQueue() {
-    return technologyQueue;
+    assert technologyQueueArray.length % 3 == 0;
+    var numEntries = technologyQueueArray.length / 3;
+    var queue = new TreeMap<Integer, TechnologyQueueEntry>();
+    for (var i = 0; i < numEntries; i++) {
+      var sequence = (int) technologyQueueArray[3 * i];
+      var k = (int) technologyQueueArray[3 * i + 1];
+      var kind = TechnologyKind.values()[k];
+      var bodyId = technologyQueueArray[3 * i + 2];
+      queue.put(sequence, new TechnologyQueueEntry(kind, bodyId));
+    }
+    return queue;
+  }
+
+  public void setTechnologyQueue(SortedMap<Integer, TechnologyQueueEntry> queue) {
+    var array = new long[queue.size() * 3];
+    var i = 0;
+    for (var entry : queue.entrySet()) {
+      array[3 * i] = entry.getKey();
+      array[3 * i + 1] = entry.getValue().kind().ordinal();
+      array[3 * i + 2] = entry.getValue().bodyId();
+      i++;
+    }
+    technologyQueueArray = array;
+  }
+
+  public SortedMap<Long, Body> getBodies() {
+    return bodies;
   }
 
   public List<Party> getParties() {

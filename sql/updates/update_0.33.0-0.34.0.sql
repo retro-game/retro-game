@@ -98,4 +98,35 @@ alter table bodies alter column shipyard_queue set not null;
 
 drop table shipyard_queue;
 
+-- Technology queue
+
+alter table users add column technology_queue bigint[];
+
+update users
+   set technology_queue = tmp3.q
+  from (
+      select user_id,
+             array_agg(i) as q
+        from (
+          select user_id,
+                 unnest(a) as i
+            from (
+                select user_id,
+                       array[sequence, kind, body_id] as a
+                  from technology_queue
+              order by user_id, sequence
+            ) tmp
+        ) tmp2
+    group by user_id
+  ) tmp3
+where users.id = tmp3.user_id;
+
+update users
+   set technology_queue = '{}'::bigint[]
+ where technology_queue is null;
+
+alter table users alter column technology_queue set not null;
+
+drop table technology_queue;
+
 commit;

@@ -105,7 +105,7 @@ class DetailsServiceImpl implements DetailsService {
 
     int currentLevel = user.getTechnologyLevel(k);
     int futureLevel = currentLevel + (int) user.getTechnologyQueue().values().stream()
-        .filter(e -> e.getKind() == k)
+        .filter(e -> e.kind() == k)
         .count();
 
     return new TechnologyDetailsDto(currentLevel, futureLevel);

@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.cache.BodyInfoCache;
 import com.github.retro_game.retro_game.dto.TechnologiesAndQueuePairDto;
 import com.github.retro_game.retro_game.dto.TechnologyDto;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
@@ -11,7 +12,6 @@ import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
 import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
 import com.github.retro_game.retro_game.repository.EventRepository;
-import com.github.retro_game.retro_game.repository.TechnologyQueueEntryRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.exception.*;
@@ -35,21 +35,20 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
   private final int technologyQueueCapacity;
   private final ItemTimeUtils itemTimeUtils;
+  private final BodyInfoCache bodyInfoCache;
   private final EventRepository eventRepository;
-  private final TechnologyQueueEntryRepository technologyQueueEntryRepository;
   private final UserRepository userRepository;
   private final int maxRequiredLabLevel;
   private BodyServiceInternal bodyServiceInternal;
   private EventScheduler eventScheduler;
 
   public TechnologyServiceImpl(@Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
-                               ItemTimeUtils itemTimeUtils, EventRepository eventRepository,
-                               TechnologyQueueEntryRepository technologyQueueEntryRepository,
+                               ItemTimeUtils itemTimeUtils, BodyInfoCache bodyInfoCache, EventRepository eventRepository,
                                UserRepository userRepository) {
     this.technologyQueueCapacity = technologyQueueCapacity;
     this.itemTimeUtils = itemTimeUtils;
+    this.bodyInfoCache = bodyInfoCache;
     this.eventRepository = eventRepository;
-    this.technologyQueueEntryRepository = technologyQueueEntryRepository;
     this.userRepository = userRepository;
     this.maxRequiredLabLevel = getMaxRequiredLabLevel();
   }
@@ -105,16 +104,15 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         next = it.hasNext() ? it.next() : null;
 
         TechnologyQueueEntry queueEntry = entry.getValue();
-        TechnologyKind kind = queueEntry.getKind();
+        TechnologyKind kind = queueEntry.kind();
 
         var level = futureTechs.get(kind) + 1;
         var cost = ItemCostUtils.getCost(kind, level);
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
 
-        Body entryBody = queueEntry.getBody();
         var item = Item.get(kind);
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
-        int effectiveLabLevel = effectiveLevelTables.get(entryBody.getId())[requiredLabLevel];
+        int effectiveLabLevel = effectiveLevelTables.get(queueEntry.bodyId())[requiredLabLevel];
         var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
         long requiredTime;
@@ -122,8 +120,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, userId);
           Assert.isTrue(event.isPresent(), "Event must be present");
           finishAt = event.get().getAt().toInstant().getEpochSecond();
-          long now = body.getUpdatedAt().toInstant().getEpochSecond();
-          requiredTime = finishAt - now;
         } else {
           requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
           finishAt += requiredTime;
@@ -136,9 +132,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
         // If we cancel the first entry we immediately start the second one, thus we need to check resources.
         if (first && next != null) {
-          Body currentBody = entry.getValue().getBody();
-          Body nextBody = next.getValue().getBody();
-          TechnologyKind nextKind = next.getValue().getKind();
+          Body currentBody = bodyServiceInternal.getUpdated(entry.getValue().bodyId());
+          Body nextBody = bodyServiceInternal.getUpdated(next.getValue().bodyId());
+          TechnologyKind nextKind = next.getValue().kind();
           var nextLevel = futureTechs.get(nextKind) + 1;
           var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
           if (currentBody.getId() == nextBody.getId()) {
@@ -159,8 +155,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           }
         }
 
+        var entryBodyInfo = bodyInfoCache.get(queueEntry.bodyId());
         queue.add(new TechnologyQueueEntryDto(Converter.convert(kind), entry.getKey(), level, Converter.convert(cost),
-            requiredEnergy, entryBody.getId(), entryBody.getName(), Converter.convert(entryBody.getCoordinates()),
+            requiredEnergy, queueEntry.bodyId(), entryBodyInfo.getName(), entryBodyInfo.getCoordinates(),
             effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable, cancelable));
 
         futureTechs.put(kind, futureTechs.get(kind) + 1);
@@ -214,7 +211,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    SortedMap<Integer, TechnologyQueueEntry> queue = user.getTechnologyQueue();
+    var queue = user.getTechnologyQueue();
     if (queue.size() >= technologyQueueCapacity) {
       logger.warn("Researching technology failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
@@ -224,7 +221,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var futureTechs = user.getTechnologies();
     queue.values().stream()
-        .map(TechnologyQueueEntry::getKind)
+        .map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     var item = Item.get(k);
@@ -234,11 +231,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       throw new RequirementsNotMetException();
     }
 
-    TechnologyQueueEntryKey key = new TechnologyQueueEntryKey();
-    key.setUser(user);
+    var sequenceNumber = 1;
     if (!queue.isEmpty()) {
-      int sequenceNumber = queue.lastKey() + 1;
-      key.setSequence(sequenceNumber);
+      sequenceNumber = queue.lastKey() + 1;
       logger.info("Researching technology successful, appending to queue: bodyId={} kind={} sequenceNumber={}",
           bodyId, k, sequenceNumber);
     } else {
@@ -275,15 +270,11 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       event.setKind(EventKind.TECHNOLOGY_QUEUE);
       event.setParam(userId);
       eventScheduler.schedule(event);
-
-      key.setSequence(1);
     }
 
-    TechnologyQueueEntry entry = new TechnologyQueueEntry();
-    entry.setKey(key);
-    entry.setBody(body);
-    entry.setKind(k);
-    technologyQueueEntryRepository.save(entry);
+    var entry = new TechnologyQueueEntry(k, bodyId);
+    queue.put(sequenceNumber, entry);
+    user.setTechnologyQueue(queue);
   }
 
   @Override
@@ -292,19 +283,19 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    SortedMap<Integer, TechnologyQueueEntry> queue = user.getTechnologyQueue();
+    var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Moving down entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, TechnologyQueueEntry> head = queue.headMap(sequenceNumber);
-    SortedMap<Integer, TechnologyQueueEntry> tail = queue.tailMap(sequenceNumber);
+    var head = queue.headMap(sequenceNumber);
+    var tail = queue.tailMap(sequenceNumber);
 
     var futureTechs = user.getTechnologies();
     head.values().stream()
-        .map(TechnologyQueueEntry::getKind)
+        .map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canSwapTop(futureTechs, tail)) {
@@ -315,9 +306,11 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     // canSwapTop == true implies tail.size >= 2.
     assert tail.size() >= 2;
-    Iterator<TechnologyQueueEntry> it = tail.values().iterator();
-    TechnologyQueueEntry entry = it.next();
-    TechnologyQueueEntry next = it.next();
+    var it = tail.entrySet().iterator();
+    var entry = it.next().getValue();
+    var n = it.next();
+    var next = n.getValue();
+    var nextSeq = n.getKey();
 
     if (!head.isEmpty()) {
       // The entry is not the first in the queue, just swap it with the next.
@@ -327,13 +320,13 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     } else {
       // The first entry.
 
-      Body firstBody = entry.getBody();
-      TechnologyKind firstKind = entry.getKind();
+      Body firstBody = bodyServiceInternal.getUpdated(entry.bodyId());
+      TechnologyKind firstKind = entry.kind();
       var firstLevel = futureTechs.get(firstKind) + 1;
       var firstCost = ItemCostUtils.getCost(firstKind, firstLevel);
 
-      Body secondBody = next.getBody();
-      TechnologyKind secondKind = next.getKind();
+      Body secondBody = bodyServiceInternal.getUpdated(next.bodyId());
+      TechnologyKind secondKind = next.kind();
       var secondLevel = futureTechs.get(secondKind) + 1;
       var secondCost = ItemCostUtils.getCost(secondKind, secondLevel);
 
@@ -390,12 +383,10 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     }
 
     // Swap.
-    Body body = entry.getBody();
-    TechnologyKind kind = entry.getKind();
-    entry.setBody(next.getBody());
-    entry.setKind(next.getKind());
-    next.setBody(body);
-    next.setKind(kind);
+    queue.put(sequenceNumber, next);
+    queue.put(nextSeq, entry);
+
+    user.setTechnologyQueue(queue);
   }
 
   @Override
@@ -404,14 +395,14 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    SortedMap<Integer, TechnologyQueueEntry> queue = user.getTechnologyQueue();
+    var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Moving up entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, TechnologyQueueEntry> head = queue.headMap(sequenceNumber);
+    var head = queue.headMap(sequenceNumber);
     if (head.isEmpty()) {
       logger.warn("Moving up entry in technology queue failed, the entry is first: bodyId={} sequenceNumber={}",
           userId, sequenceNumber);
@@ -428,19 +419,19 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
 
-    SortedMap<Integer, TechnologyQueueEntry> queue = user.getTechnologyQueue();
+    var queue = user.getTechnologyQueue();
     if (!queue.containsKey(sequenceNumber)) {
       logger.warn("Cancelling entry in technology queue failed, no such queue entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
-    SortedMap<Integer, TechnologyQueueEntry> head = queue.headMap(sequenceNumber);
-    SortedMap<Integer, TechnologyQueueEntry> tail = queue.tailMap(sequenceNumber);
+    var head = queue.headMap(sequenceNumber);
+    var tail = queue.tailMap(sequenceNumber);
 
     var futureTechs = user.getTechnologies();
     head.values().stream()
-        .map(TechnologyQueueEntry::getKind)
+        .map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canRemoveTop(futureTechs, tail)) {
@@ -454,20 +445,22 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       logger.info("Cancelling entry in technology queue successful, the entry isn't the first: userId={}" +
               " sequenceNumber={}",
           userId, sequenceNumber);
-      TechnologyQueueEntry entry = queue.remove(sequenceNumber);
-      technologyQueueEntryRepository.delete(entry);
+      var entry = queue.remove(sequenceNumber);
+      assert entry != null;
     } else {
       // The first entry.
 
-      Iterator<TechnologyQueueEntry> it = tail.values().iterator();
+      var it = tail.values().iterator();
 
-      TechnologyQueueEntry entry = it.next();
-      Body body = entry.getBody();
-      TechnologyKind kind = entry.getKind();
+      var entry = it.next();
+      var body = bodyServiceInternal.getUpdated(entry.bodyId());
+      var kind = entry.kind();
+
+      it.remove();
+
       var level = futureTechs.get(kind) + 1;
       var cost = ItemCostUtils.getCost(kind, level);
 
-      bodyServiceInternal.updateResources(body, null);
       body.getResources().add(cost);
 
       Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, userId);
@@ -486,9 +479,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       } else {
         Date now = body.getUpdatedAt();
 
-        TechnologyQueueEntry next = it.next();
-        Body nextBody = next.getBody();
-        kind = next.getKind();
+        var next = it.next();
+        var nextBody = bodyServiceInternal.getUpdated(next.bodyId());
+        kind = next.kind();
         level = futureTechs.get(kind) + 1;
         cost = ItemCostUtils.getCost(kind, level);
 
@@ -497,7 +490,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
           nextBody = body;
         }
 
-        bodyServiceInternal.updateResources(nextBody, now);
         if (!nextBody.getResources().greaterOrEqual(cost)) {
           logger.warn("Cancelling entry in technology queue failed, not enough resources: userId={} sequenceNumber={}",
               userId, sequenceNumber);
@@ -530,24 +522,23 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         event.setAt(at);
         eventScheduler.schedule(event);
       }
-
-      it.remove();
-      technologyQueueEntryRepository.delete(entry);
     }
+
+    user.setTechnologyQueue(queue);
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
     long userId = event.getParam();
-    User user = userRepository.getOne(userId);
+    var user = userRepository.getOne(userId);
 
     Date at = event.getAt();
 
     eventRepository.delete(event);
 
-    Collection<TechnologyQueueEntry> values = user.getTechnologyQueue().values();
-    Iterator<TechnologyQueueEntry> it = values.iterator();
+    var queue = user.getTechnologyQueue();
+    var it = queue.entrySet().iterator();
 
     // This shouldn't happen.
     if (!it.hasNext()) {
@@ -555,70 +546,65 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       return;
     }
 
-    TechnologyQueueEntry entry = it.next();
-    TechnologyKind kind = entry.getKind();
+    var n = it.next();
+    var seq = n.getKey();
+    var entry = n.getValue();
 
     it.remove();
-    technologyQueueEntryRepository.delete(entry);
 
     // Update technologies.
-    var oldLevel = user.getTechnologyLevel(kind);
+    var oldLevel = user.getTechnologyLevel(entry.kind());
     assert oldLevel >= 0;
     var newLevel = oldLevel + 1;
     logger.info("Handling technology queue, updating technology level: userId={} kind={} oldLevel={} newLevel={}",
-        userId, kind, oldLevel, newLevel);
-    user.setTechnologyLevel(kind, newLevel);
+        userId, entry.kind(), oldLevel, newLevel);
+    user.setTechnologyLevel(entry.kind(), newLevel);
 
     while (it.hasNext()) {
-      entry = it.next();
-      kind = entry.getKind();
-      int sequenceNumber = entry.getSequence();
+      n = it.next();
+      seq = n.getKey();
+      entry = n.getValue();
 
-      var level = user.getTechnologyLevel(kind) + 1;
+      var level = user.getTechnologyLevel(entry.kind()) + 1;
 
-      Body body = entry.getBody();
-      long bodyId = body.getId();
-      bodyServiceInternal.updateResources(body, at);
+      var body = bodyServiceInternal.getUpdated(entry.bodyId());
 
-      var cost = ItemCostUtils.getCost(kind, level);
+      var cost = ItemCostUtils.getCost(entry.kind(), level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.info("Handling technology queue, removing entry, not enough resources: userId={} bodyId={} kind={}" +
                 " sequenceNumber={}",
-            userId, bodyId, kind, sequenceNumber);
+            userId, entry.bodyId(), entry.kind(), seq);
         it.remove();
-        technologyQueueEntryRepository.delete(entry);
         continue;
       }
 
-      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(entry.kind(), level);
       if (requiredEnergy > 0) {
         int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Handling technology queue, removing entry, not enough energy: userId={} bodyId={} kind={}" +
                   " sequenceNumber={}",
-              userId, bodyId, kind, sequenceNumber);
+              userId, entry.bodyId(), entry.kind(), seq);
           it.remove();
-          technologyQueueEntryRepository.delete(entry);
           continue;
         }
       }
 
-      var item = Item.get(kind);
+      var item = Item.get(entry.kind());
       if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
         logger.info("Handling technology queue, removing entry, requirements not met: userId={} bodyId={} kind={}" +
                 " sequenceNumber={}",
-            userId, bodyId, kind, sequenceNumber);
+            userId, entry.bodyId(), entry.kind(), seq);
         it.remove();
-        technologyQueueEntryRepository.delete(entry);
         continue;
       }
 
       logger.info("Handling technology queue, creating an event: userId={} bodyId={} kind={} sequenceNumber={}",
-          userId, bodyId, kind, sequenceNumber);
+          userId, entry.bodyId(), entry.kind(), seq);
 
       body.getResources().sub(cost);
 
-      int[] table = getEffectiveLevelTables(user, Collections.singletonList(bodyId)).get(bodyId);
+      int[] table = getEffectiveLevelTables(user, Collections.singletonList(entry.bodyId())).get(entry.bodyId());
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
       int effectiveLabLevel = table[requiredLabLevel];
       var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
@@ -633,6 +619,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       break;
     }
+
+    user.setTechnologyQueue(queue);
   }
 
   private Map<Long, int[]> getEffectiveLevelTables(User user, Collection<Long> bodiesIds) {
@@ -679,8 +667,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     TechnologyQueueEntry second = it.next();
 
     // Check whether the second one depends on the first one.
-    var requirements = Item.get(second.getKind()).getTechnologiesRequirements();
-    return techs.get(first.getKind()) >= requirements.getOrDefault(first.getKind(), 0);
+    var requirements = Item.get(second.kind()).getTechnologiesRequirements();
+    return techs.get(first.kind()) >= requirements.getOrDefault(first.kind(), 0);
   }
 
   private boolean canRemoveTop(Map<TechnologyKind, Integer> techs, SortedMap<Integer, TechnologyQueueEntry> queue) {
@@ -689,12 +677,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     }
 
     Iterator<TechnologyQueueEntry> it = queue.values().iterator();
-    TechnologyKind firstKind = it.next().getKind();
+    TechnologyKind firstKind = it.next().kind();
     var level = techs.get(firstKind);
 
     while (it.hasNext()) {
       TechnologyQueueEntry current = it.next();
-      TechnologyKind currentKind = current.getKind();
+      TechnologyKind currentKind = current.kind();
 
       if (currentKind == firstKind) {
         level++;
