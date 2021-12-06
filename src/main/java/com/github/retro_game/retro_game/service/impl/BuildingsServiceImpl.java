@@ -292,20 +292,20 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var queue = body.getBuildingQueue();
 
     if (queue.size() >= buildingQueueCapacity) {
-      logger.warn("Constructing building failed, queue is full: bodyId={} kind={}", bodyId, k);
+      logger.info("Constructing building failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
     }
 
     var state = new State(body, queue);
     if (state.usedFields >= state.maxFields) {
-      logger.warn("Constructing building failed, no more free fields: bodyId={} kind={}", bodyId, k);
+      logger.info("Constructing building failed, no more free fields: bodyId={} kind={}", bodyId, k);
       throw new NoMoreFreeFieldsException();
     }
 
     var item = Item.get(k);
     if (!item.meetsSpecialRequirements(body) || !ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) ||
         (queue.isEmpty() && !ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()))) {
-      logger.warn("Constructing building failed, requirements not met: bodyId={} kind={}", bodyId, k);
+      logger.info("Constructing building failed, requirements not met: bodyId={} kind={}", bodyId, k);
       throw new RequirementsNotMetException();
     }
 
@@ -319,7 +319,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
-        logger.warn("Constructing building failed, not enough resources: bodyId={} kind={}", bodyId, k);
+        logger.info("Constructing building failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
@@ -328,7 +328,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       if (requiredEnergy > 0) {
         var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
-          logger.warn("Constructing building failed, not enough energy: bodyId={} kind={}", bodyId, k);
+          logger.info("Constructing building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
         }
       }
@@ -357,18 +357,18 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var queue = body.getBuildingQueue();
 
     if (k == BuildingKind.TERRAFORMER || k == BuildingKind.LUNAR_BASE) {
-      logger.warn("Destroying building failed, cannot destroy this building: bodyId={} kind={}", bodyId, k);
+      logger.info("Destroying building failed, cannot destroy this building: bodyId={} kind={}", bodyId, k);
       throw new WrongBuildingKindException();
     }
 
     if (queue.size() >= buildingQueueCapacity) {
-      logger.warn("Destroying building failed, queue is full: bodyId={} kind={}", bodyId, k);
+      logger.info("Destroying building failed, queue is full: bodyId={} kind={}", bodyId, k);
       throw new QueueFullException();
     }
 
     var state = new State(body, queue);
     if (state.buildings.getOrDefault(k, 0) == 0) {
-      logger.warn("Destroying building failed, the building is already going to be fully destroyed: bodyId={} kind={}",
+      logger.info("Destroying building failed, the building is already going to be fully destroyed: bodyId={} kind={}",
           bodyId, k);
       throw new BuildingAlreadyDestroyedException();
     }
@@ -385,7 +385,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var cost = ItemCostUtils.getCost(k, level);
       if (!body.getResources().greaterOrEqual(cost)) {
-        logger.warn("Destroying building failed, not enough resources: bodyId={} kind={}", bodyId, k);
+        logger.info("Destroying building failed, not enough resources: bodyId={} kind={}", bodyId, k);
         throw new NotEnoughResourcesException();
       }
       body.getResources().sub(cost);
@@ -394,7 +394,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       if (requiredEnergy > 0) {
         var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
-          logger.warn("Destroying building failed, not enough energy: bodyId={} kind={}", bodyId, k);
+          logger.info("Destroying building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
         }
       }
@@ -422,7 +422,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var queue = body.getBuildingQueue();
 
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Moving down entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
+      logger.info("Moving down entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
@@ -432,7 +432,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var state = new State(body, head);
 
     if (!canSwapTop(state, tail)) {
-      logger.warn("Moving down entry in building queue failed, cannot swap top: bodyId={} sequenceNumber={}",
+      logger.info("Moving down entry in building queue failed, cannot swap top: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new CannotMoveException();
     }
@@ -471,7 +471,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       body.getResources().add(firstCost);
       if (!body.getResources().greaterOrEqual(secondCost)) {
-        logger.warn("Moving down entry in building queue failed, not enough resources: bodyId={} sequenceNumber={}",
+        logger.info("Moving down entry in building queue failed, not enough resources: bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
         throw new NotEnoughResourcesException();
       }
@@ -481,7 +481,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       if (requiredEnergy > 0) {
         var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
         if (requiredEnergy > totalEnergy) {
-          logger.warn("Moving down entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
+          logger.info("Moving down entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
           throw new NotEnoughEnergyException();
         }
@@ -489,7 +489,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var secondItem = Item.get(secondKind);
       if (!ItemRequirementsUtils.meetsTechnologiesRequirements(secondItem, body.getUser())) {
-        logger.warn("Moving down entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
+        logger.info("Moving down entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
             bodyId, sequenceNumber);
         throw new RequirementsNotMetException();
       }
@@ -529,14 +529,14 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var queue = body.getBuildingQueue();
 
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Moving up entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
+      logger.info("Moving up entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
 
     var head = queue.headMap(sequenceNumber);
     if (head.isEmpty()) {
-      logger.warn("Moving up entry in building queue failed, the entry is first: bodyId={} sequenceNumber={}",
+      logger.info("Moving up entry in building queue failed, the entry is first: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new CannotMoveException();
     }
@@ -552,7 +552,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var queue = body.getBuildingQueue();
 
     if (!queue.containsKey(sequenceNumber)) {
-      logger.warn("Cancelling entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
+      logger.info("Cancelling entry in building queue failed, no such queue entry: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new NoSuchQueueEntryException();
     }
@@ -562,7 +562,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     var state = new State(body, head);
 
     if (!canRemoveTop(state, tail)) {
-      logger.warn("Cancelling entry in building queue failed, cannot remove top: bodyId={} sequenceNumber={}",
+      logger.info("Cancelling entry in building queue failed, cannot remove top: bodyId={} sequenceNumber={}",
           bodyId, sequenceNumber);
       throw new CannotCancelException();
     }
@@ -615,7 +615,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
         cost = ItemCostUtils.getCost(kind, level);
         if (!body.getResources().greaterOrEqual(cost)) {
-          logger.warn("Cancelling entry in building queue failed, not enough resources: bodyId={} sequenceNumber={}",
+          logger.info("Cancelling entry in building queue failed, not enough resources: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
           throw new NotEnoughResourcesException();
         }
@@ -625,7 +625,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
         if (requiredEnergy > 0) {
           var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
           if (requiredEnergy > totalEnergy) {
-            logger.warn("Cancelling entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
+            logger.info("Cancelling entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
                 bodyId, sequenceNumber);
             throw new NotEnoughEnergyException();
           }
@@ -633,7 +633,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
         var item = Item.get(kind);
         if (!ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser())) {
-          logger.warn("Cancelling entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
+          logger.info("Cancelling entry in building queue failed, requirements not met: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
           throw new RequirementsNotMetException();
         }

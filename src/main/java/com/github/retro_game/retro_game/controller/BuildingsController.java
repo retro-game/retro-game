@@ -2,7 +2,10 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.BuildingKindDto;
+import com.github.retro_game.retro_game.dto.BuildingQueueErrorDto;
 import com.github.retro_game.retro_game.service.BuildingsService;
+import com.github.retro_game.retro_game.service.exception.*;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.NotNull;
+import java.util.function.Supplier;
 
 @Controller
 @Validated
@@ -25,10 +29,45 @@ public class BuildingsController {
   @GetMapping("/buildings")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String buildings(@RequestParam(name = "body") long bodyId, Model model) {
+  public String buildings(@RequestParam(name = "body") long bodyId,
+                          @RequestParam(name = "error", required = false) BuildingQueueErrorDto error,
+                          Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("error", error);
     model.addAttribute("pair", buildingsService.getBuildingsAndQueuePair(bodyId));
     return "buildings";
+  }
+
+  private String perform(long bodyId, Supplier<Integer> action) {
+    BuildingQueueErrorDto error = null;
+    try {
+      action.get();
+    } catch (BuildingAlreadyDestroyedException e) {
+      error = BuildingQueueErrorDto.BUILDING_ALREADY_DESTROYED;
+    } catch (CannotCancelException e) {
+      error = BuildingQueueErrorDto.CANNOT_CANCEL;
+    } catch (CannotMoveException e) {
+      error = BuildingQueueErrorDto.CANNOT_MOVE;
+    } catch (MissingEventException e) {
+      error = BuildingQueueErrorDto.MISSING_EVENT;
+    } catch (NotEnoughEnergyException e) {
+      error = BuildingQueueErrorDto.NOT_ENOUGH_ENERGY;
+    } catch (NotEnoughResourcesException e) {
+      error = BuildingQueueErrorDto.NOT_ENOUGH_RESOURCES;
+    } catch (NoMoreFreeFieldsException e) {
+      error = BuildingQueueErrorDto.NO_MORE_FREE_FIELDS;
+    } catch (NoSuchQueueEntryException e) {
+      error = BuildingQueueErrorDto.NO_SUCH_QUEUE_ENTRY;
+    } catch (QueueFullException e) {
+      error = BuildingQueueErrorDto.QUEUE_FULL;
+    } catch (RequirementsNotMetException e) {
+      error = BuildingQueueErrorDto.REQUIREMENTS_NOT_MET;
+    } catch (WrongBuildingKindException e) {
+      error = BuildingQueueErrorDto.WRONG_BUILDING_KIND;
+    } catch (ConcurrencyFailureException e) {
+      error = BuildingQueueErrorDto.CONCURRENCY;
+    }
+    return "redirect:/buildings?body=" + bodyId + (error != null ? "&error=" + error : "");
   }
 
   @PostMapping("/buildings/construct")
@@ -36,8 +75,10 @@ public class BuildingsController {
   @Activity(bodies = "#bodyId")
   public String construct(@RequestParam(name = "body") long bodyId,
                           @RequestParam @NotNull BuildingKindDto kind) {
-    buildingsService.construct(bodyId, kind);
-    return "redirect:/buildings?body=" + bodyId;
+    return perform(bodyId, () -> {
+      buildingsService.construct(bodyId, kind);
+      return 0;
+    });
   }
 
   @PostMapping("/buildings/destroy")
@@ -45,8 +86,10 @@ public class BuildingsController {
   @Activity(bodies = "#bodyId")
   public String destroy(@RequestParam(name = "body") long bodyId,
                         @RequestParam @NotNull BuildingKindDto kind) {
-    buildingsService.destroy(bodyId, kind);
-    return "redirect:/buildings?body=" + bodyId;
+    return perform(bodyId, () -> {
+      buildingsService.destroy(bodyId, kind);
+      return 0;
+    });
   }
 
   @PostMapping("/buildings/move-down")
@@ -54,8 +97,10 @@ public class BuildingsController {
   @Activity(bodies = "#bodyId")
   public String moveDown(@RequestParam(name = "body") long bodyId,
                          @RequestParam(name = "sequence-number") int sequenceNumber) {
-    buildingsService.moveDown(bodyId, sequenceNumber);
-    return "redirect:/buildings?body=" + bodyId;
+    return perform(bodyId, () -> {
+      buildingsService.moveDown(bodyId, sequenceNumber);
+      return 0;
+    });
   }
 
   @PostMapping("/buildings/move-up")
@@ -63,8 +108,10 @@ public class BuildingsController {
   @Activity(bodies = "#bodyId")
   public String moveUp(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "sequence-number") int sequenceNumber) {
-    buildingsService.moveUp(bodyId, sequenceNumber);
-    return "redirect:/buildings?body=" + bodyId;
+    return perform(bodyId, () -> {
+      buildingsService.moveUp(bodyId, sequenceNumber);
+      return 0;
+    });
   }
 
   @PostMapping("/buildings/cancel")
@@ -72,7 +119,9 @@ public class BuildingsController {
   @Activity(bodies = "#bodyId")
   public String cancel(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "sequence-number") int sequenceNumber) {
-    buildingsService.cancel(bodyId, sequenceNumber);
-    return "redirect:/buildings?body=" + bodyId;
+    return perform(bodyId, () -> {
+      buildingsService.cancel(bodyId, sequenceNumber);
+      return 0;
+    });
   }
 }

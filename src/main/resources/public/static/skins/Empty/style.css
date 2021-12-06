@@ -397,6 +397,10 @@ strong {
   margin-bottom: .5rem;
 }
 
+.error {
+  color: red;
+}
+
 .date {
   color: #5f5;
 }
