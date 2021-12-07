@@ -730,48 +730,38 @@ class BodyServiceImpl implements BodyServiceInternal {
 
     if (body.getCoordinates().getKind() == CoordinatesKind.PLANET &&
         !userServiceInternal.isOnVacation(body.getUser())) {
-      Resources resources = body.getResources();
-      ProductionDto production = getProduction(body);
-      ResourcesDto capacity = getCapacity(body);
+      var resources = body.getResources();
+      var production = getProduction(body);
+      var capacity = getCapacity(body);
       double seconds = at.toInstant().getEpochSecond() - updatedAt.toInstant().getEpochSecond();
 
       // Metal.
-      double metalProduced = 0.0;
-      if (production.getMetalProduction() != 0) {
-        double metalCapacity = capacity.getMetal() - resources.getMetal();
-        double fullProductionFor = Math.min(seconds, Math.max(0.0, metalCapacity *
-            3600.0 / production.getMetalProduction()));
-        metalProduced = (production.getMetalProduction() * fullProductionFor +
-            production.getMetalBaseProduction() * (seconds - fullProductionFor)) / 3600.0;
-      }
+      double metal = resources.getMetal();
+      double metalCap = Math.max(0.0, capacity.getMetal() - metal);
+      double deltaMetal = Math.min(metalCap, production.getMetalProduction() / 3600.0 * seconds);
+      assert deltaMetal >= 0.0;
+      metal += deltaMetal;
 
       // Crystal.
-      double crystalProduced = 0.0;
-      if (production.getCrystalProduction() != 0) {
-        double crystalCapacity = capacity.getCrystal() - resources.getCrystal();
-        double fullProductionFor = Math.min(seconds, Math.max(0.0, crystalCapacity *
-            3600.0 / production.getCrystalProduction()));
-        crystalProduced = (production.getCrystalProduction() * fullProductionFor +
-            production.getCrystalBaseProduction() * (seconds - fullProductionFor)) / 3600.0;
-      }
+      double crystal = resources.getCrystal();
+      double crystalCap = Math.max(0.0, capacity.getCrystal() - crystal);
+      double deltaCrystal = Math.min(crystalCap, production.getCrystalProduction() / 3600.0 * seconds);
+      assert deltaCrystal >= 0.0;
+      crystal += deltaCrystal;
 
       // Deuterium.
-      double deuteriumProduced = 0.0;
-      if (production.getDeuteriumProduction() > 0) {
-        double deuteriumCapacity = capacity.getDeuterium() - resources.getDeuterium();
-        double fullProductionFor = Math.min(seconds, Math.max(0.0, deuteriumCapacity *
-            3600.0 / production.getDeuteriumProduction()));
-        deuteriumProduced = (production.getDeuteriumProduction() * fullProductionFor +
-            production.getDeuteriumBaseProduction() * (seconds - fullProductionFor)) / 3600.0;
-      } else if (production.getDeuteriumProduction() < 0) {
-        deuteriumProduced = production.getDeuteriumProduction() * seconds / 3600.0;
-      }
+      double deuterium = resources.getDeuterium();
+      double deuteriumCap = Math.max(0.0, capacity.getDeuterium() - deuterium);
+      double deltaDeuterium = Math.min(deuteriumCap, production.getDeuteriumProduction() / 3600.0 * seconds);
+      // deltaDeuterium can be negative if a fusion reactor is used, thus Math.max with 0.
+      deuterium = Math.max(0.0, deuterium + deltaDeuterium);
 
       // Update.
-      Resources bodyResources = body.getResources();
-      bodyResources.setMetal(bodyResources.getMetal() + metalProduced);
-      bodyResources.setCrystal(bodyResources.getCrystal() + crystalProduced);
-      bodyResources.setDeuterium(Math.max(0.0, bodyResources.getDeuterium() + deuteriumProduced));
+      var newResources = new Resources();
+      newResources.setMetal(metal);
+      newResources.setCrystal(crystal);
+      newResources.setDeuterium(deuterium);
+      body.setResources(newResources);
     }
 
     body.setUpdatedAt(at);
