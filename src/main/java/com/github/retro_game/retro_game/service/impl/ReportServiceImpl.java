@@ -381,7 +381,7 @@ class ReportServiceImpl implements ReportServiceInternal {
 
         // Skip unit groups.
         int numGroups = stream.readUnsignedByte() + 1;
-        stream.skipBytes(numGroups * 5);
+        stream.skipBytes(numGroups * 9);
       }
     }
 
