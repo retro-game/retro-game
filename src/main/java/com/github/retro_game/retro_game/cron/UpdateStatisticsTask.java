@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -52,12 +53,12 @@ class UpdateStatisticsTask {
       var cost = item.getBaseCost();
       var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
       var factor = item.getCostFactor();
-      joiner.add(String.format("%f * (%f ^ b.buildings[%d] - 1)", total / (factor - 1), factor, index));
+      joiner.add(String.format(Locale.US, "%f * (%f ^ b.buildings[%d] - 1)", total / (factor - 1), factor, index));
     }
     return "" +
         "with p as (" +
         "      select u.id," +
-        "             coalesce(cast(floor(sum(" + joiner.toString() + ") / 1000) as int), 0) as p" +
+        "             coalesce(cast(floor(sum(" + joiner + ") / 1000) as int), 0) as p" +
         "        from bodies b" +
         "  right join users u" +
         "          on u.id = b.user_id" +
@@ -79,12 +80,12 @@ class UpdateStatisticsTask {
       var cost = item.getBaseCost();
       var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
       var factor = item.getCostFactor();
-      joiner.add(String.format("%f * (%f ^ u.technologies[%d] - 1)", total / (factor - 1), factor, index));
+      joiner.add(String.format(Locale.US, "%f * (%f ^ u.technologies[%d] - 1)", total / (factor - 1), factor, index));
     }
     return "" +
         "with p as (" +
         "  select u.id," +
-        "         coalesce(cast(floor((" + joiner.toString() + ") / 1000) as int), 0) as p" +
+        "         coalesce(cast(floor((" + joiner + ") / 1000) as int), 0) as p" +
         "    from users u" +
         ")" +
         "insert into technologies_statistics" +
@@ -102,19 +103,19 @@ class UpdateStatisticsTask {
       var item = entry.getValue();
       var cost = item.getCost();
       var total = cost.getMetal() + cost.getCrystal() + cost.getDeuterium();
-      joiner.add(String.format("%f * units[%d]", total, index));
+      joiner.add(String.format(Locale.US, "%f * units[%d]", total, index));
     }
     return String.format("" +
         "with p as (" +
         "      select u.id," +
         "             coalesce(cast(floor(sum(tmp.points) / 1000) as int), 0) as p" +
         "        from (select b.user_id as user_id," +
-        "                     sum(" + joiner.toString() + ") as points" +
+        "                     sum(" + joiner + ") as points" +
         "                from bodies b" +
         "            group by b.user_id" +
         "               union" +
         "              select f.start_user_id as user_id," +
-        "                     sum(" + joiner.toString() + ") as points" +
+        "                     sum(" + joiner + ") as points" +
         "                from flights f" +
         "            group by f.start_user_id) as tmp" +
         "  right join users u" +
