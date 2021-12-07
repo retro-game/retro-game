@@ -36,6 +36,29 @@ create view flight_view as (
       on sb.id = f.start_body_id
 );
 
+-- Fix event is not present
+
+delete from building_queue
+      where body_id in (
+        select distinct bq.body_id
+                   from building_queue bq
+                  where not exists (select 1 from events e where e.param = bq.body_id and e.kind = 0)
+      );
+
+delete from shipyard_queue
+      where body_id in (
+        select distinct sq.body_id
+                   from shipyard_queue sq
+                  where not exists (select 1 from events e where e.param = sq.body_id and e.kind = 1)
+      );
+
+delete from technology_queue
+      where user_id in (
+        select distinct tq.user_id
+                   from technology_queue tq
+                  where not exists (select 1 from events e where e.param = tq.user_id and e.kind = 2)
+      );
+
 -- Building queue
 
 alter table bodies add column building_queue int[];
