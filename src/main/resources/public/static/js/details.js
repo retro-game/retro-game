@@ -1,6 +1,7 @@
 'use strict';
 
 var productionSpeed = +$(document.body).attr('data-production-speed');
+var storageCapacityMultiplier = +$(document.body).attr('data-storage-capacity-multiplier');
 
 var input = $('#details-table');
 var kind = input.attr('data-kind');
@@ -88,7 +89,7 @@ if (kind === 'METAL_MINE' || kind === 'CRYSTAL_MINE' || kind === 'DEUTERIUM_SYNT
 } else if (kind === 'METAL_STORAGE' || kind === 'CRYSTAL_STORAGE' || kind === 'DEUTERIUM_TANK') {
   headers = headers.concat([msg('capacity'), msg('capacity-diff')]);
   capacityFunc = function (level) {
-    return Math.ceil(1 + Math.pow(1.6, level)) * 50000;
+    return Math.ceil(1 + Math.pow(1.6, level)) * 50000 * storageCapacityMultiplier;
   };
   body.push(capacityFunc);
   body.push(function (level) {
