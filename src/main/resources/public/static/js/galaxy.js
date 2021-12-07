@@ -23,15 +23,20 @@ $(document).on('keydown', function (event) {
   }
 });
 
-$('#galaxy-input').submit(function () {
-  var system = 0 | $('#system-input [name="system"]').val();
-  $('[name="system"]', this).val(system);
-});
-
-$('#system-input').submit(function () {
-  var galaxy = 0 | $('#galaxy-input [name="galaxy"]').val();
+function galaxySubmit() {
+  let galaxy = 0 | $('#galaxy-input [name="galaxy"]').val();
+  if (galaxy < 1 || galaxy > 5)
+    galaxy = 1;
   $('[name="galaxy"]', this).val(galaxy);
-});
+
+  let system = 0 | $('#system-input [name="system"]').val();
+  if (system < 1 || system > 500)
+    system = 1;
+  $('[name="system"]', this).val(system);
+}
+
+$('#galaxy-input').submit(galaxySubmit);
+$('#system-input').submit(galaxySubmit);
 
 $('[data-spy]').click(function () {
   let reports = $('#reports');
