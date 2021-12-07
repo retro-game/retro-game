@@ -242,8 +242,8 @@ class FlightServiceImpl implements FlightServiceInternal {
         throw new WrongMissionException();
       }
 
-      Optional<Party> partyOptional = partyRepository.findById(params.getPartyId());
-      if (!partyOptional.isPresent()) {
+      var partyOptional = partyRepository.findById(params.getPartyId());
+      if (partyOptional.isEmpty()) {
         logger.info("Sending fleet failed, party doesn't exist: userId={} bodyId={} partyId={}",
             userId, body.getId(), partyId);
         throw new PartyDoesNotExistException();
@@ -268,16 +268,18 @@ class FlightServiceImpl implements FlightServiceInternal {
       throw new WrongTargetException();
     }
 
-    Map<UnitKind, Integer> units = new EnumMap<>(UnitKind.class);
-    for (Map.Entry<UnitKindDto, Integer> entry : params.getUnits().entrySet()) {
+    EnumMap<UnitKind, Integer> units = new EnumMap<>(UnitKind.class);
+    for (var entry : params.getUnits().entrySet()) {
       UnitKind kind = Converter.convert(entry.getKey());
-      if (kind == UnitKind.SOLAR_SATELLITE || !UnitItem.getFleet().containsKey(kind)) {
+      if (kind == UnitKind.SOLAR_SATELLITE || !UnitItem.getFleet().containsKey(kind))
         continue;
-      }
       Integer count = entry.getValue();
-      if (count != null && count > 0) {
-        units.put(kind, count);
-      }
+      if (count == null)
+        continue;
+      count = Math.min(count, body.getUnitsCount(kind));
+      if (count <= 0)
+        continue;
+      units.put(kind, count);
     }
 
     if (units.isEmpty()) {
@@ -295,74 +297,66 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Note that a check whether there is a death star when sending fleet on a destroy mission shouldn't be done here,
     // as death stars may be sent later using ACS. Thus, it is better to check it when handling the mission.
     switch (mission) {
-      case COLONIZATION: {
+      case COLONIZATION -> {
         if (!units.containsKey(UnitKind.COLONY_SHIP)) {
           logger.info("Sending fleet failed, colonization without colony ship: userId={} bodyId={}",
               userId, body.getId());
           throw new NoColonyShipSelectedException();
         }
-        break;
       }
-      case ESPIONAGE: {
+      case ESPIONAGE -> {
         if (!units.containsKey(UnitKind.ESPIONAGE_PROBE)) {
           logger.info("Sending fleet failed, espionage without probe: userId={} bodyId={}", userId, body.getId());
           throw new NoEspionageProbeSelectedException();
         }
-        break;
       }
-      case HARVEST: {
+      case HARVEST -> {
         if (!units.containsKey(UnitKind.RECYCLER)) {
           logger.info("Sending fleet failed, harvest without recycler: userId={} bodyId={}", userId, body.getId());
           throw new NoRecyclerSelectedException();
         }
-        break;
       }
     }
 
     // Some missions require specific target kind.
     switch (mission) {
-      case COLONIZATION: {
+      case COLONIZATION -> {
         if (coordinates.getKind() != CoordinatesKind.PLANET) {
           logger.info("Sending fleet failed, wrong target kind for colonization: userId={} bodyId={} targetKind={}",
               userId, body.getId(), coordinates.getKind());
           throw new WrongTargetKindException();
         }
-        break;
       }
-      case DESTROY: {
+      case DESTROY -> {
         if (coordinates.getKind() != CoordinatesKind.MOON) {
           logger.info("Sending fleet failed, wrong target kind for destroy: userId={} bodyId={} targetKind={}",
               userId, body.getId(), coordinates.getKind());
           throw new WrongTargetKindException();
         }
-        break;
       }
-      case HARVEST: {
+      case HARVEST -> {
         if (coordinates.getKind() != CoordinatesKind.DEBRIS_FIELD) {
           logger.info("Sending fleet failed, wrong target kind for harvest: userId={} bodyId={} targetKind={}",
               userId, body.getId(), coordinates.getKind());
           throw new WrongTargetKindException();
         }
-        break;
       }
-      default: {
+      default -> {
         if (coordinates.getKind() != CoordinatesKind.PLANET && coordinates.getKind() != CoordinatesKind.MOON) {
           logger.info("Sending fleet failed, wrong target kind: userId={} bodyId={} mission={} targetKind={}",
               userId, body.getId(), mission, coordinates.getKind());
           throw new WrongTargetKindException();
         }
-        break;
       }
     }
 
     // Some missions require an existing target.
     Optional<Body> targetBodyOptional;
     switch (mission) {
-      case COLONIZATION: {
+      case COLONIZATION -> {
         targetBodyOptional = Optional.empty();
-        break;
       }
-      case HARVEST: {
+      case HARVEST -> {
         if (!debrisFieldRepository.existsByKey_GalaxyAndKey_SystemAndKey_Position(coordinates.getGalaxy(),
             coordinates.getSystem(), coordinates.getPosition())) {
           logger.info("Sending fleet failed, harvest with non-existing debris field: userId={} bodyId={}" +
@@ -371,17 +365,15 @@ class FlightServiceImpl implements FlightServiceInternal {
           throw new DebrisFieldDoesNotExistException();
         }
         targetBodyOptional = Optional.empty();
-        break;
       }
-      default: {
+      default -> {
         targetBodyOptional = bodyRepository.findByCoordinates(coordinates);
-        if (!targetBodyOptional.isPresent()) {
+        if (targetBodyOptional.isEmpty()) {
           logger.info("Sending fleet failed, target body doesn't exist: userId={} bodyId={} targetCoordinates={}" +
                   " mission={}",
               userId, body.getId(), coordinates, mission);
           throw new BodyDoesNotExistException();
         }
-        break;
       }
     }
 
@@ -393,10 +385,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       throw new TargetOnVacationException();
     }
     switch (mission) {
-      case ATTACK:
-      case DESTROY:
-      case ESPIONAGE:
-      case HOLD: {
+      case ATTACK, DESTROY, ESPIONAGE, HOLD -> {
         long targetUserId = targetBodyOptional.get().getUser().getId();
         if (targetUserId == userId) {
           logger.info("Sending fleet failed, wrong target user: userId={} bodyId={} targetUserId={} targetBodyId={}" +
@@ -411,9 +400,8 @@ class FlightServiceImpl implements FlightServiceInternal {
               userId, body.getId(), targetUserId, targetBodyOptional.get().getId(), mission);
           throw new NoobProtectionException();
         }
-        break;
       }
-      case DEPLOYMENT: {
+      case DEPLOYMENT -> {
         long targetUserId = targetBodyOptional.get().getUser().getId();
         if (targetUserId != userId) {
           logger.info("Sending fleet failed, wrong target user for deployment: userId={} bodyId={} targetUserId={}" +
@@ -421,7 +409,6 @@ class FlightServiceImpl implements FlightServiceInternal {
               userId, body.getId(), targetUserId, targetBodyOptional.get().getId());
           throw new WrongTargetUserException();
         }
-        break;
       }
     }
 
@@ -481,7 +468,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       flight.setArrivalAt(Date.from(Instant.ofEpochSecond(arrivalAt)));
 
       if (mission == Mission.HOLD) {
-        long holdUntil = arrivalAt + 3600 * params.getHoldTime();
+        long holdUntil = arrivalAt + 3600L * params.getHoldTime();
         flight.setHoldUntil(Date.from(Instant.ofEpochSecond(holdUntil)));
         flight.setReturnAt(Date.from(Instant.ofEpochSecond(holdUntil + duration)));
       } else {
@@ -535,8 +522,8 @@ class FlightServiceImpl implements FlightServiceInternal {
         }
         assert firstId != Long.MAX_VALUE;
 
-        Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.FLIGHT, firstId);
-        if (!eventOptional.isPresent()) {
+        var eventOptional = eventRepository.findFirstByKindAndParam(EventKind.FLIGHT, firstId);
+        if (eventOptional.isEmpty()) {
           // Shouldn't happen.
           logger.error("Sending fleet failed, event for the party doesn't exist: userId={} bodyId={} partyId={}",
               userId, body.getId(), party.getId());
