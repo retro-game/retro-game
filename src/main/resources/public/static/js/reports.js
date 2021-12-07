@@ -23,11 +23,16 @@ $('[data-delete-report]').click(function () {
     }),
     success: function (data) {
       if (data.success) {
-        var e = elem.parent().parent();
+        let e = elem.parent().parent();
         if (kind === 'other') {
-          e = e.parent();
+          let th = e.prev().prev();
+          let msg = e.prev();
+          th.remove();
+          msg.remove();
+          e.remove();
+        } else {
+          e.remove();
         }
-        e.remove();
       } else {
         alert('Deleting the report failed');
       }
