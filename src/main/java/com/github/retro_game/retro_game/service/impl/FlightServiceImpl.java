@@ -244,9 +244,9 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       Optional<Party> partyOptional = partyRepository.findById(params.getPartyId());
       if (!partyOptional.isPresent()) {
-        logger.warn("Sending fleet failed, party doesn't exist: userId={} bodyId={} partyId={}",
+        logger.info("Sending fleet failed, party doesn't exist: userId={} bodyId={} partyId={}",
             userId, body.getId(), partyId);
-        throw new PartyDoesntExistException();
+        throw new PartyDoesNotExistException();
       }
       party = partyOptional.get();
 
@@ -368,7 +368,7 @@ class FlightServiceImpl implements FlightServiceInternal {
           logger.info("Sending fleet failed, harvest with non-existing debris field: userId={} bodyId={}" +
                   " targetCoordinates={}",
               userId, body.getId(), coordinates);
-          throw new DebrisFieldDoesntExistException();
+          throw new DebrisFieldDoesNotExistException();
         }
         targetBodyOptional = Optional.empty();
         break;
@@ -379,7 +379,7 @@ class FlightServiceImpl implements FlightServiceInternal {
           logger.info("Sending fleet failed, target body doesn't exist: userId={} bodyId={} targetCoordinates={}" +
                   " mission={}",
               userId, body.getId(), coordinates, mission);
-          throw new BodyDoesntExistException();
+          throw new BodyDoesNotExistException();
         }
         break;
       }
@@ -409,7 +409,7 @@ class FlightServiceImpl implements FlightServiceInternal {
           logger.info("Sending fleet failed, wrong target user: userId={} bodyId={} targetUserId={} targetBodyId={}" +
                   " mission={}",
               userId, body.getId(), targetUserId, targetBodyOptional.get().getId(), mission);
-          throw new WrongTargetUserException();
+          throw new NoobProtectionException();
         }
         break;
       }
@@ -492,7 +492,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       if (flights.isEmpty()) {
         logger.error("Sending fleet failed, dangling party: userId={} bodyId={} partyId={}",
             userId, body.getId(), party.getId());
-        throw new PartyDoesntExistException();
+        throw new PartyDoesNotExistException();
       }
 
       if (flights.size() >= MAX_COMBATANTS) {
@@ -540,7 +540,7 @@ class FlightServiceImpl implements FlightServiceInternal {
           // Shouldn't happen.
           logger.error("Sending fleet failed, event for the party doesn't exist: userId={} bodyId={} partyId={}",
               userId, body.getId(), party.getId());
-          throw new FlightDoesntExistException();
+          throw new FlightDoesNotExistException();
         }
 
         Event event = eventOptional.get();
@@ -698,7 +698,7 @@ class FlightServiceImpl implements FlightServiceInternal {
       logger.info("Sending missiles failed, target doesn't exist: userId={} bodyId={} targetCoordinates={}" +
               " numMissiles={}",
           userId, bodyId, targetCoordinates, numMissiles);
-      throw new BodyDoesntExistException();
+      throw new BodyDoesNotExistException();
     }
     Body targetBody = optionalTargetBody.get();
     long targetBodyId = targetBody.getId();
@@ -773,8 +773,8 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     Optional<Flight> flightOptional = flightRepository.findById(flightId);
     if (!flightOptional.isPresent()) {
-      logger.warn("Recalling flight failed, flight doesn't exist: userId={} flightId={}", userId, flightId);
-      throw new FlightDoesntExistException();
+      logger.info("Recalling flight failed, flight doesn't exist: userId={} flightId={}", userId, flightId);
+      throw new FlightDoesNotExistException();
     }
     Flight flight = flightOptional.get();
 
@@ -787,7 +787,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     boolean recallable = flight.getMission() != Mission.MISSILE_ATTACK && flight.getArrivalAt() != null &&
         (flight.getArrivalAt().after(now) || (flight.getMission() == Mission.HOLD && flight.getHoldUntil().after(now)));
     if (!recallable) {
-      logger.warn("Recalling flight failed, flight is unrecallable: userId={} flightId={}", userId, flightId);
+      logger.info("Recalling flight failed, flight is unrecallable: userId={} flightId={}", userId, flightId);
       throw new UnrecallableFlightException();
     }
 

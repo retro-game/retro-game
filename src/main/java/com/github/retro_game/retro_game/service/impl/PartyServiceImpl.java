@@ -46,7 +46,7 @@ class PartyServiceImpl implements PartyService {
     Optional<Party> partyOptional = partyRepository.findById(partyId);
     if (!partyOptional.isPresent()) {
       logger.warn("Getting party failed, party doesn't exist: userId={} partyId={}", userId, partyId);
-      throw new PartyDoesntExistException();
+      throw new PartyDoesNotExistException();
     }
     Party party = partyOptional.get();
 
@@ -82,7 +82,7 @@ class PartyServiceImpl implements PartyService {
     Optional<Flight> flightOptional = flightRepository.findById(flightId);
     if (!flightOptional.isPresent()) {
       logger.warn("Creating party failed, flight doesn't exist: userId={} flightId={}", userId, flightId);
-      throw new FlightDoesntExistException();
+      throw new FlightDoesNotExistException();
     }
     Flight flight = flightOptional.get();
 
@@ -135,7 +135,7 @@ class PartyServiceImpl implements PartyService {
     Optional<Party> partyOptional = partyRepository.findById(partyId);
     if (!partyOptional.isPresent()) {
       logger.warn("Inviting user to party failed, party doesn't exist: userId={} partyId={}", userId, partyId);
-      throw new PartyDoesntExistException();
+      throw new PartyDoesNotExistException();
     }
     Party party = partyOptional.get();
 

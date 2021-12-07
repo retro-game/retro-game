@@ -6,10 +6,8 @@ import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.FlightService;
 import com.github.retro_game.retro_game.service.PartyService;
-import com.github.retro_game.retro_game.service.exception.NoMoreFreeSlotsException;
-import com.github.retro_game.retro_game.service.exception.NotEnoughCapacityException;
-import com.github.retro_game.retro_game.service.exception.NotEnoughDeuteriumException;
-import com.github.retro_game.retro_game.service.exception.NotEnoughUnitsException;
+import com.github.retro_game.retro_game.service.exception.*;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +17,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Controller
 public class FlightsController {
@@ -32,12 +31,78 @@ public class FlightsController {
     this.partyService = partyService;
   }
 
+  private String perform(long bodyId, String page, Supplier<Integer> action) {
+    FlightErrorDto error = null;
+    try {
+      action.get();
+    } catch (BodyDoesNotExistException e) {
+      error = FlightErrorDto.BODY_DOES_NOT_EXIST;
+    } catch (DebrisFieldDoesNotExistException e) {
+      error = FlightErrorDto.DEBRIS_FIELD_DOES_NOT_EXIST;
+    } catch (FlightDoesNotExistException e) {
+      error = FlightErrorDto.FLIGHT_DOES_NOT_EXIST;
+    } catch (HoldTimeNotSpecifiedException e) {
+      error = FlightErrorDto.HOLD_TIME_NOT_SPECIFIED;
+    } catch (NoobProtectionException e) {
+      error = FlightErrorDto.NOOB_PROTECTION;
+    } catch (NotEnoughCapacityException e) {
+      error = FlightErrorDto.NOT_ENOUGH_CAPACITY;
+    } catch (NotEnoughDeuteriumException e) {
+      error = FlightErrorDto.NOT_ENOUGH_DEUTERIUM;
+    } catch (NotEnoughUnitsException e) {
+      error = FlightErrorDto.NOT_ENOUGH_UNITS;
+    } catch (NoColonyShipSelectedException e) {
+      error = FlightErrorDto.NO_COLONY_SHIP_SELECTED;
+    } catch (NoEspionageProbeSelectedException e) {
+      error = FlightErrorDto.NO_ESPIONAGE_PROBE_SELECTED;
+    } catch (NoMoreFreeSlotsException e) {
+      error = FlightErrorDto.NO_MORE_FREE_SLOTS;
+    } catch (NoRecyclerSelectedException e) {
+      error = FlightErrorDto.NO_RECYCLER_SELECTED;
+    } catch (NoUnitSelectedException e) {
+      error = FlightErrorDto.NO_UNIT_SELECTED;
+    } catch (PartyDoesNotExistException e) {
+      error = FlightErrorDto.PARTY_DOES_NOT_EXIST;
+    } catch (TargetOnVacationException e) {
+      error = FlightErrorDto.TARGET_ON_VACATION;
+    } catch (TargetOutOfRangeException e) {
+      error = FlightErrorDto.TARGET_OUT_OF_RANGE;
+    } catch (TooLateException e) {
+      error = FlightErrorDto.TOO_LATE;
+    } catch (TooManyPartyFlightsException e) {
+      error = FlightErrorDto.TOO_MANY_PARTY_FLIGHTS;
+    } catch (UnauthorizedFlightAccessException e) {
+      error = FlightErrorDto.UNAUTHORIZED_FLIGHT_ACCESS;
+    } catch (UnauthorizedPartyAccessException e) {
+      error = FlightErrorDto.UNAUTHORIZED_PARTY_ACCESS;
+    } catch (UnrecallableFlightException e) {
+      error = FlightErrorDto.UNRECALLABLE_FLIGHT;
+    } catch (WrongMissionException e) {
+      error = FlightErrorDto.WRONG_MISSION;
+    } catch (WrongTargetException e) {
+      error = FlightErrorDto.WRONG_TARGET;
+    } catch (WrongTargetKindException e) {
+      error = FlightErrorDto.WRONG_TARGET_KIND;
+    } catch (WrongTargetUserException e) {
+      error = FlightErrorDto.WRONG_TARGET_USER;
+    } catch (ConcurrencyFailureException e) {
+      error = FlightErrorDto.CONCURRENCY;
+    }
+    if (error != null) {
+      return "redirect:" + page + "?body=" + bodyId + "&error=" + error;
+    }
+    return "redirect:/flights?body=" + bodyId;
+  }
+
   @GetMapping("/flights")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String flights(@RequestParam(name = "body") long bodyId, Model model) {
+  public String flights(@RequestParam(name = "body") long bodyId,
+                        @RequestParam(required = false) FlightErrorDto error,
+                        Model model) {
     List<FlightDto> flights = flightService.getFlights(bodyId);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("error", error);
     model.addAttribute("flights", flights);
     model.addAttribute("occupiedSlots", flights.size());
     model.addAttribute("maxSlots", flightService.getMaxFlightSlots(bodyId));
@@ -54,6 +119,7 @@ public class FlightsController {
                      @RequestParam(required = false) CoordinatesKindDto kind,
                      @RequestParam(required = false) MissionDto mission,
                      @RequestParam(required = false) Map<String, String> params,
+                     @RequestParam(required = false) FlightErrorDto error,
                      Model model) {
     List<BodyInfoDto> bodies = bodyService.getBodiesBasicInfo(bodyId);
 
@@ -74,6 +140,7 @@ public class FlightsController {
     model.addAttribute("kind", k);
     model.addAttribute("mission", mission);
     model.addAttribute("params", params);
+    model.addAttribute("error", error);
     model.addAttribute("occupiedSlots", flightService.getOccupiedFlightSlots(bodyId));
     model.addAttribute("maxSlots", flightService.getMaxFlightSlots(bodyId));
     model.addAttribute("units", flightService.getFlyableUnits(bodyId));
@@ -93,8 +160,50 @@ public class FlightsController {
         form.getDeuterium() != null ? form.getDeuterium() : 0.0);
     SendFleetParamsDto params = new SendFleetParamsDto(form.getBody(), form.getUnits(), form.getMission(),
         form.getHoldTime(), c, form.getFactor(), r, form.getParty());
-    flightService.send(params);
-    return "redirect:/flights?body=" + form.getBody();
+    return perform(form.getBody(), "/flights/send", () -> {
+      flightService.send(params);
+      return 0;
+    });
+  }
+
+  @GetMapping("/flights/send-missiles")
+  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
+  @Activity(bodies = "#bodyId")
+  public String sendMissiles(@RequestParam(name = "body") long bodyId,
+                             @RequestParam(required = false) Integer galaxy,
+                             @RequestParam(required = false) Integer system,
+                             @RequestParam(required = false) Integer position,
+                             @RequestParam(required = false) CoordinatesKindDto kind,
+                             @RequestParam(required = false) FlightErrorDto error,
+                             Model model) {
+    model.addAttribute("bodyId", bodyId);
+    model.addAttribute("galaxy", galaxy);
+    model.addAttribute("system", system);
+    model.addAttribute("position", position);
+    model.addAttribute("kind", kind);
+    model.addAttribute("error", error);
+    return "flights-send-missiles";
+  }
+
+  @PostMapping("/flights/send-missiles")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
+  public String doSendMissiles(@Valid SendMissilesForm form) {
+    CoordinatesDto target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
+    return perform(form.getBody(), "/flights/send-missiles", () -> {
+      flightService.sendMissiles(form.getBody(), target, form.getNumMissiles());
+      return 0;
+    });
+  }
+
+  @PostMapping("/flights/recall")
+  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
+  @Activity(bodies = "#form.body")
+  public String recall(@Valid RecallFlightForm form) {
+    return perform(form.getBody(), "/flights", () -> {
+      flightService.recall(form.getBody(), form.getFlight());
+      return 0;
+    });
   }
 
   @PostMapping("/flights/send-probes")
@@ -118,39 +227,5 @@ public class FlightsController {
       response.setError("NOT_ENOUGH_UNITS");
     }
     return response;
-  }
-
-  @GetMapping("/flights/send-missiles")
-  @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
-  @Activity(bodies = "#bodyId")
-  public String sendMissiles(@RequestParam(name = "body") long bodyId,
-                             @RequestParam(required = false) Integer galaxy,
-                             @RequestParam(required = false) Integer system,
-                             @RequestParam(required = false) Integer position,
-                             @RequestParam(required = false) CoordinatesKindDto kind,
-                             Model model) {
-    model.addAttribute("bodyId", bodyId);
-    model.addAttribute("galaxy", galaxy);
-    model.addAttribute("system", system);
-    model.addAttribute("position", position);
-    model.addAttribute("kind", kind);
-    return "flights-send-missiles";
-  }
-
-  @PostMapping("/flights/send-missiles")
-  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
-  @Activity(bodies = "#form.body")
-  public String doSendMissiles(@Valid SendMissilesForm form) {
-    CoordinatesDto target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
-    flightService.sendMissiles(form.getBody(), target, form.getNumMissiles());
-    return "redirect:/flights?body=" + form.getBody();
-  }
-
-  @PostMapping("/flights/recall")
-  @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
-  @Activity(bodies = "#form.body")
-  public String recall(@Valid RecallFlightForm form) {
-    flightService.recall(form.getBody(), form.getFlight());
-    return "redirect:/flights?body=" + form.getBody();
   }
 }

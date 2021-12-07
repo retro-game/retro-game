@@ -6,6 +6,14 @@
 </head>
 <body>
 <div layout:fragment="content">
+  <table th:if="${error}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td class="error" th:text="${#messages.msg('flightError.' + error)}"></td>
+    </tr>
+  </table>
   <form th:action="@{/flights/send-missiles}" method="post">
     <input name="body" type="hidden" th:value="${bodyId}">
     <table>

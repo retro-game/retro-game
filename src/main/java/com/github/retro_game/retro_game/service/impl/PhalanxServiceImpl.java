@@ -6,7 +6,7 @@ import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.FlightEventsService;
 import com.github.retro_game.retro_game.service.PhalanxService;
-import com.github.retro_game.retro_game.service.exception.BodyDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.BodyDoesNotExistException;
 import com.github.retro_game.retro_game.service.exception.NotEnoughDeuteriumException;
 import com.github.retro_game.retro_game.service.exception.TargetOutOfRangeException;
 import org.slf4j.Logger;
@@ -81,7 +81,7 @@ class PhalanxServiceImpl implements PhalanxService {
     if (!targetOptional.isPresent()) {
       logger.warn("Phalanx scanning failed, target doesn't exist: userId={} bodyId={} targetCoordinates={}-{}-{}-P",
           CustomUser.getCurrentUserId(), body.getId(), galaxy, system, position);
-      throw new BodyDoesntExistException();
+      throw new BodyDoesNotExistException();
     }
     Body target = targetOptional.get();
 

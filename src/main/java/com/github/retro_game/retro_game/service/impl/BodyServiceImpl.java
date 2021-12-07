@@ -360,7 +360,7 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   public int getTemperature(long bodyId) {
-    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesntExistException::new);
+    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesNotExistException::new);
     return body.getTemperature();
   }
 
@@ -386,7 +386,7 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   public BodyTypeAndImagePairDto getBodyTypeAndImagePair(long bodyId) {
-    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesntExistException::new);
+    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesNotExistException::new);
     return new BodyTypeAndImagePairDto(Converter.convert(body.getType()), body.getImage());
   }
 
