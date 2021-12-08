@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 class EventScheduler implements Runnable {
   private static final int WAIT_TIME_STEP_IN_MS = 10;
-  private static final int MAX_WAIT_TIME_IN_MS = 1000;
+  private static final int MAX_WAIT_TIME_IN_MS = 3000;
   private static final Logger logger = LoggerFactory.getLogger(EventScheduler.class);
   private final Lock lock = new ReentrantLock();
   private final Condition condition = lock.newCondition();
@@ -99,40 +99,36 @@ class EventScheduler implements Runnable {
   public void run() {
     int waitTime = 0;
     while (true) {
-      Event event;
       try {
-        event = getNext();
-      } catch (InterruptedException e) {
-        logger.info("Interrupted");
-        continue;
-      }
-      try {
+        var event = getNext();
         switch (event.getKind()) {
-          case BUILDING_QUEUE:
-            buildingsServiceInternal.handle(event);
-            break;
-          case SHIPYARD_QUEUE:
-            shipyardServiceInternal.handle(event);
-            break;
-          case TECHNOLOGY_QUEUE:
-            technologyServiceInternal.handle(event);
-            break;
-          case FLIGHT:
-            flightServiceInternal.handle(event);
-            break;
-          default:
+          case BUILDING_QUEUE -> buildingsServiceInternal.handle(event);
+          case SHIPYARD_QUEUE -> shipyardServiceInternal.handle(event);
+          case TECHNOLOGY_QUEUE -> technologyServiceInternal.handle(event);
+          case FLIGHT -> flightServiceInternal.handle(event);
+          default -> {
             logger.error("Wrong event kind");
             return;
+          }
         }
         waitTime = 0;
-      } catch (DataAccessException e) {
-        logger.warn("Transaction failed, waiting {}ms: msg={}", waitTime, e.getMessage());
+      } catch (Exception e) {
+        if (e instanceof InterruptedException) {
+          logger.info("Interrupted");
+          continue;
+        } else if (e instanceof DataAccessException) {
+          waitTime = Math.min(MAX_WAIT_TIME_IN_MS, waitTime + WAIT_TIME_STEP_IN_MS);
+          logger.warn("Scheduler transaction failed, retrying in {}ms: msg={}", waitTime, e.getMessage());
+        } else {
+          waitTime = MAX_WAIT_TIME_IN_MS;
+          logger.error("Scheduler unexpected error, retrying in {}ms: msg={}", waitTime, e.getMessage());
+        }
+
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException ex) {
           logger.warn("Waiting interrupted");
         }
-        waitTime = Math.min(MAX_WAIT_TIME_IN_MS, waitTime + WAIT_TIME_STEP_IN_MS);
       }
     }
   }
