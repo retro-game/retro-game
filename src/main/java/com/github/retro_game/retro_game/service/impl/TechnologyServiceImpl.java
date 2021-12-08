@@ -335,8 +335,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         secondBody = firstBody;
       }
 
-      bodyServiceInternal.updateResources(firstBody, null);
-      bodyServiceInternal.updateResources(secondBody, firstBody.getUpdatedAt());
+      var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+      bodyServiceInternal.updateResourcesAndShipyard(firstBody, now);
+      bodyServiceInternal.updateResourcesAndShipyard(secondBody, firstBody.getUpdatedAt());
 
       firstBody.getResources().add(firstCost);
       if (!secondBody.getResources().greaterOrEqual(secondCost)) {
@@ -376,7 +377,6 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       logger.info("Moving down entry in technology queue successful, the entry is the first, adding an event for the" +
               " next entry: userId={} sequenceNumber={}",
           userId, sequenceNumber);
-      Date now = secondBody.getUpdatedAt();
       Date at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
       event.setAt(at);
       eventScheduler.schedule(event);

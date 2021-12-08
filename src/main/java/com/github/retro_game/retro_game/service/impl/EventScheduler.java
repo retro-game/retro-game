@@ -29,7 +29,6 @@ class EventScheduler implements Runnable {
   private final EventRepository eventRepository;
   private BuildingsServiceInternal buildingsServiceInternal;
   private FlightServiceInternal flightServiceInternal;
-  private ShipyardServiceInternal shipyardServiceInternal;
   private TechnologyServiceInternal technologyServiceInternal;
 
   public EventScheduler(TaskExecutor eventSchedulerThread, EventRepository eventRepository) {
@@ -45,11 +44,6 @@ class EventScheduler implements Runnable {
   @Autowired
   public void setFlightServiceInternal(FlightServiceInternal flightServiceInternal) {
     this.flightServiceInternal = flightServiceInternal;
-  }
-
-  @Autowired
-  public void setShipyardServiceInternal(ShipyardServiceInternal shipyardServiceInternal) {
-    this.shipyardServiceInternal = shipyardServiceInternal;
   }
 
   @Autowired
@@ -103,9 +97,12 @@ class EventScheduler implements Runnable {
         var event = getNext();
         switch (event.getKind()) {
           case BUILDING_QUEUE -> buildingsServiceInternal.handle(event);
-          case SHIPYARD_QUEUE -> shipyardServiceInternal.handle(event);
           case TECHNOLOGY_QUEUE -> technologyServiceInternal.handle(event);
           case FLIGHT -> flightServiceInternal.handle(event);
+          case SHIPYARD_QUEUE -> {
+            logger.error("Shipyard queue event, this shouldn't happen");
+            eventRepository.delete(event);
+          }
           default -> {
             logger.error("Wrong event kind");
             return;

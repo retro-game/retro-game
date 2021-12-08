@@ -126,6 +126,7 @@ create table bodies (
   fusion_reactor_factor int not null check (fusion_reactor_factor between 0 and 10),
   solar_satellites_factor int not null check (solar_satellites_factor between 0 and 10),
   last_jump_at timestamptz,
+  shipyard_start_at timestamptz,
   buildings int[] not null check (array_length(buildings, 1) = 18),
   units int[] not null check (array_length(units, 1) = 23),
   building_queue int[] not null,

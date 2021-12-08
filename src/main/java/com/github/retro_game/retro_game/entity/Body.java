@@ -57,6 +57,10 @@ public class Body implements Serializable {
   @Temporal(TemporalType.TIMESTAMP)
   private Date lastJumpAt;
 
+  @Column(name = "shipyard_start_at")
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date shipyardStartAt;
+
   @Column(name = "buildings", nullable = false)
   @Type(type = "int-array")
   private int[] buildingsArray;
@@ -171,6 +175,14 @@ public class Body implements Serializable {
 
   public void setLastJumpAt(Date lastJumpAt) {
     this.lastJumpAt = lastJumpAt;
+  }
+
+  public Date getShipyardStartAt() {
+    return shipyardStartAt;
+  }
+
+  public void setShipyardStartAt(Date shipyardStartAt) {
+    this.shipyardStartAt = shipyardStartAt;
   }
 
   public EnumMap<BuildingKind, Integer> getBuildings() {

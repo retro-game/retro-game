@@ -502,7 +502,7 @@ class ReportServiceImpl implements ReportServiceInternal {
   public void createEspionageReport(Flight flight, List<Flight> holdingFlights, double counterChance) {
     try {
       Body body = flight.getTargetBody();
-      bodyServiceInternal.updateResources(body, flight.getArrivalAt());
+      bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
 
       long now = flight.getArrivalAt().toInstant().getEpochSecond();
       Long activityAt = activityService.getBodyActivity(body.getId());

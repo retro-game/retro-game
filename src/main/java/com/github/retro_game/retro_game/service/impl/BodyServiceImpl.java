@@ -412,7 +412,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public OverviewBodiesDto getOverviewBodies(long bodyId) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -494,7 +493,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public EmpireDto getEmpire(long bodyId, @Nullable Integer galaxy, @Nullable Integer system,
                              @Nullable Integer position, @Nullable CoordinatesKindDto kind) {
     long userId = CustomUser.getCurrentUserId();
@@ -508,7 +506,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     List<EmpireBodyDto> empireBodies = bodies.stream()
         .map(body -> {
-          updateResources(body, now);
+          updateResourcesAndShipyard(body, now);
 
           int usedFields = getUsedFields(body);
           int maxFields = getMaxFields(body);
@@ -702,26 +700,27 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public Body getUpdated(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
-    updateResources(body, null);
+    var body = bodyRepository.getOne(bodyId);
+    var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+    updateResourcesAndShipyard(body, now);
     return body;
   }
 
   @Override
-  @Transactional(readOnly = true)
+  public void updateResourcesAndShipyard(Body body, Date at) {
+    shipyardServiceInternal.update(body, at);
+    updateResources(body, at);
+  }
+
+  @Override
+  @Transactional
   public ResourcesDto getResources(long bodyId) {
     Body body = getUpdated(bodyId);
     return Converter.convert(body.getResources());
   }
 
-  @Override
-  public void updateResources(Body body, Date at) {
-    if (at == null) {
-      at = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    }
-
+  private void updateResources(Body body, Date at) {
     Date updatedAt = body.getUpdatedAt();
 
     if (!at.after(updatedAt)) {
@@ -994,7 +993,6 @@ class BodyServiceImpl implements BodyServiceInternal {
     cacheObserver.notifyBodyDeleted(body.getUser().getId(), body.getId());
 
     buildingsServiceInternal.deleteBuildingsAndQueue(body);
-    shipyardServiceInternal.deleteUnitsAndQueue(body);
     bodyRepository.delete(body);
   }
 }

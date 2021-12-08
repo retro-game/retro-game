@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.Map;
 
 interface BodyServiceInternal extends BodyService {
-  // Returns body with updated resources.
+  // Returns body with updated resources & shipyard.
   Body getUpdated(long bodyId);
 
   int getUsedFields(Body body);
@@ -18,7 +18,7 @@ interface BodyServiceInternal extends BodyService {
 
   int getMaxFields(Body body, Map<BuildingKind, Integer> buildings);
 
-  void updateResources(Body body, Date at);
+  void updateResourcesAndShipyard(Body body, Date at);
 
   ProductionDto getProduction(Body body);
 

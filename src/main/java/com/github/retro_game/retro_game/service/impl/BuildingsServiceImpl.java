@@ -677,7 +677,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
     it.remove();
 
-    bodyServiceInternal.updateResources(body, event.getAt());
+    bodyServiceInternal.updateResourcesAndShipyard(body, event.getAt());
 
     // Update buildings.
     var oldLevel = body.getBuildingLevel(entry.kind());

@@ -294,9 +294,9 @@ class UserServiceImpl implements UserServiceInternal {
       long bodyId = entry.getKey();
       activityService.handleBodyActivity(bodyId, s);
 
-      // Update resources.
+      // Update resources and shipyard.
       Body body = entry.getValue();
-      bodyServiceInternal.updateResources(body, at);
+      bodyServiceInternal.updateResourcesAndShipyard(body, at);
     }
   }
 

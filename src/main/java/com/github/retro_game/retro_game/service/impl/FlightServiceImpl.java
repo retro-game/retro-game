@@ -186,7 +186,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Override
   @Transactional(readOnly = true)
   public Map<UnitKindDto, FlyableUnitInfoDto> getFlyableUnits(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
+    var body = bodyServiceInternal.getUpdated(bodyId);
     User user = body.getUser();
     return UnitItem.getFleet().entrySet().stream()
         .filter(e -> e.getKey() != UnitKind.SOLAR_SATELLITE)
@@ -898,7 +898,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Create activity.
     activityService.handleBodyActivity(body.getId(), flight.getReturnAt().toInstant().getEpochSecond());
 
-    bodyServiceInternal.updateResources(body, flight.getReturnAt());
+    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getReturnAt());
     body.getResources().add(flight.getResources());
 
     deployUnits(flight, body);
@@ -927,7 +927,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Create activity.
     activityService.handleBodyActivity(body.getId(), arrivalAt.toInstant().getEpochSecond());
 
-    bodyServiceInternal.updateResources(body, arrivalAt);
+    bodyServiceInternal.updateResourcesAndShipyard(body, arrivalAt);
 
     List<Flight> attackersFlights;
     long partyId = 0;
@@ -1457,7 +1457,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Create activity.
     activityService.handleBodyActivity(body.getId(), flight.getArrivalAt().toInstant().getEpochSecond());
 
-    bodyServiceInternal.updateResources(body, flight.getArrivalAt());
+    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
     body.getResources().add(flight.getResources());
 
     deployUnits(flight, body);
@@ -1468,6 +1468,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   private void handleEspionage(Flight flight) {
     Body body = flight.getTargetBody();
+    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
 
     List<Flight> holdingFlights = getHoldingFlights(flight.getTargetBody(), flight.getArrivalAt());
 
@@ -1619,7 +1620,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     activityService.handleBodyActivity(body.getId(), arrival);
 
     flight.setResources(new Resources());
-    bodyServiceInternal.updateResources(body, arrivalAt);
+    bodyServiceInternal.updateResourcesAndShipyard(body, arrivalAt);
     body.getResources().add(resources);
 
     if (flight.getStartUser().getId() == body.getUser().getId()) {
@@ -1645,6 +1646,8 @@ class FlightServiceImpl implements FlightServiceInternal {
 
     // Create activity.
     activityService.handleBodyActivity(body.getId(), flight.getArrivalAt().toInstant().getEpochSecond());
+
+    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
 
     var numIpm = flight.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE);
     if (numIpm == 0) {

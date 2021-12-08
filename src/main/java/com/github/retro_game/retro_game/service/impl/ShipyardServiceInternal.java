@@ -7,8 +7,6 @@ import io.vavr.Tuple2;
 
 import java.util.Map;
 
-interface ShipyardServiceInternal extends EventHandler, ShipyardService {
+interface ShipyardServiceInternal extends ShipyardService {
   Map<UnitKind, Tuple2<Integer, Integer>> getCurrentAndFutureCounts(Body body);
-
-  void deleteUnitsAndQueue(Body body);
 }

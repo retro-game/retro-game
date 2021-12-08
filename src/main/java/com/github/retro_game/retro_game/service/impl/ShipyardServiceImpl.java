@@ -6,8 +6,6 @@ import com.github.retro_game.retro_game.model.Item;
 import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
 import com.github.retro_game.retro_game.model.ItemTimeUtils;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
-import com.github.retro_game.retro_game.repository.BodyRepository;
-import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.service.exception.*;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -17,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.Instant;
 import java.util.*;
@@ -28,26 +25,15 @@ import java.util.stream.Collectors;
 class ShipyardServiceImpl implements ShipyardServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(ShipyardServiceImpl.class);
   private final ItemTimeUtils itemTimeUtils;
-  private final BodyRepository bodyRepository;
-  private final EventRepository eventRepository;
   private BodyServiceInternal bodyServiceInternal;
-  private EventScheduler eventScheduler;
 
-  public ShipyardServiceImpl(ItemTimeUtils itemTimeUtils, BodyRepository bodyRepository,
-                             EventRepository eventRepository) {
+  public ShipyardServiceImpl(ItemTimeUtils itemTimeUtils) {
     this.itemTimeUtils = itemTimeUtils;
-    this.bodyRepository = bodyRepository;
-    this.eventRepository = eventRepository;
   }
 
   @Autowired
   public void setBodyServiceInternal(BodyServiceInternal bodyServiceInternal) {
     this.bodyServiceInternal = bodyServiceInternal;
-  }
-
-  @Autowired
-  public void setEventScheduler(EventScheduler eventScheduler) {
-    this.eventScheduler = eventScheduler;
   }
 
   @Override
@@ -77,14 +63,11 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
       long requiredTime;
       if (first) {
-        Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.SHIPYARD_QUEUE, body.getId());
-        Assert.isTrue(event.isPresent(), "Event must be present");
-
-        long readyAt = event.get().getAt().toInstant().getEpochSecond();
+        long startAt = body.getShipyardStartAt().toInstant().getEpochSecond();
         long now = body.getUpdatedAt().toInstant().getEpochSecond();
-        long remainingTime = readyAt - now;
+        long remainingTime = startAt - now;
 
-        requiredTime = remainingTime + (count - 1) * constructionTime;
+        requiredTime = remainingTime + count * constructionTime;
         finishAt = now + requiredTime;
 
         first = false;
@@ -271,71 +254,66 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     body.setShipyardQueue(queue);
 
     if (last == null) {
-      // Add event.
-      long time = getConstructionTime(item.getCost(), body);
-      Date now = body.getUpdatedAt();
-      Date startAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + time));
-      Event event = new Event();
-      event.setAt(startAt);
-      event.setKind(EventKind.SHIPYARD_QUEUE);
-      event.setParam(body.getId());
-      eventScheduler.schedule(event);
+      body.setShipyardStartAt(body.getUpdatedAt());
     }
   }
 
-  @Override
-  @Transactional(isolation = Isolation.REPEATABLE_READ)
-  public void handle(Event event) {
-    long bodyId = event.getParam();
-    Body body = bodyRepository.getOne(bodyId);
+  public void update(Body body, Date at) {
+    if (body.getShipyardStartAt() == null)
+      return;
 
-    Date at = event.getAt();
+    var startTime = body.getShipyardStartAt().toInstant().getEpochSecond();
+    var endTime = at.toInstant().getEpochSecond();
+    if (endTime <= startTime)
+      return;
 
-    eventRepository.delete(event);
+    var initialBudget = (endTime - startTime);
+    var budget = initialBudget;
 
     var queue = body.getShipyardQueue();
+    var it = queue.iterator();
+    var changed = false;
+    while (it.hasNext()) {
+      var entry = it.next();
 
-    // This shouldn't happen.
-    if (queue.isEmpty()) {
-      logger.error("Handling shipyard queue, queue is empty: bodyId={}", bodyId);
-      return;
+      var item = Item.get(entry.kind());
+      var itemTime = getConstructionTime(item.getCost(), body);
+      assert itemTime >= 1;
+      var maxBuilt = (int) Math.min(Integer.MAX_VALUE, budget / itemTime);
+
+      var numBuilt = Math.min(entry.count(), maxBuilt);
+      assert numBuilt >= 0;
+      if (numBuilt == 0)
+        break;
+
+      logger.info("Shipyard: bodyId={} kind={} count={}", body.getId(), entry.kind(), numBuilt);
+
+      changed = true;
+      budget -= numBuilt * itemTime;
+      assert budget >= 0;
+      body.setUnitsCount(entry.kind(), body.getUnitsCount(entry.kind()) + numBuilt);
+
+      var toBuilt = entry.count() - numBuilt;
+      if (toBuilt >= 1) {
+        var newEntry = new ShipyardQueueEntry(entry.kind(), toBuilt);
+        queue.set(0, newEntry);
+        break;
+      }
+
+      it.remove();
     }
 
-    // Update resources, as the production may increase when we build solar satellites.
-    bodyServiceInternal.updateResources(body, at);
-
-    var first = queue.get(0);
-
-    // Add units.
-    body.setUnitsCount(first.kind(), body.getUnitsCount(first.kind()) + 1);
-
-    assert first.count() >= 1;
-    if (first.count() == 1) {
-      queue.remove(0);
-    } else {
-      var newFirst = new ShipyardQueueEntry(first.kind(), first.count() - 1);
-      queue.set(0, newFirst);
+    if (changed) {
+      body.setShipyardQueue(queue);
+      if (queue.isEmpty()) {
+        body.setShipyardStartAt(null);
+      } else {
+        var spent = initialBudget - budget;
+        var newStartAt = startTime + spent;
+        assert newStartAt <= endTime;
+        body.setShipyardStartAt(Date.from(Instant.ofEpochSecond(newStartAt)));
+      }
     }
-    body.setShipyardQueue(queue);
-
-    if (!queue.isEmpty()) {
-      var item = Item.get(queue.get(0).kind());
-      var time = getConstructionTime(item.getCost(), body);
-      // Add event.
-      Date startAt = Date.from(Instant.ofEpochSecond(at.toInstant().getEpochSecond() + time));
-      Event newEvent = new Event();
-      newEvent.setAt(startAt);
-      newEvent.setKind(EventKind.SHIPYARD_QUEUE);
-      newEvent.setParam(bodyId);
-      eventScheduler.schedule(newEvent);
-    }
-  }
-
-  @Override
-  @Transactional(isolation = Isolation.REPEATABLE_READ)
-  public void deleteUnitsAndQueue(Body body) {
-    Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.SHIPYARD_QUEUE, body.getId());
-    event.ifPresent(eventRepository::delete);
   }
 
   private long getConstructionTime(Resources cost, Body body) {
