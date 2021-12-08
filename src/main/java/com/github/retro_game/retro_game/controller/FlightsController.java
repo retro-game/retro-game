@@ -223,8 +223,10 @@ public class FlightsController {
       response.setError("NOT_ENOUGH_DEUTERIUM");
     } catch (NotEnoughCapacityException e) {
       response.setError("NOT_ENOUGH_CAPACITY");
-    } catch (NotEnoughUnitsException e) {
+    } catch (NoUnitSelectedException | NotEnoughUnitsException e) {
       response.setError("NOT_ENOUGH_UNITS");
+    } catch (ConcurrencyFailureException e) {
+      response.setError("CONCURRENCY");
     }
     return response;
   }

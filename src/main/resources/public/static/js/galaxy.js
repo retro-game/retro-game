@@ -46,12 +46,12 @@ $('[data-spy]').click(function () {
 
   let addReport = (html) => $('#reports :first-child').first().after(html);
 
-  var body = 0 | $($('[name="body"]')[0]).val();
-  var galaxy = 0 | $(this).attr('data-galaxy');
-  var system = 0 | $(this).attr('data-system');
-  var position = 0 | $(this).attr('data-position');
-  var kind = $(this).attr('data-kind');
-  var count = 0 | $('#num-probes').val();
+  const body = 0 | $($('[name="body"]')[0]).val();
+  const galaxy = 0 | $(this).attr('data-galaxy');
+  const system = 0 | $(this).attr('data-system');
+  const position = 0 | $(this).attr('data-position');
+  const kind = $(this).attr('data-kind');
+  const count = 0 | $('#num-probes').val();
 
   $.ajax({
     type: 'post',
@@ -66,12 +66,12 @@ $('[data-spy]').click(function () {
       count: count
     }),
     success: function (data) {
-      var coordinates = [galaxy, system, position, kind[0]].join('-');
+      const coordinates = [galaxy, system, position, kind[0]].join('-');
       if (data.success) {
         addReport('<tr><td>Probes were sent to ' + coordinates + ' successfully</td></tr>');
         return;
       }
-      var message = 'Probes couldn\'t be sent to ' + coordinates + ', ';
+      let message = 'Probes couldn\'t be sent to ' + coordinates + ', ';
       switch (data.error) {
         case 'NO_MORE_FREE_SLOTS':
           message += 'no more free flight slots';
@@ -84,6 +84,9 @@ $('[data-spy]').click(function () {
           break;
         case 'NOT_ENOUGH_UNITS':
           message += 'you don\'t have enough probes';
+          break;
+        case 'CONCURRENCY':
+          message += 'please try again'
           break;
       }
       addReport('<tr><td><font color="red">' + message + '</font></td></tr>');
