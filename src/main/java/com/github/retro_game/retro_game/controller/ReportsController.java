@@ -26,14 +26,14 @@ import java.util.*;
 @Validated
 public class ReportsController {
   private static final Map<TechnologyKindDto, Integer> websimTechsIndexes =
-      Collections.unmodifiableMap(new EnumMap<TechnologyKindDto, Integer>(TechnologyKindDto.class) {{
+      Collections.unmodifiableMap(new EnumMap<>(TechnologyKindDto.class) {{
         put(TechnologyKindDto.WEAPONS_TECHNOLOGY, 0);
         put(TechnologyKindDto.SHIELDING_TECHNOLOGY, 1);
         put(TechnologyKindDto.ARMOR_TECHNOLOGY, 2);
       }});
 
   private static final Map<UnitKindDto, Integer> websimUnitsIndexes =
-      Collections.unmodifiableMap(new EnumMap<UnitKindDto, Integer>(UnitKindDto.class) {{
+      Collections.unmodifiableMap(new EnumMap<>(UnitKindDto.class) {{
         put(UnitKindDto.SMALL_CARGO, 0);
         put(UnitKindDto.LARGE_CARGO, 1);
         put(UnitKindDto.LITTLE_FIGHTER, 2);
@@ -115,6 +115,7 @@ public class ReportsController {
   @Activity(bodies = "#bodyId")
   public String reports(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("summary", reportService.getSummary(bodyId));
     return "reports";
   }
@@ -128,10 +129,12 @@ public class ReportsController {
                               @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                               @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                               Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedCombatReportDto> reports = reportService.getSimplifiedCombatReports(bodyId, order, direction,
         pageRequest);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", reportService.getSummary(bodyId));
     model.addAttribute("order", order.toString());
     model.addAttribute("direction", direction.toString());
@@ -173,10 +176,12 @@ public class ReportsController {
                                  @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                  @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                  Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedEspionageReportDto> reports = reportService.getSimplifiedEspionageReports(bodyId, order, direction,
         pageRequest);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", reportService.getSummary(bodyId));
     model.addAttribute("order", order.toString());
     model.addAttribute("direction", direction.toString());
@@ -219,9 +224,11 @@ public class ReportsController {
                                @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<HarvestReportDto> reports = reportService.getHarvestReports(bodyId, order, direction, pageRequest);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", reportService.getSummary(bodyId));
     model.addAttribute("order", order.toString());
     model.addAttribute("direction", direction.toString());
@@ -263,9 +270,11 @@ public class ReportsController {
                                  @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                  @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                                  Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<TransportReportDto> reports = reportService.getTransportReports(bodyId, order, direction, pageRequest);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", reportService.getSummary(bodyId));
     model.addAttribute("order", order.toString());
     model.addAttribute("direction", direction.toString());
@@ -305,9 +314,11 @@ public class ReportsController {
                              @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                              @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
                              Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<OtherReportDto> reports = reportService.getOtherReports(bodyId, pageRequest);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", reportService.getSummary(bodyId));
     model.addAttribute("page", page);
     model.addAttribute("size", size);

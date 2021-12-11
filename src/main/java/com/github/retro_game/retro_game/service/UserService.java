@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.service;
 
+import com.github.retro_game.retro_game.dto.UserContextDto;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 
 import java.util.Date;
@@ -7,6 +8,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 public interface UserService {
+  UserContextDto getCurrentUserContext(long bodyId);
+
   long create(String email, String name, String password);
 
   boolean existsByEmailIgnoreCase(String email);

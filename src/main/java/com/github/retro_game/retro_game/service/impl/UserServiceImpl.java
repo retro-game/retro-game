@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.UserContextDto;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.EventRepository;
@@ -66,6 +67,18 @@ class UserServiceImpl implements UserServiceInternal {
   @Autowired
   public void setPrangerServiceInternal(PrangerServiceInternal prangerServiceInternal) {
     this.prangerServiceInternal = prangerServiceInternal;
+  }
+
+  @Override
+  public UserContextDto getCurrentUserContext(long bodyId) {
+    var userId = CustomUser.getCurrentUserId();
+    var user = userRepository.getById(userId);
+    var settings = getUserSettings(user);
+    var bodies = bodyServiceInternal.getBodiesBasicInfo(bodyId);
+    var body = bodyServiceInternal.getBodyContext(bodyId);
+    var bodyPointers = bodyServiceInternal.getBodiesPointers(bodyId);
+    return new UserContextDto(userId, user.getName(), user.getVacationUntil(), user.isForcedVacation(), settings,
+        bodies, body, bodyPointers);
   }
 
   @Override
@@ -143,6 +156,10 @@ class UserServiceImpl implements UserServiceInternal {
   public UserSettingsDto getCurrentUserSettings() {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
+    return getUserSettings(user);
+  }
+
+  private UserSettingsDto getUserSettings(User user) {
     return new UserSettingsDto(user.getLanguage(), user.getSkin(), user.getNumProbes(),
         Converter.convert(user.getBodiesSortOrder()), user.getBodiesSortDirection(),
         user.hasFlag(UserFlag.NUMBER_INPUT_SCROLLING), user.hasFlag(UserFlag.SHOW_NEW_MESSAGES_IN_OVERVIEW),

@@ -1,7 +1,6 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
-import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -36,18 +35,20 @@ public class OverviewController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
   public String overview(@RequestParam(name = "body") long bodyId, Model model) {
-    UserSettingsDto settings = userService.getCurrentUserSettings();
-    model.addAttribute("numNewMessages", settings.isShowNewMessagesInOverviewEnabled() ?
-        messagesSummaryService.get(bodyId).getTotalMessages() : 0);
-    model.addAttribute("numNewReports", settings.isShowNewReportsInOverviewEnabled() ?
-        reportService.getSummary(bodyId).getTotalReports() : 0);
-
     model.addAttribute("bodyId", bodyId);
+
+    var userCtx = userService.getCurrentUserContext(bodyId);
+    model.addAttribute("ctx", userCtx);
+
+    var settings = userCtx.settings();
+    model.addAttribute("numNewMessages", settings.isShowNewMessagesInOverviewEnabled() ? messagesSummaryService.get(bodyId).getTotalMessages() : 0);
+    model.addAttribute("numNewReports", settings.isShowNewReportsInOverviewEnabled() ? reportService.getSummary(bodyId).getTotalReports() : 0);
+
     model.addAttribute("serverTime", Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond())));
-    model.addAttribute("userName", userService.getCurrentUserName());
     model.addAttribute("flightEvents", flightEventsService.getOverviewFlightEvents(bodyId));
     model.addAttribute("bodies", bodyService.getOverviewBodies(bodyId));
     model.addAttribute("summary", statisticsService.getCurrentUserSummary(bodyId));
+
     return "overview";
   }
 }

@@ -37,7 +37,7 @@
           th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
     </tr>
   </table>
-  <table th:with="onVacation=${@userService.isOnVacation()},r=${@bodyService.getResources(bodyId)}">
+  <table th:with="onVacation=${ctx.onVacation},r=${ctx.curBody.resources}">
     <tr>
       <th colspan="3" th:text="#{shipyard}">Shipyard</th>
     </tr>

@@ -22,7 +22,7 @@
       </tr>
       <tr>
         <td colspan="2">
-          <button th:disabled="${@userService.isOnVacation()}" th:text="#{abandon}">Abandon</button>
+          <button th:disabled="${ctx.onVacation}" th:text="#{abandon}">Abandon</button>
         </td>
       </tr>
     </table>

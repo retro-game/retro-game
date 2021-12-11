@@ -9,12 +9,12 @@
     <div>
       <div th:fragment="top-bar" id="top-bar">
         <div id="top-bar-bodies">
-          <img th:with="pair=${@bodyService.getBodyTypeAndImagePair(bodyId)}"
-               th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${pair.type},image=${pair.image})}">
-          <div th:with="bodiesBasicInfo=${@bodyService.getBodiesBasicInfo(bodyId)}">
+          <img
+              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${ctx.curBody.type},image=${ctx.curBody.image})}">
+          <div>
             <form id="top-bar-body-list">
               <select name="body">
-                <option th:each="info : ${bodiesBasicInfo}" th:with="c=${info.coordinates}" th:data-galaxy="${c.galaxy}"
+                <option th:each="info : ${ctx.bodies}" th:with="c=${info.coordinates}" th:data-galaxy="${c.galaxy}"
                         th:data-system="${c.system}" th:data-position="${c.position}" th:data-kind="${c.kind}"
                         th:value="${info.id}" th:text="|${info.name} [${c}]|"
                         th:selected="${info.id} == ${bodyId}"></option>
@@ -22,7 +22,7 @@
               <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
                      th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
             </form>
-            <div id="top-bar-body-pointers" th:with="pointers=${@bodyService.getBodiesPointers(bodyId)}">
+            <div id="top-bar-body-pointers" th:with="pointers=${ctx.curBodyPointers}">
               <form th:with="info=${pointers.previous}">
                 <input name="body" type="hidden" th:value="${info?.id}">
                 <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
@@ -45,7 +45,7 @@
           </div>
         </div>
         <div id="top-bar-resources"
-             th:with="r=${@bodyService.getResources(bodyId)},p=${@bodyService.getProduction(bodyId)},c=${@bodyService.getCapacity(bodyId)}"
+             th:with="r=${ctx.curBody.resources},p=${ctx.curBody.production},c=${ctx.curBody.capacity}"
              th:data-resources-metal="${r.metal}" th:data-resources-crystal="${r.crystal}"
              th:data-resources-deuterium="${r.deuterium}">
           <div data-tooltip data-tooltip-html

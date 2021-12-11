@@ -657,8 +657,10 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void handle(Event event) {
+    assert event.getKind() == EventKind.BUILDING_QUEUE;
+
     var bodyId = event.getParam();
-    var body = bodyRepository.getOne(bodyId);
+    var body = bodyRepository.getById(bodyId);
 
     eventRepository.delete(event);
 

@@ -39,7 +39,7 @@
            th:text="#{defense}">Defense</a>
       </li>
       <li>
-        <a th:with="c=${@bodyService.getBodyBasicInfo(bodyId).coordinates}"
+        <a th:with="c=${ctx.curBody.coordinates}"
            th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system})}" th:text="#{galaxy}">Galaxy</a>
       </li>
       <li>
@@ -61,7 +61,7 @@
         <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{ranking}">Ranking</a>
       </li>
       <li>
-        <a th:href="@{/statistics/summary(body=${bodyId},user=${@userService.currentId})}"
+        <a th:href="@{/statistics/summary(body=${bodyId},user=${ctx.id})}"
            th:text="#{statistics}">Statistics</a>
       </li>
       <li>

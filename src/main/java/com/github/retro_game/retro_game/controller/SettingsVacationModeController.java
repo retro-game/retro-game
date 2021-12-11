@@ -21,9 +21,9 @@ public class SettingsVacationModeController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
   public String vacationMode(@RequestParam(name = "body") long bodyId, Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
-    model.addAttribute("onVacation", userService.isOnVacation());
-    model.addAttribute("vacationUntil", userService.getVacationUntil());
+    model.addAttribute("ctx", ctx);
     model.addAttribute("canEnable", userService.canEnableVacationMode());
     model.addAttribute("canDisable", userService.canDisableVacationMode());
     return "settings-vacation-mode";

@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.dto.BuildingQueueErrorDto;
 import com.github.retro_game.retro_game.service.BuildingsService;
+import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,9 +22,11 @@ import java.util.function.Supplier;
 @Validated
 public class BuildingsController {
   private final BuildingsService buildingsService;
+  private final UserService userService;
 
-  public BuildingsController(BuildingsService buildingsService) {
+  public BuildingsController(BuildingsService buildingsService, UserService userService) {
     this.buildingsService = buildingsService;
+    this.userService = userService;
   }
 
   @GetMapping("/buildings")
@@ -33,6 +36,7 @@ public class BuildingsController {
                           @RequestParam(name = "error", required = false) BuildingQueueErrorDto error,
                           Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("error", error);
     model.addAttribute("pair", buildingsService.getBuildingsAndQueuePair(bodyId));
     return "buildings";

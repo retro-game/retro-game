@@ -7,7 +7,7 @@
 <body>
 <div layout:fragment="content">
   <div th:replace="galaxy-navigation :: galaxy-navigation"></div>
-  <table th:with="onVacation=${@userService.isOnVacation()}">
+  <table th:with="onVacation=${ctx.onVacation}">
     <tr>
       <th width="30" th:text="#{slot}">Slot</th>
       <th width="30" th:text="#{planet}">Planet</th>
@@ -149,7 +149,7 @@
   </table>
   <table id="reports">
   </table>
-  <input id="num-probes" type="hidden" th:value="${numProbes}">
+  <input id="num-probes" type="hidden" th:value="${ctx.settings.numProbes}">
   <script th:src="@{/static/js/galaxy.js?{v}(v=${version})}"></script>
 </div>
 </body>

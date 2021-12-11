@@ -2,11 +2,10 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.SetProductionFactorsForm;
-import com.github.retro_game.retro_game.dto.ProductionDto;
 import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
 import com.github.retro_game.retro_game.dto.ProductionItemsDto;
-import com.github.retro_game.retro_game.dto.ResourcesDto;
 import com.github.retro_game.retro_game.service.BodyService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +20,11 @@ import java.util.Date;
 @Controller
 public class ResourcesController {
   private final BodyService bodyService;
+  private final UserService userService;
 
-  public ResourcesController(BodyService bodyService) {
+  public ResourcesController(BodyService bodyService, UserService userService) {
     this.bodyService = bodyService;
+    this.userService = userService;
   }
 
   @GetMapping("/resources")
@@ -32,7 +33,10 @@ public class ResourcesController {
   public String resources(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
 
-    ProductionDto production = bodyService.getProduction(bodyId);
+    var ctx = userService.getCurrentUserContext(bodyId);
+    model.addAttribute("ctx", ctx);
+
+    var production = ctx.curBody().production();
     model.addAttribute("production", production);
 
     ProductionItemsDto items = bodyService.getProductionItems(bodyId);
@@ -70,8 +74,8 @@ public class ResourcesController {
 
     // Capacity.
 
-    ResourcesDto resources = bodyService.getResources(bodyId);
-    ResourcesDto capacity = bodyService.getCapacity(bodyId);
+    var resources = ctx.curBody().resources();
+    var capacity = ctx.curBody().capacity();
     model.addAttribute("capacity", capacity);
 
     long now = Instant.now().getEpochSecond();
@@ -98,9 +102,7 @@ public class ResourcesController {
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   @Activity(bodies = "#form.body")
   public String setFactors(@Valid SetProductionFactorsForm form) {
-    ProductionFactorsDto factors = new ProductionFactorsDto(form.getMetalMineFactor(), form.getCrystalMineFactor(),
-        form.getDeuteriumSynthesizerFactor(), form.getSolarPlantFactor(), form.getFusionReactorFactor(),
-        form.getSolarSatellitesFactor());
+    ProductionFactorsDto factors = new ProductionFactorsDto(form.getMetalMineFactor(), form.getCrystalMineFactor(), form.getDeuteriumSynthesizerFactor(), form.getSolarPlantFactor(), form.getFusionReactorFactor(), form.getSolarSatellitesFactor());
     bodyService.setProductionFactors(form.getBody(), factors);
     return "redirect:/resources?body=" + form.getBody();
   }

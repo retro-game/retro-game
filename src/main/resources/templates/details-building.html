@@ -54,7 +54,7 @@
           <form th:action="@{/buildings/destroy}" method="post">
             <input name="body" type="hidden" th:value="${bodyId}">
             <input name="kind" type="hidden" th:value="${kind}">
-            <button th:disabled="${!details.canDestroyNow || @userService.isOnVacation()}" th:text="#{destroy}">
+            <button th:disabled="${!details.canDestroyNow || ctx.onVacation}" th:text="#{destroy}">
               Destroy
             </button>
           </form>

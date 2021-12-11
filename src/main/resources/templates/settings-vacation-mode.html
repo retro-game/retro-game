@@ -10,7 +10,7 @@
     <tr>
       <th colspan="2" th:text="#{vacationMode}">Vacation mode</th>
     </tr>
-    <tr th:unless="${onVacation}">
+    <tr th:unless="${ctx.onVacation}">
       <td colspan="2">
         <p th:unless="${canEnable}" th:text="#{vacationModeCannotBeEnabled}"></p>
         <form th:action="@{/settings/vacation-mode/enable}" method="post">
@@ -19,10 +19,10 @@
         </form>
       </td>
     </tr>
-    <th:block th:if="${onVacation}">
+    <th:block th:if="${ctx.onVacation}">
       <tr>
         <td th:text="#{vacationAtLeastUntil}">Vacation mode at least until</td>
-        <td th:text="${#dates.format(vacationUntil, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        <td th:text="${#dates.format(ctx.vacationUntil, 'yyyy-MM-dd HH:mm:ss')}"></td>
       </tr>
       <tr>
         <td colspan="2">

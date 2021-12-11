@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.AllianceService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,11 @@ import java.util.List;
 @Validated
 public class AllianceController {
   private final AllianceService allianceService;
+  private final UserService userService;
 
-  public AllianceController(AllianceService allianceService) {
+  public AllianceController(AllianceService allianceService, UserService userService) {
     this.allianceService = allianceService;
+    this.userService = userService;
   }
 
   @GetMapping("/alliance")
@@ -31,6 +34,7 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String alliance(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
 
     // Check whether the user already has an alliance.
     AllianceDto alliance = allianceService.getCurrentUserAlliance(bodyId);
@@ -67,6 +71,7 @@ public class AllianceController {
                      @RequestParam(name = "alliance") long allianceId,
                      Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     AllianceDto alliance = allianceService.getById(bodyId, allianceId);
     model.addAttribute("alliance", alliance);
     return "alliance-view";
@@ -79,6 +84,7 @@ public class AllianceController {
                         @RequestParam(name = "alliance") long allianceId,
                         Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     List<AllianceMemberDto> members = allianceService.getMembers(bodyId, allianceId);
     model.addAttribute("members", members);
     return "alliance-members";
@@ -91,6 +97,7 @@ public class AllianceController {
                       @RequestParam(name = "alliance") long allianceId,
                       Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     return "alliance-leave";
   }
@@ -113,6 +120,7 @@ public class AllianceController {
                       @RequestParam(name = "alliance") long allianceId,
                       Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     String applicationText = allianceService.getText(bodyId, allianceId, AllianceTextKindDto.APPLICATION);
     model.addAttribute("applicationText", applicationText);
@@ -144,6 +152,7 @@ public class AllianceController {
                              @RequestParam(name = "alliance") long allianceId,
                              Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     AllianceApplicationListDto list = allianceService.getApplications(bodyId, allianceId);
     model.addAttribute("list", list);
     return "alliance-applications";
@@ -176,6 +185,7 @@ public class AllianceController {
                        @RequestParam(name = "alliance") long allianceId,
                        Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     return "alliance-manage";
   }
@@ -188,6 +198,7 @@ public class AllianceController {
                               Model model) {
     // FIXME: Kick action should be visible only for users with corresponding privileges.
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     List<AllianceMemberDto> members = allianceService.getMembers(bodyId, allianceId);
     model.addAttribute("members", members);
@@ -211,6 +222,7 @@ public class AllianceController {
                            @RequestParam(name = "alliance") long allianceId,
                            Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     AllianceDto alliance = allianceService.getById(bodyId, allianceId);
     model.addAttribute("url", alliance.getLogo());
@@ -235,6 +247,7 @@ public class AllianceController {
                            @RequestParam @NotNull AllianceTextKindDto kind,
                            Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     model.addAttribute("kind", kind);
     String text = allianceService.getText(bodyId, allianceId, kind);
@@ -260,6 +273,7 @@ public class AllianceController {
                               @RequestParam(name = "alliance") long allianceId,
                               Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     return "alliance-manage-disband";
   }

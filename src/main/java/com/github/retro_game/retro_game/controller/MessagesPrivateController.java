@@ -9,6 +9,7 @@ import com.github.retro_game.retro_game.dto.PrivateMessageDto;
 import com.github.retro_game.retro_game.dto.PrivateMessageKindDto;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.PrivateMessageService;
+import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
 import org.hibernate.validator.constraints.Range;
@@ -28,11 +29,13 @@ import java.util.List;
 public class MessagesPrivateController {
   private final MessagesSummaryService messagesSummaryService;
   private final PrivateMessageService privateMessageService;
+  private final UserService userService;
 
   public MessagesPrivateController(MessagesSummaryService messagesSummaryService,
-                                   PrivateMessageService privateMessageService) {
+                                   PrivateMessageService privateMessageService, UserService userService) {
     this.messagesSummaryService = messagesSummaryService;
     this.privateMessageService = privateMessageService;
+    this.userService = userService;
   }
 
   @GetMapping("/messages/private")
@@ -44,10 +47,12 @@ public class MessagesPrivateController {
                          @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Range(min = 1, max = 1000) int size,
                          Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<PrivateMessageDto> messages = privateMessageService.getMessages(bodyId, kind, correspondentId, pageRequest);
 
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", messagesSummaryService.get(bodyId));
     model.addAttribute("kind", kind);
     model.addAttribute("page", page);
@@ -63,7 +68,9 @@ public class MessagesPrivateController {
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "recipient") long recipientId,
                      Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("recipientId", recipientId);
     return "messages-private-send";
   }

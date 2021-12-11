@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.StatisticsDistributionDto;
 import com.github.retro_game.retro_game.dto.StatisticsKindDto;
 import com.github.retro_game.retro_game.dto.StatisticsPeriodDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
+import com.github.retro_game.retro_game.service.UserService;
 import io.vavr.Tuple2;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -17,15 +18,16 @@ import reactor.util.annotation.NonNull;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 
 @Controller
 @Validated
 public class StatisticsController {
   private final StatisticsService statisticsService;
+  private final UserService userService;
 
-  public StatisticsController(StatisticsService statisticsService) {
+  public StatisticsController(StatisticsService statisticsService, UserService userService) {
     this.statisticsService = statisticsService;
+    this.userService = userService;
   }
 
   @GetMapping("/statistics/summary")
@@ -35,6 +37,7 @@ public class StatisticsController {
                         @RequestParam(name = "user") long userId,
                         Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("userId", userId);
     model.addAttribute("summary", statisticsService.getSummary(bodyId, userId));
     return "statistics-summary";
@@ -48,8 +51,9 @@ public class StatisticsController {
                                 @RequestParam @NotNull StatisticsKindDto kind,
                                 @RequestParam @NonNull StatisticsPeriodDto period,
                                 Model model) {
-    List<Tuple2<Date, PointsAndRankPairDto>> changes = statisticsService.getDistinctChanges(bodyId, userId, kind,
-        period);
+    var ctx = userService.getCurrentUserContext(bodyId);
+
+    var changes = statisticsService.getDistinctChanges(bodyId, userId, kind, period);
     StringBuilder builder = new StringBuilder();
     boolean first = true;
     for (Tuple2<Date, PointsAndRankPairDto> change : changes) {
@@ -65,6 +69,7 @@ public class StatisticsController {
     }
 
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("userId", userId);
     model.addAttribute("kind", kind);
     model.addAttribute("period", period);
@@ -80,8 +85,9 @@ public class StatisticsController {
                                     @RequestParam(name = "user") long userId,
                                     @RequestParam @NonNull StatisticsPeriodDto period,
                                     Model model) {
-    List<Tuple2<Date, StatisticsDistributionDto>> changes = statisticsService.getDistributionChanges(bodyId, userId,
-        period);
+    var ctx = userService.getCurrentUserContext(bodyId);
+
+    var changes = statisticsService.getDistributionChanges(bodyId, userId, period);
     StringBuilder builder = new StringBuilder();
     boolean first = true;
     for (Tuple2<Date, StatisticsDistributionDto> change : changes) {
@@ -104,6 +110,7 @@ public class StatisticsController {
     }
 
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("userId", userId);
     model.addAttribute("period", period);
     model.addAttribute("changes", builder.toString());

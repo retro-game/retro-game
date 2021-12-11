@@ -43,10 +43,11 @@ public class GalaxyController {
     model.addAttribute("system", system);
     model.addAttribute("position", position);
     model.addAttribute("kind", kind);
+    var ctx = userService.getCurrentUserContext(bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("time", Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond())));
     model.addAttribute("slots", galaxyService.getSlots(bodyId, galaxy, system));
     model.addAttribute("systemWithinRange", phalanxService.systemWithinRange(bodyId, galaxy, system));
-    model.addAttribute("numProbes", userService.getCurrentUserSettings().getNumProbes());
     return "galaxy";
   }
 }

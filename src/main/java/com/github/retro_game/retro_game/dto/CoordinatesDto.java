@@ -15,6 +15,18 @@ public class CoordinatesDto implements Comparable<CoordinatesDto>, Serializable 
     this.kind = kind;
   }
 
+  public boolean isPlanet() {
+    return kind == CoordinatesKindDto.PLANET;
+  }
+
+  public boolean isMoon() {
+    return kind == CoordinatesKindDto.MOON;
+  }
+
+  public boolean isDebrisField() {
+    return kind == CoordinatesKindDto.DEBRIS_FIELD;
+  }
+
   public int getGalaxy() {
     return galaxy;
   }

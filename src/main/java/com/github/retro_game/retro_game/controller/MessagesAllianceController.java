@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.controller.form.SendAllianceMessageForm;
 import com.github.retro_game.retro_game.dto.AllianceMessageDto;
 import com.github.retro_game.retro_game.service.AllianceMessagesService;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,11 +25,13 @@ import java.util.List;
 public class MessagesAllianceController {
   private final AllianceMessagesService allianceMessagesService;
   private final MessagesSummaryService messagesSummaryService;
+  private final UserService userService;
 
   public MessagesAllianceController(AllianceMessagesService allianceMessagesService,
-                                    MessagesSummaryService messagesSummaryService) {
+                                    MessagesSummaryService messagesSummaryService, UserService userService) {
     this.allianceMessagesService = allianceMessagesService;
     this.messagesSummaryService = messagesSummaryService;
+    this.userService = userService;
   }
 
   @GetMapping("/messages/alliance")
@@ -38,10 +41,12 @@ public class MessagesAllianceController {
                          @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                          @RequestParam(required = false, defaultValue = "10") @Range(min = 1, max = 1000) int size,
                          Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<AllianceMessageDto> messages = allianceMessagesService.getCurrentUserAllianceMessages(bodyId, pageRequest);
 
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("summary", messagesSummaryService.get(bodyId));
     model.addAttribute("page", page);
     model.addAttribute("size", size);
@@ -56,7 +61,9 @@ public class MessagesAllianceController {
   public String send(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "alliance") long allianceId,
                      Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("allianceId", allianceId);
     return "messages-alliance-send";
   }

@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.controller.form.BuildUnitsForm;
 import com.github.retro_game.retro_game.dto.ShipyardQueueErrorDto;
 import com.github.retro_game.retro_game.dto.UnitTypeDto;
 import com.github.retro_game.retro_game.service.ShipyardService;
+import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +20,11 @@ import javax.validation.Valid;
 @Controller
 public class ShipyardController {
   private final ShipyardService shipyardService;
+  private final UserService userService;
 
-  public ShipyardController(ShipyardService shipyardService) {
+  public ShipyardController(ShipyardService shipyardService, UserService userService) {
     this.shipyardService = shipyardService;
+    this.userService = userService;
   }
 
   @GetMapping("/shipyard")
@@ -31,7 +34,9 @@ public class ShipyardController {
                          @RequestParam(required = false) UnitTypeDto type,
                          @RequestParam(name = "error", required = false) ShipyardQueueErrorDto error,
                          Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("type", type);
     model.addAttribute("error", error);
     model.addAttribute("pair", shipyardService.getUnitsAndQueuePair(bodyId, type));

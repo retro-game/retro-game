@@ -45,6 +45,7 @@ public class SettingsController {
   @Activity(bodies = "#bodyId")
   public String settings(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("languages", languages);
     model.addAttribute("skins", skins);
     return "settings";

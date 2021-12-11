@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.InviteToPartyForm;
 import com.github.retro_game.retro_game.service.PartyService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,9 +16,11 @@ import javax.validation.Valid;
 @Controller
 public class PartyController {
   private final PartyService partyService;
+  private final UserService userService;
 
-  public PartyController(PartyService partyService) {
+  public PartyController(PartyService partyService, UserService userService) {
     this.partyService = partyService;
+    this.userService = userService;
   }
 
   @GetMapping("/party")
@@ -26,6 +29,7 @@ public class PartyController {
   public String party(@RequestParam(name = "body") long bodyId, @RequestParam(name = "party") long partyId,
                       Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("party", partyService.get(bodyId, partyId));
     return "party";
   }

@@ -1,10 +1,8 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
-import com.github.retro_game.retro_game.dto.BodyTypeAndImagePairDto;
-import com.github.retro_game.retro_game.dto.BodyTypeDto;
-import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -18,25 +16,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Validated
 public class BodySettingsChangeImageController {
   private final BodyService bodyService;
+  private final UserService userService;
 
-  public BodySettingsChangeImageController(BodyService bodyService) {
+  public BodySettingsChangeImageController(BodyService bodyService, UserService userService) {
     this.bodyService = bodyService;
+    this.userService = userService;
   }
 
   @GetMapping("/body-settings/change-image")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
   public String changeImage(@RequestParam(name = "body") long bodyId, Model model) {
-    BodyTypeAndImagePairDto pair = bodyService.getBodyTypeAndImagePair(bodyId);
-    BodyTypeDto type = pair.getType();
-    int image = pair.getImage();
-
-    boolean isPlanet = bodyService.getBodyBasicInfo(bodyId).getCoordinates().getKind() == CoordinatesKindDto.PLANET;
-
     model.addAttribute("bodyId", bodyId);
-    model.addAttribute("type", type);
-    model.addAttribute("image", image);
-    model.addAttribute("isPlanet", isPlanet);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     return "body-settings-change-image";
   }
 

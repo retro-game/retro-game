@@ -15,14 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,6 +39,8 @@ import java.util.stream.Collectors;
 @Service("bodyService")
 class BodyServiceImpl implements BodyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(BodyServiceImpl.class);
+  private final PlatformTransactionManager platformTransactionManager;
+  private final EntityManager entityManager;
   private final int homeworldDiameter;
   private final int productionSpeed;
   private final int metalBaseProduction;
@@ -61,7 +68,9 @@ class BodyServiceImpl implements BodyServiceInternal {
   private ShipyardServiceInternal shipyardServiceInternal;
   private UserServiceInternal userServiceInternal;
 
-  public BodyServiceImpl(@Value("${retro-game.homeworld-diameter}") int homeworldDiameter,
+  public BodyServiceImpl(PlatformTransactionManager platformTransactionManager,
+                         EntityManager entityManager,
+                         @Value("${retro-game.homeworld-diameter}") int homeworldDiameter,
                          @Value("${retro-game.production-speed}") int productionSpeed,
                          @Value("${retro-game.metal-base-production}") int metalBaseProduction,
                          @Value("${retro-game.crystal-base-production}") int crystalBaseProduction,
@@ -83,6 +92,8 @@ class BodyServiceImpl implements BodyServiceInternal {
                          UserInfoCache userInfoCache,
                          BodyRepository bodyRepository,
                          UserRepository userRepository) {
+    this.platformTransactionManager = platformTransactionManager;
+    this.entityManager = entityManager;
     this.homeworldDiameter = homeworldDiameter;
     this.productionSpeed = productionSpeed;
     this.metalBaseProduction = metalBaseProduction;
@@ -167,6 +178,48 @@ class BodyServiceImpl implements BodyServiceInternal {
         "retro-game.fields-per-terraformer-level must be greater than 1");
     Assert.isTrue(fieldsPerLunarBaseLevel > 1,
         "retro-game.fields-per-lunar-base-level must be greater than 1");
+  }
+
+  @Override
+  public BodyContextDto getBodyContext(long bodyId) {
+    var txDef = new DefaultTransactionDefinition();
+    txDef.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
+    var txStatus = platformTransactionManager.getTransaction(txDef);
+
+    BodyContextDto ctx = null;
+    try {
+      var body = bodyRepository.getById(bodyId);
+
+      var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+      updateResourcesAndShipyard(body, now);
+
+      var name = body.getName();
+      var coordinates = Converter.convert(body.getCoordinates());
+      var type = Converter.convert(body.getType());
+      var image = body.getImage();
+      var resources = Converter.convert(body.getResources());
+      var production = getProduction(body);
+      var capacity = getCapacity(body);
+      ctx = new BodyContextDto(bodyId, name, coordinates, type, image, resources, production, capacity);
+
+      entityManager.persist(body);
+      platformTransactionManager.commit(txStatus);
+    } catch (TransientDataAccessException e) {
+      logger.warn("Updating body resources failed due to concurrent access: bodyId={}", bodyId);
+    }
+
+    return ctx;
+  }
+
+  private ResourcesDto getCapacity(Body body) {
+    double metal = calcCapacity(body.getBuildingLevel(BuildingKind.METAL_STORAGE));
+    double crystal = calcCapacity(body.getBuildingLevel(BuildingKind.CRYSTAL_STORAGE));
+    double deuterium = calcCapacity(body.getBuildingLevel(BuildingKind.DEUTERIUM_TANK));
+    return new ResourcesDto(metal, crystal, deuterium);
+  }
+
+  private double calcCapacity(int level) {
+    return Math.ceil(1 + Math.pow(1.6, level)) * 50000 * storageCapacityMultiplier;
   }
 
   @Override
@@ -368,11 +421,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  public BodyInfoDto getBodyBasicInfo(long bodyId) {
-    return bodyInfoCache.get(bodyId);
-  }
-
-  @Override
   public List<BodyInfoDto> getBodiesBasicInfo(long bodyId) {
     var userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -385,12 +433,6 @@ class BodyServiceImpl implements BodyServiceInternal {
     sort(bodies, keyExtractors, user);
 
     return bodies;
-  }
-
-  @Override
-  public BodyTypeAndImagePairDto getBodyTypeAndImagePair(long bodyId) {
-    Body body = bodyRepository.findById(bodyId).orElseThrow(BodyDoesNotExistException::new);
-    return new BodyTypeAndImagePairDto(Converter.convert(body.getType()), body.getImage());
   }
 
   @Override
@@ -713,13 +755,6 @@ class BodyServiceImpl implements BodyServiceInternal {
     updateResources(body, at);
   }
 
-  @Override
-  @Transactional
-  public ResourcesDto getResources(long bodyId) {
-    Body body = getUpdated(bodyId);
-    return Converter.convert(body.getResources());
-  }
-
   private void updateResources(Body body, Date at) {
     Date updatedAt = body.getUpdatedAt();
 
@@ -764,13 +799,6 @@ class BodyServiceImpl implements BodyServiceInternal {
     }
 
     body.setUpdatedAt(at);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public ProductionDto getProduction(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
-    return getProduction(body);
   }
 
   @Override
@@ -899,24 +927,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   public void setProductionFactors(long bodyId, ProductionFactorsDto factors) {
     Body body = getUpdated(bodyId);
     body.setProductionFactors(Converter.convert(factors));
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public ResourcesDto getCapacity(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
-    return getCapacity(body);
-  }
-
-  private ResourcesDto getCapacity(Body body) {
-    double metal = getCapacity(body.getBuildingLevel(BuildingKind.METAL_STORAGE));
-    double crystal = getCapacity(body.getBuildingLevel(BuildingKind.CRYSTAL_STORAGE));
-    double deuterium = getCapacity(body.getBuildingLevel(BuildingKind.DEUTERIUM_TANK));
-    return new ResourcesDto(metal, crystal, deuterium);
-  }
-
-  private double getCapacity(int level) {
-    return Math.ceil(1 + Math.pow(1.6, level)) * 50000 * storageCapacityMultiplier;
   }
 
   @Override

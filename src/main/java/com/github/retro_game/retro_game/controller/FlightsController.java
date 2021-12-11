@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.FlightService;
 import com.github.retro_game.retro_game.service.PartyService;
+import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,11 +25,14 @@ public class FlightsController {
   private final BodyService bodyService;
   private final FlightService flightService;
   private final PartyService partyService;
+  private final UserService userService;
 
-  public FlightsController(BodyService bodyService, FlightService flightService, PartyService partyService) {
+  public FlightsController(BodyService bodyService, FlightService flightService, PartyService partyService,
+                           UserService userService) {
     this.bodyService = bodyService;
     this.flightService = flightService;
     this.partyService = partyService;
+    this.userService = userService;
   }
 
   private String perform(long bodyId, String page, Supplier<Integer> action) {
@@ -100,9 +104,11 @@ public class FlightsController {
   public String flights(@RequestParam(name = "body") long bodyId,
                         @RequestParam(required = false) FlightErrorDto error,
                         Model model) {
-    List<FlightDto> flights = flightService.getFlights(bodyId);
+    var ctx = userService.getCurrentUserContext(bodyId);
+    var flights = flightService.getFlights(bodyId);
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("error", error);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("flights", flights);
     model.addAttribute("occupiedSlots", flights.size());
     model.addAttribute("maxSlots", flightService.getMaxFlightSlots(bodyId));
@@ -121,6 +127,7 @@ public class FlightsController {
                      @RequestParam(required = false) Map<String, String> params,
                      @RequestParam(required = false) FlightErrorDto error,
                      Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     List<BodyInfoDto> bodies = bodyService.getBodiesBasicInfo(bodyId);
 
     Optional<BodyInfoDto> curBodyOptional = bodies.stream().filter(i -> i.getId() == bodyId).findFirst();
@@ -141,6 +148,7 @@ public class FlightsController {
     model.addAttribute("mission", mission);
     model.addAttribute("params", params);
     model.addAttribute("error", error);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("occupiedSlots", flightService.getOccupiedFlightSlots(bodyId));
     model.addAttribute("maxSlots", flightService.getMaxFlightSlots(bodyId));
     model.addAttribute("units", flightService.getFlyableUnits(bodyId));
@@ -182,6 +190,7 @@ public class FlightsController {
     model.addAttribute("position", position);
     model.addAttribute("kind", kind);
     model.addAttribute("error", error);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     return "flights-send-missiles";
   }
 

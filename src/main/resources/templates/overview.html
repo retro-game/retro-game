@@ -10,7 +10,7 @@
     <tr>
       <th colspan="4">
         <a th:href="@{/body-settings(body=${bodyId})}" th:title="#{bodySettings}" th:text="${body.name}">Homeworld</a>
-        (<span th:text="${userName}">Gaius</span>)
+        (<span th:text="${ctx.name}">Gaius</span>)
       </th>
     </tr>
     <tr th:if="${numNewMessages > 0}">

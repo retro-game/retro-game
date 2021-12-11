@@ -4,6 +4,7 @@ import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.dto.TechnologyQueueErrorDto;
 import com.github.retro_game.retro_game.service.TechnologyService;
+import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,9 +22,11 @@ import java.util.function.Supplier;
 @Validated
 public class TechnologiesController {
   private final TechnologyService technologyService;
+  private final UserService userService;
 
-  public TechnologiesController(TechnologyService technologyService) {
+  public TechnologiesController(TechnologyService technologyService, UserService userService) {
     this.technologyService = technologyService;
+    this.userService = userService;
   }
 
   @GetMapping("/technologies")
@@ -32,7 +35,9 @@ public class TechnologiesController {
   public String technologies(@RequestParam(name = "body") long bodyId,
                              @RequestParam(name = "error", required = false) TechnologyQueueErrorDto error,
                              Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("error", error);
     model.addAttribute("pair", technologyService.getTechnologiesAndQueuePair(bodyId));
     return "technologies";

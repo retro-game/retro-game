@@ -33,7 +33,7 @@ public class RankingController {
       Model model
   ) {
     model.addAttribute("bodyId", bodyId);
-    model.addAttribute("currentUserId", userService.getCurrentId());
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("ranking", statisticsService.getLatestRanking(bodyId, kind));
     return "ranking";
   }

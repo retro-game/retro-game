@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.BodyService;
+import com.github.retro_game.retro_game.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +19,11 @@ import javax.validation.constraints.Size;
 @Validated
 public class BodySettingsRenameController {
   private final BodyService bodyService;
+  private final UserService userService;
 
-  public BodySettingsRenameController(BodyService bodyService) {
+  public BodySettingsRenameController(BodyService bodyService, UserService userService) {
     this.bodyService = bodyService;
+    this.userService = userService;
   }
 
   @GetMapping("/body-settings/rename")
@@ -28,6 +31,7 @@ public class BodySettingsRenameController {
   @Activity(bodies = "#bodyId")
   public String rename(@RequestParam(name = "body") long bodyId, Model model) {
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     return "body-settings-rename";
   }
 
