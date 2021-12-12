@@ -185,14 +185,17 @@ public class FlightsController {
                              @RequestParam(required = false) FlightErrorDto error,
                              @RequestParam(required = false) Integer num,
                              Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
+    var maxMissiles = ctx.curBody().units().get(UnitKindDto.INTERPLANETARY_MISSILE);
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);
     model.addAttribute("position", position);
     model.addAttribute("kind", kind);
     model.addAttribute("numMissiles", num);
+    model.addAttribute("maxMissiles", maxMissiles);
     model.addAttribute("error", error);
-    model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     return "flights-send-missiles";
   }
 

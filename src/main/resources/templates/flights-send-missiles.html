@@ -42,11 +42,20 @@
       </tr>
       <tr>
         <td>
-          <label for="numMissiles" th:text="#{numMissiles}"></label>
+          <label for="numMissiles">
+            <span th:text="#{numMissiles}">Num missiles</span>
+            (<span th:text="${#numbers.formatInteger(maxMissiles, 1, 'DEFAULT')}"></span>)
+          </label>
         </td>
         <td>
           <input id="numMissiles" name="numMissiles" type="number" th:value="${numMissiles != null ? numMissiles : 0}"
                  min="1" required>
+          <button data-set th:data-set-for="numMissiles" th:data-set-value="${maxMissiles}" th:text="#{max}">
+            Max
+          </button>
+          <button data-set th:data-set-for="numMissiles" data-set-value="" th:text="#{reset}">
+            Reset
+          </button>
         </td>
       </tr>
       <tr>
