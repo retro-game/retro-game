@@ -513,6 +513,15 @@ select create_statistics('defense');
 
 drop function create_statistics(kind text);
 
+-- Records
+
+create table records (
+    key text primary key,
+    value bigint not null,
+    at timestamptz not null,
+    holders bigint[] not null
+);
+
 -- Pranger
 
 create table pranger (

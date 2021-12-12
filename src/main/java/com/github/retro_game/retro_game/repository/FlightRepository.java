@@ -25,6 +25,8 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
 
   List<Flight> findByTargetBody(Body body);
 
+  List<Flight> findByStartUser(User user);
+
   @Query("SELECT f FROM Flight f WHERE f.targetBody = ?1 AND ?2 BETWEEN f.arrivalAt AND f.holdUntil ORDER BY f.id")
   List<Flight> findHoldingFlights(Body body, Date at, Pageable pageable);
 }

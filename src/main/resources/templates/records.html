@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{records}">Records</title>
+</head>
+<body>
+<th:block th:fragment="record(name, r)">
+  <tr>
+    <td th:text="${name}"></td>
+    <th:block th:unless="${r}">
+      <td>-</td>
+      <td>-</td>
+    </th:block>
+    <th:block th:if="${r}">
+      <td th:class="${r.isNew ? 'record-new' : ''}" th:text="${#numbers.formatInteger(r.value, 1, 'DEFAULT')}"></td>
+      <td th:text="${#strings.listJoin(r.holders, ', ')}"></td>
+    </th:block>
+  </tr>
+</th:block>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th colspan="3">
+        <div class="space-between">
+          <span th:text="#{records}">Records</span>
+          <a th:href="@{/records/share(body=${bodyId})}" th:text="#{shareEmpire}">Share empire</a>
+        </div>
+      </th>
+    </tr>
+    <tr>
+      <th colspan="3" th:text="#{buildings}">Buildings</th>
+    </tr>
+    <th:block th:each="kind : ${T(com.github.retro_game.retro_game.dto.BuildingKindDto).values()}">
+      <th:block th:replace=":: record(#{${'items.' + kind + '.name'}}, ${records.get('BUILDING_' + kind)})"></th:block>
+    </th:block>
+    <tr>
+      <th colspan="3" th:text="#{technologies}">Technologies</th>
+    </tr>
+    <th:block th:each="kind : ${T(com.github.retro_game.retro_game.dto.TechnologyKindDto).values()}">
+      <th:block th:replace=":: record(#{${'items.' + kind + '.name'}}, ${records.get('TECHNOLOGY_' + kind)})"></th:block>
+    </th:block>
+    <tr>
+      <th colspan="3" th:text="#{units}">Units</th>
+    </tr>
+    <th:block th:each="kind : ${T(com.github.retro_game.retro_game.dto.UnitKindDto).values()}">
+      <th:block th:replace=":: record(#{${'items.' + kind + '.name'}}, ${records.get('UNIT_' + kind)})"></th:block>
+    </th:block>
+    <tr>
+      <th colspan="3" th:text="#{production}">Production</th>
+    </tr>
+    <th:block th:replace=":: record(#{metal}, ${records.get('PRODUCTION_METAL')})"></th:block>
+    <th:block th:replace=":: record(#{crystal}, ${records.get('PRODUCTION_CRYSTAL')})"></th:block>
+    <th:block th:replace=":: record(#{deuterium}, ${records.get('PRODUCTION_DEUTERIUM')})"></th:block>
+    <tr>
+      <th colspan="3" th:text="#{other}">Other</th>
+    </tr>
+    <th:block th:replace=":: record(#{numberOfPlanets}, ${records.get('NUM_PLANETS')})"></th:block>
+    <th:block th:replace=":: record(#{numberOfMoons}, ${records.get('NUM_MOONS')})"></th:block>
+    <th:block th:replace=":: record(#{planetDiameter}, ${records.get('PLANET_DIAMETER')})"></th:block>
+    <th:block th:replace=":: record(#{moonDiameter}, ${records.get('MOON_DIAMETER')})"></th:block>
+  </table>
+</div>
+</body>
+</html>
