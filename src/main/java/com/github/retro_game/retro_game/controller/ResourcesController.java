@@ -47,9 +47,9 @@ public class ResourcesController {
 
     // Economy.
 
-    double metal = production.getMetalProduction();
-    double crystal = production.getCrystalProduction();
-    double deuterium = production.getDeuteriumProduction();
+    double metal = production.metalProduction();
+    double crystal = production.crystalProduction();
+    double deuterium = production.deuteriumProduction();
     double sum = metal + crystal + deuterium;
 
     model.addAttribute("metalHourly", metal);

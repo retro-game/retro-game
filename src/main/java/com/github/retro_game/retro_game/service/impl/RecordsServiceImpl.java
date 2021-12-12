@@ -3,8 +3,8 @@ package com.github.retro_game.retro_game.service.impl;
 import com.github.retro_game.retro_game.cache.UserInfoCache;
 import com.github.retro_game.retro_game.dto.RecordDto;
 import com.github.retro_game.retro_game.dto.ResourcesDto;
-import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.entity.Record;
+import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.FlightRepository;
 import com.github.retro_game.retro_game.repository.RecordRepository;
@@ -118,7 +118,7 @@ public class RecordsServiceImpl implements RecordsService {
     if (production) {
       var prod = bodies.values().stream()
           .map(b -> bodyServiceInternal.getProduction(b))
-          .map(p -> new ResourcesDto(p.getMetalProduction(), p.getCrystalProduction(), p.getDeuteriumProduction()))
+          .map(p -> new ResourcesDto(p.metalProduction(), p.crystalProduction(), p.deuteriumProduction()))
           .reduce(
               new ResourcesDto(0, 0, 0),
               (lhs, rhs) -> new ResourcesDto(

@@ -123,7 +123,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     Body body = bodyServiceInternal.getUpdated(bodyId);
     User user = body.getUser();
     Resources resources = body.getResources();
-    final int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+    final int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
 
     State state = new State(body, null);
 
@@ -326,7 +326,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
-        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Constructing building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
@@ -392,7 +392,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
-        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Destroying building failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
@@ -479,7 +479,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(secondKind, secondLevel);
       if (requiredEnergy > 0) {
-        var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        var totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Moving down entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
               bodyId, sequenceNumber);
@@ -623,7 +623,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
         if (requiredEnergy > 0) {
-          var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+          var totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
           if (requiredEnergy > totalEnergy) {
             logger.info("Cancelling entry in building queue failed, not enough energy: bodyId={} sequenceNumber={}",
                 bodyId, sequenceNumber);
@@ -692,7 +692,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
     // Handle subsequent entries.
 
-    var totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+    var totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
     var usedFields = bodyServiceInternal.getUsedFields(body);
     var maxFields = bodyServiceInternal.getMaxFields(body);
 

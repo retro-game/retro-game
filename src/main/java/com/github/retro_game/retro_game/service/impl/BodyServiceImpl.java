@@ -559,12 +559,12 @@ class BodyServiceImpl implements BodyServiceInternal {
 
           ProductionDto production = getProduction(body);
 
-          int availableEnergy = production.getAvailableEnergy();
-          int totalEnergy = production.getTotalEnergy();
+          int availableEnergy = production.availableEnergy();
+          int totalEnergy = production.totalEnergy();
 
-          double m = production.getMetalProduction();
-          double c = production.getCrystalProduction();
-          double d = production.getDeuteriumProduction();
+          double m = production.metalProduction();
+          double c = production.crystalProduction();
+          double d = production.deuteriumProduction();
 
           ResourcesDto hourly = new ResourcesDto(m, c, d);
           long hourlyTotal = (long) (m + c + d);
@@ -772,21 +772,21 @@ class BodyServiceImpl implements BodyServiceInternal {
       // Metal.
       double metal = resources.getMetal();
       double metalCap = Math.max(0.0, capacity.getMetal() - metal);
-      double deltaMetal = Math.min(metalCap, production.getMetalProduction() / 3600.0 * seconds);
+      double deltaMetal = Math.min(metalCap, production.metalProduction() / 3600.0 * seconds);
       assert deltaMetal >= 0.0;
       metal += deltaMetal;
 
       // Crystal.
       double crystal = resources.getCrystal();
       double crystalCap = Math.max(0.0, capacity.getCrystal() - crystal);
-      double deltaCrystal = Math.min(crystalCap, production.getCrystalProduction() / 3600.0 * seconds);
+      double deltaCrystal = Math.min(crystalCap, production.crystalProduction() / 3600.0 * seconds);
       assert deltaCrystal >= 0.0;
       crystal += deltaCrystal;
 
       // Deuterium.
       double deuterium = resources.getDeuterium();
       double deuteriumCap = Math.max(0.0, capacity.getDeuterium() - deuterium);
-      double deltaDeuterium = Math.min(deuteriumCap, production.getDeuteriumProduction() / 3600.0 * seconds);
+      double deltaDeuterium = Math.min(deuteriumCap, production.deuteriumProduction() / 3600.0 * seconds);
       // deltaDeuterium can be negative if a fusion reactor is used, thus Math.max with 0.
       deuterium = Math.max(0.0, deuterium + deltaDeuterium);
 
@@ -805,7 +805,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Transactional(readOnly = true)
   public ProductionDto getProduction(Body body) {
     if (body.getCoordinates().getKind() != CoordinatesKind.PLANET) {
-      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // Base production.
@@ -893,8 +893,9 @@ class BodyServiceImpl implements BodyServiceInternal {
         metalMineProduction, metalMineCurrentEnergyUsage, metalMineMaxEnergyUsage, crystalMineProduction,
         crystalMineCurrentEnergyUsage, crystalMineMaxEnergyUsage, deuteriumSynthesizerProduction,
         deuteriumSynthesizerCurrentEnergyUsage, deuteriumSynthesizerMaxEnergyUsage, solarPlantEnergyProduction,
-        fusionReactorDeuteriumUsage, fusionReactorEnergyProduction, solarSatellitesEnergyProduction, metalProduction,
-        crystalProduction, deuteriumProduction, totalEnergy, usedEnergy, availableEnergy);
+        fusionReactorDeuteriumUsage, fusionReactorEnergyProduction, singleSatelliteEnergy,
+        solarSatellitesEnergyProduction, metalProduction, crystalProduction, deuteriumProduction, totalEnergy,
+        usedEnergy, availableEnergy);
   }
 
   @Override

@@ -148,7 +148,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
           var nextRequiredEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevel);
           if (nextRequiredEnergy > 0) {
-            int totalEnergy = bodyServiceInternal.getProduction(nextBody).getTotalEnergy();
+            int totalEnergy = bodyServiceInternal.getProduction(nextBody).totalEnergy();
             if (nextRequiredEnergy > totalEnergy) {
               downMovable = cancelable = false;
             }
@@ -168,7 +168,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     }
 
     Resources resources = body.getResources();
-    int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+    int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
     boolean canResearch = queue.size() < technologyQueueCapacity;
     int[] currentBodyTable = effectiveLevelTables.get(bodyId);
     List<TechnologyDto> techs = new ArrayList<>();
@@ -248,7 +248,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(k, level);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Researching technology failed, not enough energy: bodyId={} kind={}", bodyId, k);
           throw new NotEnoughEnergyException();
@@ -349,7 +349,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(secondKind, secondLevel);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(secondBody).getTotalEnergy();
+        int totalEnergy = bodyServiceInternal.getProduction(secondBody).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Moving down entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
               userId, sequenceNumber);
@@ -499,7 +499,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
         var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
         if (requiredEnergy > 0) {
-          int totalEnergy = bodyServiceInternal.getProduction(nextBody).getTotalEnergy();
+          int totalEnergy = bodyServiceInternal.getProduction(nextBody).totalEnergy();
           if (requiredEnergy > totalEnergy) {
             logger.info("Cancelling entry in technology queue failed, not enough energy: userId={} sequenceNumber={}",
                 userId, sequenceNumber);
@@ -580,7 +580,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(entry.kind(), level);
       if (requiredEnergy > 0) {
-        int totalEnergy = bodyServiceInternal.getProduction(body).getTotalEnergy();
+        int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Handling technology queue, removing entry, not enough energy: userId={} bodyId={} kind={}" +
                   " sequenceNumber={}",
