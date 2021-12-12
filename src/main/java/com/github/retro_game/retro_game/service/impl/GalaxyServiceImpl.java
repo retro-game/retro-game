@@ -8,6 +8,8 @@ import com.github.retro_game.retro_game.dto.GalaxySlotDto;
 import com.github.retro_game.retro_game.dto.NoobProtectionRankDto;
 import com.github.retro_game.retro_game.dto.StatisticsSummaryDto;
 import com.github.retro_game.retro_game.entity.GalaxySlot;
+import com.github.retro_game.retro_game.entity.UnitKind;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.GalaxySlotRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.ActivityService;
@@ -109,6 +111,11 @@ class GalaxyServiceImpl implements GalaxyService {
         activity = 60;
       }
 
+      var debrisMetal = slot.getDebrisMetal() != null ? slot.getDebrisMetal() : 0L;
+      var debrisCrystal = slot.getDebrisCrystal() != null ? slot.getDebrisCrystal() : 0L;
+      var recyclerCapacity = UnitItem.get(UnitKind.RECYCLER).getCapacity();
+      var neededRecyclers = (int) Math.ceil((double) (debrisMetal + debrisCrystal) / recyclerCapacity);
+
       Long allianceId = userAllianceCache.getUserAlliance(slot.getUserId());
       String allianceTag = allianceId == null ? null : allianceTagCache.getTag(allianceId);
 
@@ -116,7 +123,7 @@ class GalaxyServiceImpl implements GalaxyService {
 
       GalaxySlotDto s = new GalaxySlotDto(slot.getUserId(), slot.getUserName(), rank, onVacation, banned,
           noobProtectionRank, slot.getPlanetName(), Converter.convert(slot.getPlanetType()), slot.getPlanetImage(),
-          slot.getMoonName(), slot.getMoonImage(), activity, slot.getDebrisMetal(), slot.getDebrisCrystal(), allianceId,
+          slot.getMoonName(), slot.getMoonImage(), activity, debrisMetal, debrisCrystal, neededRecyclers, allianceId,
           allianceTag, own, shortInactive, longInactive);
       ret.put(slot.getPosition(), s);
     }

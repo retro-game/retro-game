@@ -70,8 +70,8 @@
         </td>
         <td th:unless="${slot.moonName}"></td>
         <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).DEBRIS_FIELD ? 'highlight' : ''}">
-          <a th:if="${slot.debrisMetal >= 0 || slot.debrisCrystal >= 0}"
-             th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='DEBRIS_FIELD',mission='HARVEST')}"
+          <a th:if="${slot.debrisMetal + slot.debrisCrystal >= 300}"
+             th:href="@{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='DEBRIS_FIELD',mission='HARVEST',units[RECYCLER]=${slot.neededRecyclers})}"
              th:title="#{sendFleet}">
             <span th:text="${#numbers.formatInteger(slot.debrisMetal, 1, 'DEFAULT')}"></span>
             <br>
