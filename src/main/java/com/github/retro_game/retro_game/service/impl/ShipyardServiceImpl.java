@@ -93,58 +93,58 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     Resources resources = body.getResources();
 
     List<UnitDto> units = new ArrayList<>(items.size());
-    for (Map.Entry<UnitKind, UnitItem> entry : items.entrySet()) {
-      UnitKind kind = entry.getKey();
-      UnitItem item = entry.getValue();
+    for (var entry : items.entrySet()) {
+      var kind = entry.getKey();
+      var item = entry.getValue();
 
-      int currentCount = body.getUnitsCount(kind);
-      int futureCount = currentCount + inQueue.getOrDefault(kind, 0);
+      var currentCount = body.getUnitsCount(kind);
+      var futureCount = currentCount + inQueue.getOrDefault(kind, 0);
 
       var meetsRequirements = ItemRequirementsUtils.meetsRequirements(item, body);
 
-      if (futureCount > 0 || meetsRequirements) {
-        var time = getConstructionTime(item.getCost(), body);
-        Resources cost = item.getCost();
+      // Don't show the unit if there is no unit on the body and requirements are not met.
+      if (futureCount == 0 && !meetsRequirements) continue;
 
-        int maxBuildable = 0;
-        if (meetsRequirements) {
-          maxBuildable = Integer.MAX_VALUE;
+      var time = getConstructionTime(item.getCost(), body);
+      var cost = item.getCost();
 
-          if (cost.getMetal() > 0.0) {
-            maxBuildable = (int) (resources.getMetal() / cost.getMetal());
-          }
-          if (cost.getCrystal() > 0.0) {
-            maxBuildable = Math.min(maxBuildable, (int) (resources.getCrystal() / cost.getCrystal()));
-          }
-          if (cost.getDeuterium() > 0.0) {
-            maxBuildable = Math.min(maxBuildable, (int) (resources.getDeuterium() / cost.getDeuterium()));
-          }
+      int maxBuildable = 0;
+      if (meetsRequirements) {
+        maxBuildable = Integer.MAX_VALUE;
 
-          if (kind == UnitKind.SMALL_SHIELD_DOME || kind == UnitKind.LARGE_SHIELD_DOME) {
-            if (futureCount >= 1) {
-              maxBuildable = 0;
-            } else if (maxBuildable > 1) {
-              maxBuildable = 1;
-            }
-          } else if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
-            int nAnti = body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) +
-                inQueue.getOrDefault(UnitKind.ANTI_BALLISTIC_MISSILE, 0);
-            int nInter = body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE) +
-                inQueue.getOrDefault(UnitKind.INTERPLANETARY_MISSILE, 0);
-            int max = 10 * body.getBuildingLevel(BuildingKind.MISSILE_SILO) - (nAnti + 2 * nInter);
-            if (kind == UnitKind.INTERPLANETARY_MISSILE) {
-              max /= 2;
-            }
-            maxBuildable = Math.min(maxBuildable, max);
+        if (cost.getMetal() > 0.0)
+          maxBuildable = (int) (resources.getMetal() / cost.getMetal());
+        if (cost.getCrystal() > 0.0)
+          maxBuildable = Math.min(maxBuildable, (int) (resources.getCrystal() / cost.getCrystal()));
+        if (cost.getDeuterium() > 0.0)
+          maxBuildable = Math.min(maxBuildable, (int) (resources.getDeuterium() / cost.getDeuterium()));
+
+        if (kind == UnitKind.SMALL_SHIELD_DOME || kind == UnitKind.LARGE_SHIELD_DOME) {
+          if (futureCount >= 1) {
+            maxBuildable = 0;
+          } else if (maxBuildable > 1) {
+            maxBuildable = 1;
           }
+        } else if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
+          int nAnti = body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) +
+              inQueue.getOrDefault(UnitKind.ANTI_BALLISTIC_MISSILE, 0);
+          int nInter = body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE) +
+              inQueue.getOrDefault(UnitKind.INTERPLANETARY_MISSILE, 0);
+          int max = 10 * body.getBuildingLevel(BuildingKind.MISSILE_SILO) - (nAnti + 2 * nInter);
+          if (kind == UnitKind.INTERPLANETARY_MISSILE) {
+            max /= 2;
+          }
+          maxBuildable = Math.min(maxBuildable, max);
         }
-
-        units.add(new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time,
-            maxBuildable));
       }
+
+      var unit = new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time,
+          maxBuildable);
+      units.add(unit);
     }
+
     // Keep the order defined in the service layer.
-    units.sort(Comparator.comparing(UnitDto::getKind));
+    units.sort(Comparator.comparing(UnitDto::kind));
 
     return new UnitsAndQueuePairDto(units, queue);
   }
