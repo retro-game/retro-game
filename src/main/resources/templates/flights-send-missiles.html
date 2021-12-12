@@ -45,7 +45,8 @@
           <label for="numMissiles" th:text="#{numMissiles}"></label>
         </td>
         <td>
-          <input id="numMissiles" name="numMissiles" type="number" min="1" required>
+          <input id="numMissiles" name="numMissiles" type="number" th:value="${numMissiles != null ? numMissiles : 0}"
+                 min="1" required>
         </td>
       </tr>
       <tr>

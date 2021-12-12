@@ -183,12 +183,14 @@ public class FlightsController {
                              @RequestParam(required = false) Integer position,
                              @RequestParam(required = false) CoordinatesKindDto kind,
                              @RequestParam(required = false) FlightErrorDto error,
+                             @RequestParam(required = false) Integer num,
                              Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);
     model.addAttribute("position", position);
     model.addAttribute("kind", kind);
+    model.addAttribute("numMissiles", num);
     model.addAttribute("error", error);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     return "flights-send-missiles";

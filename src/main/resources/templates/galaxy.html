@@ -36,6 +36,7 @@
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
+                      (${!slot.own && isWithinMissilesRange && numMissiles > 0} ? '<p><a href=\'' + @{/flights/send-missiles(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',num=${numMissiles})} + '\'>' + #{mission.MISSILE_ATTACK} + '</a></p>' : '') +
                       (${!onVacation && isWithinPhalanxRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
                     '</td>' +
                   '</tr>' +
@@ -64,6 +65,7 @@
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='DESTROY')} + '\'>' + #{mission.DESTROY} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
+                      (${!slot.own && isWithinMissilesRange && numMissiles > 0} ? '<p><a href=\'' + @{/flights/send-missiles(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',num=${numMissiles})} + '\'>' + #{mission.MISSILE_ATTACK} + '</a></p>' : '') +
                     '</td>' +
                   '</tr>' +
                 '</table>'" width="25" height="25">

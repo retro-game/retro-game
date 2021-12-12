@@ -3,9 +3,10 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
+import com.github.retro_game.retro_game.dto.TechnologyKindDto;
+import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.service.GalaxyService;
-import com.github.retro_game.retro_game.service.PhalanxService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.impl.Converter;
 import org.hibernate.validator.constraints.Range;
@@ -23,12 +24,10 @@ import java.util.Date;
 @Validated
 public class GalaxyController {
   private final GalaxyService galaxyService;
-  private final PhalanxService phalanxService;
   private final UserService userService;
 
-  public GalaxyController(GalaxyService galaxyService, PhalanxService phalanxService, UserService userService) {
+  public GalaxyController(GalaxyService galaxyService, UserService userService) {
     this.galaxyService = galaxyService;
-    this.phalanxService = phalanxService;
     this.userService = userService;
   }
 
@@ -42,8 +41,12 @@ public class GalaxyController {
                        @RequestParam(required = false) CoordinatesKindDto kind,
                        Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
-
     var startCoords = Converter.convert(ctx.curBody().coordinates());
+    var numMissiles = ctx.curBody().units().get(UnitKindDto.INTERPLANETARY_MISSILE);
+
+    var impulseDriveLevel = ctx.technologies().get(TechnologyKindDto.IMPULSE_DRIVE);
+    var isWithinMissilesRange = ItemUtils.isWithinMissilesRange(startCoords, galaxy, system, impulseDriveLevel);
+
     var phalanxLevel = ctx.curBody().buildings().get(BuildingKindDto.SENSOR_PHALANX);
     var isWithinPhalanxRange = ItemUtils.isWithinPhalanxRange(startCoords, galaxy, system, phalanxLevel);
 
@@ -58,6 +61,8 @@ public class GalaxyController {
     model.addAttribute("kind", kind);
     model.addAttribute("time", now);
     model.addAttribute("slots", slots);
+    model.addAttribute("numMissiles", numMissiles);
+    model.addAttribute("isWithinMissilesRange", isWithinMissilesRange);
     model.addAttribute("isWithinPhalanxRange", isWithinPhalanxRange);
 
     return "galaxy";

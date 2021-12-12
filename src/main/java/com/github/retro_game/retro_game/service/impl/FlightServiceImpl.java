@@ -8,6 +8,7 @@ import com.github.retro_game.retro_game.cache.BodyInfoCache;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.Item;
+import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
@@ -668,18 +669,16 @@ class FlightServiceImpl implements FlightServiceInternal {
     User user = body.getUser();
     long userId = user.getId();
 
-    int diff = Math.abs(body.getCoordinates().getSystem() - targetCoordinates.getSystem());
-    diff = Math.min(diff, 500 - diff);
-    int impulseLevel = user.getTechnologyLevel(TechnologyKind.IMPULSE_DRIVE);
-    int reach = 5 * impulseLevel - 1;
-    if (body.getCoordinates().getGalaxy() != targetCoordinates.getGalaxy() || diff > reach) {
+    Coordinates coords = Converter.convert(targetCoordinates);
+
+    var impulseDriveLevel = user.getTechnologyLevel(TechnologyKind.IMPULSE_DRIVE);
+    if (!ItemUtils.isWithinMissilesRange(body.getCoordinates(), coords, impulseDriveLevel)) {
       logger.info("Sending missiles failed, target out of range: userId={} bodyId={} targetCoordinates={}" +
               " numMissiles={}",
           userId, bodyId, targetCoordinates, numMissiles);
       throw new TargetOutOfRangeException();
     }
 
-    Coordinates coords = Converter.convert(targetCoordinates);
     Optional<Body> optionalTargetBody = bodyRepository.findByCoordinates(coords);
     if (!optionalTargetBody.isPresent()) {
       logger.info("Sending missiles failed, target doesn't exist: userId={} bodyId={} targetCoordinates={}" +
@@ -725,7 +724,9 @@ class FlightServiceImpl implements FlightServiceInternal {
     body.setUnitsCount(UnitKind.INTERPLANETARY_MISSILE, count);
 
     long now = body.getUpdatedAt().toInstant().getEpochSecond();
-    long duration = 30 + 60 * diff;
+    int diff = Math.abs(body.getCoordinates().getSystem() - targetCoordinates.getSystem());
+    diff = Math.min(diff, 500 - diff);
+    long duration = 30L + 60L * diff;
     long arrivalAt = now + duration;
     // Return time doesn't matter in missile attacks, but the column is not nullable and it must differ from arrival
     // time, because handle() function compares these times and decides whether it should handle an attack or a return.
