@@ -57,6 +57,17 @@
           </th:block>
         </h2>
         <p th:text="#{${'items.' + unit.kind + '.description'}}"></p>
+        <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).SOLAR_SATELLITE}">
+          <span th:text="#{energy}">Energy</span>:
+          <strong
+              th:text="${#numbers.formatInteger(ctx.curBody.production.singleSolarSatelliteEnergyProduction, 1, 'DEFAULT')}">50</strong>
+          <th:block th:if="${neededSatellites > 0}">
+            <span th:text="#{neededSatellites}">Needed satellites</span>:
+            <a href="#" data-set th:data-set-for="'count_' + ${unit.kind}" th:data-set-value="${neededSatellites}">
+              <strong th:text="${#numbers.formatInteger(neededSatellites, 1, 'DEFAULT')}">100</strong>
+            </a>
+          </th:block>
+        </p>
         <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).INTERPLANETARY_MISSILE && unit.currentCount > 0}">
           <a th:href="@{/flights/send-missiles(body=${bodyId})}">
             <strong th:text="#{sendMissiles}">Send missiles</strong>

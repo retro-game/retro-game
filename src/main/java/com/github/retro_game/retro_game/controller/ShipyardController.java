@@ -35,10 +35,17 @@ public class ShipyardController {
                          @RequestParam(name = "error", required = false) ShipyardQueueErrorDto error,
                          Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
+
+    var p = ctx.curBody().production();
+    var neededSatellites = 0;
+    if (p.availableEnergy() < 0 && p.singleSolarSatelliteEnergyProduction() > 0)
+      neededSatellites = (int) Math.ceil(-(double) p.availableEnergy() / p.singleSolarSatelliteEnergyProduction());
+
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
     model.addAttribute("type", type);
     model.addAttribute("error", error);
+    model.addAttribute("neededSatellites", neededSatellites);
     model.addAttribute("pair", shipyardService.getUnitsAndQueuePair(bodyId, type));
     return "shipyard";
   }
