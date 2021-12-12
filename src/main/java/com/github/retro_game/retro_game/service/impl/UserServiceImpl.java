@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
+import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.dto.UserContextDto;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.entity.*;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("userService")
 class UserServiceImpl implements UserServiceInternal {
@@ -77,8 +79,17 @@ class UserServiceImpl implements UserServiceInternal {
     var bodies = bodyServiceInternal.getBodiesBasicInfo(bodyId);
     var body = bodyServiceInternal.getBodyContext(bodyId);
     var bodyPointers = bodyServiceInternal.getBodiesPointers(bodyId);
+    var technologies = Arrays.stream(TechnologyKind.values())
+        .collect(Collectors.toMap(
+            Converter::convert,
+            user::getTechnologyLevel,
+            (a, b) -> {
+              throw new IllegalStateException();
+            },
+            () -> new EnumMap<>(TechnologyKindDto.class)
+        ));
     return new UserContextDto(userId, user.getName(), user.getVacationUntil(), user.isForcedVacation(), settings,
-        bodies, body, bodyPointers);
+        bodies, body, bodyPointers, technologies);
   }
 
   @Override

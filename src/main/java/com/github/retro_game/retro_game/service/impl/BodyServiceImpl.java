@@ -200,7 +200,25 @@ class BodyServiceImpl implements BodyServiceInternal {
       var resources = Converter.convert(body.getResources());
       var production = getProduction(body);
       var capacity = getCapacity(body);
-      ctx = new BodyContextDto(bodyId, name, coordinates, type, image, resources, production, capacity);
+      var buildings = Arrays.stream(BuildingKind.values())
+          .collect(Collectors.toMap(
+              Converter::convert,
+              body::getBuildingLevel,
+              (a, b) -> {
+                throw new IllegalStateException();
+              },
+              () -> new EnumMap<>(BuildingKindDto.class)
+          ));
+      var units = Arrays.stream(UnitKind.values())
+          .collect(Collectors.toMap(
+              Converter::convert,
+              body::getUnitsCount,
+              (a, b) -> {
+                throw new IllegalStateException();
+              },
+              () -> new EnumMap<>(UnitKindDto.class)
+          ));
+      ctx = new BodyContextDto(bodyId, name, coordinates, type, image, resources, production, capacity, buildings, units);
 
       entityManager.persist(body);
       platformTransactionManager.commit(txStatus);

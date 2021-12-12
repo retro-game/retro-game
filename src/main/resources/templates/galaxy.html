@@ -36,7 +36,7 @@
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='HOLD')} + '\'>' + #{mission.HOLD} + '</a></p>' : '') +
                       '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='TRANSPORT')} + '\'>' + #{mission.TRANSPORT} + '</a></p>' +
-                      (${!onVacation && systemWithinRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
+                      (${!onVacation && isWithinPhalanxRange} ? '<p><a href=\'' + @{/phalanx(body=${bodyId},galaxy=${galaxy},system=${system},position=${i})} + '\'>' + #{phalanxScan} + '</a></p>' : '') +
                     '</td>' +
                   '</tr>' +
                 '</table>'" width="30" height="30">
@@ -87,12 +87,17 @@
                                   (slot.shortInactive ? 'short-inactive' : '')))))}">
             <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${slot.userId}, ${slot.userName})"></span>
             (<span th:text="${#numbers.formatInteger(slot.rank, 1, 'DEFAULT')}">1</span>)
-            <span th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
+            <span
+                th:if="${slot.banned || slot.onVacation || slot.noobProtectionRank != T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).EQUAL || slot.shortInactive}">
               (
               <span th:if="${slot.banned}" class="banned">b</span>
               <span th:if="${slot.onVacation}" class="vacation">v</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB}" class="noob">n</span>
-              <span th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG}" class="strong">s</span>
+              <span
+                  th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).NOOB}"
+                  class="noob">n</span>
+              <span
+                  th:if="${slot.noobProtectionRank == T(com.github.retro_game.retro_game.dto.NoobProtectionRankDto).STRONG}"
+                  class="strong">s</span>
               <span th:if="${slot.shortInactive}" class="short-inactive">i</span>
               <span th:if="${slot.longInactive}" class="long-inactive">I</span>
               )

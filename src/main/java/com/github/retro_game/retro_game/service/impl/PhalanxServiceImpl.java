@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.FlightEventDto;
 import com.github.retro_game.retro_game.entity.*;
+import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.FlightEventsService;
@@ -52,25 +53,6 @@ class PhalanxServiceImpl implements PhalanxService {
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public boolean systemWithinRange(long bodyId, int galaxy, int system) {
-    Body body = bodyRepository.getOne(bodyId);
-    return systemWithinRange(body, galaxy, system);
-  }
-
-  private boolean systemWithinRange(Body body, int galaxy, int system) {
-    if (body.getCoordinates().getGalaxy() != galaxy) {
-      return false;
-    }
-
-    var level = body.getBuildingLevel(BuildingKind.SENSOR_PHALANX);
-    assert level >= 0;
-    var range = level * level - 1;
-    var diff = Math.abs(body.getCoordinates().getSystem() - system);
-    return Math.abs(Math.min(diff, 500 - diff)) <= range;
-  }
-
-  @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public List<FlightEventDto> scan(long bodyId, int galaxy, int system, int position) {
     Body body = bodyServiceInternal.getUpdated(bodyId);
@@ -85,7 +67,8 @@ class PhalanxServiceImpl implements PhalanxService {
     }
     Body target = targetOptional.get();
 
-    if (!systemWithinRange(body, target.getCoordinates().getGalaxy(), target.getCoordinates().getSystem())) {
+    var phalanxLevel = body.getBuildingLevel(BuildingKind.SENSOR_PHALANX);
+    if (!ItemUtils.isWithinPhalanxRange(body.getCoordinates(), target.getCoordinates(), phalanxLevel)) {
       logger.warn("Phalanx scanning failed, system out of range: userId={} bodyId={} targetCoordinates={}-{}-{}-P",
           CustomUser.getCurrentUserId(), body.getId(), galaxy, system, position);
       throw new TargetOutOfRangeException();

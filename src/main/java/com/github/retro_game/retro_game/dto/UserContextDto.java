@@ -4,10 +4,11 @@ import org.springframework.lang.Nullable;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public record UserContextDto(long id, String name, @Nullable Date vacationUntil, boolean forcedVacation,
                              UserSettingsDto settings, List<BodyInfoDto> bodies, BodyContextDto curBody,
-                             BodiesPointersDto curBodyPointers) {
+                             BodiesPointersDto curBodyPointers, Map<TechnologyKindDto, Integer> technologies) {
   public boolean isOnVacation() {
     return vacationUntil != null;
   }

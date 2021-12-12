@@ -187,7 +187,7 @@ public class Converter {
     return new CoordinatesDto(entity.getGalaxy(), entity.getSystem(), entity.getPosition(), convert(entity.getKind()));
   }
 
-  static Coordinates convert(CoordinatesDto dto) {
+  public static Coordinates convert(CoordinatesDto dto) {
     return new Coordinates(dto.getGalaxy(), dto.getSystem(), dto.getPosition(), convert(dto.getKind()));
   }
 

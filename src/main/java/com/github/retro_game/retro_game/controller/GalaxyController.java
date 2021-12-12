@@ -1,10 +1,13 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
+import com.github.retro_game.retro_game.dto.BuildingKindDto;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
+import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.PhalanxService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.service.impl.Converter;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -38,16 +41,25 @@ public class GalaxyController {
                        @RequestParam(required = false) @Range(min = 1, max = 15) Integer position,
                        @RequestParam(required = false) CoordinatesKindDto kind,
                        Model model) {
+    var ctx = userService.getCurrentUserContext(bodyId);
+
+    var startCoords = Converter.convert(ctx.curBody().coordinates());
+    var phalanxLevel = ctx.curBody().buildings().get(BuildingKindDto.SENSOR_PHALANX);
+    var isWithinPhalanxRange = ItemUtils.isWithinPhalanxRange(startCoords, galaxy, system, phalanxLevel);
+
+    var slots = galaxyService.getSlots(bodyId, galaxy, system);
+    var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
+
     model.addAttribute("bodyId", bodyId);
+    model.addAttribute("ctx", ctx);
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);
     model.addAttribute("position", position);
     model.addAttribute("kind", kind);
-    var ctx = userService.getCurrentUserContext(bodyId);
-    model.addAttribute("ctx", ctx);
-    model.addAttribute("time", Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond())));
-    model.addAttribute("slots", galaxyService.getSlots(bodyId, galaxy, system));
-    model.addAttribute("systemWithinRange", phalanxService.systemWithinRange(bodyId, galaxy, system));
+    model.addAttribute("time", now);
+    model.addAttribute("slots", slots);
+    model.addAttribute("isWithinPhalanxRange", isWithinPhalanxRange);
+
     return "galaxy";
   }
 }
