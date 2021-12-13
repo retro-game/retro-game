@@ -86,7 +86,7 @@
         </p>
         <p>
           <span th:text="#{buildingTime}">Building time</span>:
-          <strong th:text="${@formatterService.formatTime(unit.buildingTime)}">01:02:03</strong>
+          <strong th:text="${@formatterService.formatTimeMs(unit.buildingTime)}">01:02:03</strong>
         </p>
       </td>
       <td class="item-actions">

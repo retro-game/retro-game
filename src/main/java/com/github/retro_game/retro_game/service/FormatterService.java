@@ -5,7 +5,9 @@ import com.github.retro_game.retro_game.dto.UnitKindDto;
 import java.util.Map;
 
 public interface FormatterService {
-  String formatTime(long t);
+  String formatTime(long s);
+
+  String formatTimeMs(long ms);
 
   String prefixedNumber(long i);
 

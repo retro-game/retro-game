@@ -26,14 +26,28 @@ class FormatterServiceImpl implements FormatterService {
   }
 
   @Override
-  public String formatTime(long t) {
-    long seconds = t % 60;
-    t /= 60;
-    long minutes = t % 60;
-    t /= 60;
-    long hours = t % 24;
-    long days = t / 24;
+  public String formatTime(long s) {
+    long seconds = s % 60;
+    s /= 60;
+    long minutes = s % 60;
+    s /= 60;
+    long hours = s % 24;
+    long days = s / 24;
     return (days > 0 ? String.valueOf(days) + " d " : "") + String.format("%02d:%02d:%02d", hours, minutes, seconds);
+  }
+
+  @Override
+  public String formatTimeMs(long ms) {
+    var milliseconds = ms % 1000;
+    ms /= 1000;
+    var seconds = ms % 60;
+    ms /= 60;
+    var minutes = ms % 60;
+    ms /= 60;
+    var hours = ms % 24;
+    var days = ms / 24;
+    return (days > 0 ? days + " d " : "") + String.format("%02d:%02d:%02d", hours, minutes, seconds) +
+        (milliseconds > 0 ? String.format(".%03d", milliseconds) : "");
   }
 
   @Override

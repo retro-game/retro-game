@@ -61,19 +61,18 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
       var constructionTime = getConstructionTime(item.getCost(), body);
 
-      long requiredTime;
       if (first) {
-        long startAt = body.getShipyardStartAt().toInstant().getEpochSecond();
-        long now = body.getUpdatedAt().toInstant().getEpochSecond();
-        long remainingTime = startAt - now;
-
-        requiredTime = remainingTime + count * constructionTime;
-        finishAt = now + requiredTime;
-
+        finishAt = body.getShipyardStartAt().toInstant().getEpochSecond();
         first = false;
+      }
+      if (constructionTime >= 1000) {
+        assert constructionTime % 1000 == 0;
+        var secs = constructionTime / 1000;
+        finishAt += count * secs;
       } else {
-        requiredTime = count * constructionTime;
-        finishAt += requiredTime;
+        assert constructionTime >= 1;
+        var numPerSec = 1000 / constructionTime;
+        finishAt += (count + numPerSec - 1) / numPerSec;
       }
 
       queue.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, Converter.convert(cost),
@@ -267,7 +266,7 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
     if (endTime <= startTime)
       return;
 
-    var initialBudget = (endTime - startTime);
+    var initialBudget = endTime - startTime;
     var budget = initialBudget;
 
     var queue = body.getShipyardQueue();
@@ -278,10 +277,19 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
 
       var item = Item.get(entry.kind());
       var itemTime = getConstructionTime(item.getCost(), body);
-      assert itemTime >= 1;
-      var maxBuilt = (int) Math.min(Integer.MAX_VALUE, budget / itemTime);
+      long maxBuilt;
+      if (itemTime >= 1000) {
+        assert itemTime % 1000 == 0;
+        var secs = itemTime / 1000;
+        maxBuilt = budget / secs;
+      } else {
+        assert itemTime >= 1;
+        var numPerSec = 1000 / itemTime;
+        maxBuilt = budget * numPerSec;
+      }
+      maxBuilt = Math.min(Integer.MAX_VALUE, maxBuilt);
 
-      var numBuilt = Math.min(entry.count(), maxBuilt);
+      var numBuilt = Math.min(entry.count(), (int) maxBuilt);
       assert numBuilt >= 0;
       if (numBuilt == 0)
         break;
@@ -289,7 +297,13 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       logger.info("Shipyard: bodyId={} kind={} count={}", body.getId(), entry.kind(), numBuilt);
 
       changed = true;
-      budget -= numBuilt * itemTime;
+      if (itemTime >= 1000) {
+        var secs = itemTime / 1000;
+        budget -= numBuilt * secs;
+      } else {
+        var numPerSec = 1000 / itemTime;
+        budget -= (numBuilt + numPerSec - 1) / numPerSec;
+      }
       assert budget >= 0;
       body.setUnitsCount(entry.kind(), body.getUnitsCount(entry.kind()) + numBuilt);
 

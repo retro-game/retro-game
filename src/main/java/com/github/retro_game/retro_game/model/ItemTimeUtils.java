@@ -15,17 +15,20 @@ public class ItemTimeUtils {
   private final int technologyResearchSpeed;
   private final int unitConstructionSpeed;
   private final double irnBoostFactor;
+  private final int minShipyardTime;
 
   public ItemTimeUtils(@Value("${retro-game.building-construction-speed}") int buildingConstructionSpeed,
                        @Value("${retro-game.building-destruction-speed}") int buildingDestructionSpeed,
                        @Value("${retro-game.technology-research-speed}") int technologyResearchSpeed,
                        @Value("${retro-game.unit-construction-speed}") int unitConstructionSpeed,
-                       @Value("${retro-game.irn-boost-factor}") double irnBoostFactor) {
+                       @Value("${retro-game.irn-boost-factor}") double irnBoostFactor,
+                       @Value("${retro-game.min-shipyard-time}") int minShipyardTime) {
     this.buildingConstructionSpeed = buildingConstructionSpeed;
     this.buildingDestructionSpeed = buildingDestructionSpeed;
     this.technologyResearchSpeed = technologyResearchSpeed;
     this.unitConstructionSpeed = unitConstructionSpeed;
     this.irnBoostFactor = irnBoostFactor;
+    this.minShipyardTime = minShipyardTime;
   }
 
   @PostConstruct
@@ -40,6 +43,8 @@ public class ItemTimeUtils {
         "retro-game.unit-construction-speed must be at least 1");
     Assert.isTrue(irnBoostFactor >= 0.0,
         "retro-game.irn-boost-factor should be greater than or equal to 0");
+    Assert.isTrue(minShipyardTime >= 1,
+        "retro-game.min-shipyard-time must be at least 1");
   }
 
   // Buildings
@@ -79,10 +84,12 @@ public class ItemTimeUtils {
   public long getUnitConstructionTime(Resources cost, int shipyardLevel, int naniteFactoryLevel) {
     assert shipyardLevel >= 0;
     assert naniteFactoryLevel >= 0;
-    var seconds = (long) (1.44 * (cost.getMetal() + cost.getCrystal()));
-    seconds /= 1 + shipyardLevel;
-    seconds >>= naniteFactoryLevel;
-    seconds /= unitConstructionSpeed;
-    return Math.max(seconds, 1);  // unit construction always have to take at least 1 sec
+    var ms = 1000L * (long) (1.44 * (cost.getMetal() + cost.getCrystal()));
+    ms /= 1 + shipyardLevel;
+    ms >>= naniteFactoryLevel;
+    ms /= unitConstructionSpeed;
+    if (ms >= 1000)
+      return ms / 1000 * 1000;
+    return Math.max(minShipyardTime, ms);
   }
 }
