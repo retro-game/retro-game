@@ -59,6 +59,17 @@
         </td>
       </tr>
       <tr>
+        <td>
+          <label for="mainTarget" th:text="#{mainTarget}"></label>
+        </td>
+        <td>
+          <select id="mainTarget" name="mainTarget">
+            <option th:each="kind : ${mainTargetKinds}" th:value="${kind}"
+                    th:text="#{${'items.' + kind + '.name'}}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
         <td colspan="2">
           <button th:disabled="${ctx.onVacation}" th:text="#{send}">Send</button>
         </td>

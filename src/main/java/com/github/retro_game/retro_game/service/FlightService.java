@@ -18,7 +18,7 @@ public interface FlightService {
 
   void sendProbes(long bodyId, CoordinatesDto targetCoordinates, int numProbes);
 
-  void sendMissiles(long bodyId, CoordinatesDto targetCoordinates, int numMissiles);
+  void sendMissiles(long bodyId, CoordinatesDto targetCoordinates, int numMissiles, UnitKindDto mainTarget);
 
   void recall(long bodyId, long flightId);
 }

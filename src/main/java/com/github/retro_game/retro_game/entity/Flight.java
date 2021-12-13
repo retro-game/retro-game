@@ -79,6 +79,9 @@ public class Flight {
   @Type(type = "int-array")
   private int[] unitsArray;
 
+  @Column(name = "main_target", updatable = false)
+  private UnitKind mainTarget;
+
   public EnumMap<UnitKind, Integer> getUnits() {
     return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
   }
@@ -202,5 +205,13 @@ public class Flight {
 
   public void setResources(Resources resources) {
     this.resources = resources;
+  }
+
+  public UnitKind getMainTarget() {
+    return mainTarget;
+  }
+
+  public void setMainTarget(UnitKind mainTarget) {
+    this.mainTarget = mainTarget;
   }
 }

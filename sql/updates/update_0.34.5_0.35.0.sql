@@ -11,4 +11,8 @@ create table records (
     holders bigint[] not null
 );
 
+-- Main target
+
+alter table flights add column main_target int;
+
 commit;

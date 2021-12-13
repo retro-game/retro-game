@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.*;
 import com.github.retro_game.retro_game.dto.*;
+import com.github.retro_game.retro_game.entity.UnitKind;
+import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.FlightService;
 import com.github.retro_game.retro_game.service.PartyService;
@@ -187,6 +189,9 @@ public class FlightsController {
                              Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var maxMissiles = ctx.curBody().units().get(UnitKindDto.INTERPLANETARY_MISSILE);
+    var mainTargetKinds = UnitItem.getDefense().keySet().stream()
+        .filter(k -> k != UnitKind.ANTI_BALLISTIC_MISSILE && k != UnitKind.INTERPLANETARY_MISSILE)
+        .toList();
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
     model.addAttribute("galaxy", galaxy);
@@ -195,6 +200,7 @@ public class FlightsController {
     model.addAttribute("kind", kind);
     model.addAttribute("numMissiles", num);
     model.addAttribute("maxMissiles", maxMissiles);
+    model.addAttribute("mainTargetKinds", mainTargetKinds);
     model.addAttribute("error", error);
     return "flights-send-missiles";
   }
@@ -203,9 +209,9 @@ public class FlightsController {
   @PreAuthorize("hasPermission(#form.body, 'ACCESS')")
   @Activity(bodies = "#form.body")
   public String doSendMissiles(@Valid SendMissilesForm form) {
-    CoordinatesDto target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
+    var target = new CoordinatesDto(form.getGalaxy(), form.getSystem(), form.getPosition(), form.getKind());
     return perform(form.getBody(), "/flights/send-missiles", () -> {
-      flightService.sendMissiles(form.getBody(), target, form.getNumMissiles());
+      flightService.sendMissiles(form.getBody(), target, form.getNumMissiles(), form.getMainTarget());
       return 0;
     });
   }

@@ -1,6 +1,7 @@
 package com.github.retro_game.retro_game.controller.form;
 
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
+import com.github.retro_game.retro_game.dto.UnitKindDto;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Min;
@@ -23,6 +24,9 @@ public class SendMissilesForm {
 
   @Min(1)
   private int numMissiles;
+
+  @NotNull
+  private UnitKindDto mainTarget;
 
   public long getBody() {
     return body;
@@ -70,5 +74,13 @@ public class SendMissilesForm {
 
   public void setNumMissiles(int numMissiles) {
     this.numMissiles = numMissiles;
+  }
+
+  public UnitKindDto getMainTarget() {
+    return mainTarget;
+  }
+
+  public void setMainTarget(UnitKindDto mainTarget) {
+    this.mainTarget = mainTarget;
   }
 }

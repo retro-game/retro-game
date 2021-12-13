@@ -661,13 +661,22 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   @Override
   @Transactional(isolation = Isolation.SERIALIZABLE)
-  public void sendMissiles(long bodyId, CoordinatesDto targetCoordinates, int numMissiles) {
+  public void sendMissiles(long bodyId, CoordinatesDto targetCoordinates, int numMissiles, UnitKindDto mainTarget) {
     // This should be validated in the controller.
     assert numMissiles >= 1;
 
     Body body = bodyServiceInternal.getUpdated(bodyId);
     User user = body.getUser();
     long userId = user.getId();
+
+    var mainTargetKind = Converter.convert(mainTarget);
+    if (!UnitItem.getDefense().containsKey(mainTargetKind) || mainTargetKind == UnitKind.ANTI_BALLISTIC_MISSILE ||
+        mainTargetKind == UnitKind.INTERPLANETARY_MISSILE) {
+      logger.warn("Sending missiles failed, wrong main target: userId={} bodyId={} targetCoordinates={}" +
+              " numMissiles={} mainTarget={}",
+          userId, bodyId, targetCoordinates, numMissiles, mainTargetKind);
+      throw new WrongMainTargetException();
+    }
 
     Coordinates coords = Converter.convert(targetCoordinates);
 
@@ -726,7 +735,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     long now = body.getUpdatedAt().toInstant().getEpochSecond();
     int diff = Math.abs(body.getCoordinates().getSystem() - targetCoordinates.getSystem());
     diff = Math.min(diff, 500 - diff);
-    long duration = 30L + 60L * diff;
+    long duration = Math.max(1L, (30L + 60L * diff) / fleetSpeed);
     long arrivalAt = now + duration;
     // Return time doesn't matter in missile attacks, but the column is not nullable and it must differ from arrival
     // time, because handle() function compares these times and decides whether it should handle an attack or a return.
@@ -744,6 +753,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     f.setMission(Mission.MISSILE_ATTACK);
     f.setResources(new Resources());
     f.setUnits(Collections.singletonMap(UnitKind.INTERPLANETARY_MISSILE, numMissiles));
+    f.setMainTarget(mainTargetKind);
     flightRepository.save(f);
 
     // Add event.
@@ -1648,8 +1658,6 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Create activity.
     activityService.handleBodyActivity(body.getId(), flight.getArrivalAt().toInstant().getEpochSecond());
 
-    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
-
     var numIpm = flight.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE);
     if (numIpm == 0) {
       logger.error("Missile attack, no missiles: flightId={} startUserId={} startBodyId={} targetUserId={}" +
@@ -1658,6 +1666,16 @@ class FlightServiceImpl implements FlightServiceInternal {
           body.getId(), flight.getArrivalAt());
       flightRepository.delete(flight);
       return;
+    }
+
+    var mainTarget = flight.getMainTarget();
+    if (mainTarget == null || !UnitItem.getDefense().containsKey(mainTarget)
+        || mainTarget == UnitKind.ANTI_BALLISTIC_MISSILE || mainTarget == UnitKind.INTERPLANETARY_MISSILE) {
+      logger.error("Missile attack, wrong main target, assuming rocket launcher as main target: flightId={}" +
+              "startUserId={} startBodyId={} targetUserId={} targetBodyId={} arrivalAt='{}' mainTarget={}",
+          flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
+          body.getId(), flight.getArrivalAt(), mainTarget);
+      mainTarget = UnitKind.ROCKET_LAUNCHER;
     }
 
     Body planet;
@@ -1680,6 +1698,10 @@ class FlightServiceImpl implements FlightServiceInternal {
       }
       planet = planetOpt.get();
     }
+
+    bodyServiceInternal.updateResourcesAndShipyard(body, flight.getArrivalAt());
+    if (planet != body)
+      bodyServiceInternal.updateResourcesAndShipyard(planet, flight.getArrivalAt());
 
     var numAbm = planet.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE);
     var n = Math.min(numIpm, numAbm);
@@ -1714,18 +1736,21 @@ class FlightServiceImpl implements FlightServiceInternal {
             () -> new EnumMap<>(UnitKind.class)
         ));
 
-    ArrayList<UnitKind> order = new ArrayList<>(units.keySet());
-    Collections.shuffle(order, ThreadLocalRandom.current());
-
-    if (logger.isInfoEnabled()) {
-      String orderString = order.stream()
-          .map(UnitKind::toString)
-          .collect(Collectors.joining(", "));
-      logger.info("Missile attack, destroying defense: flightId={} startUserId={} startBodyId={} targetUserId={}" +
-              " targetBodyId={} arrivalAt='{}' numIpm={} order='{}'",
-          flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
-          body.getId(), flight.getArrivalAt(), numIpm, orderString);
+    var order = new ArrayList<UnitKind>(units.keySet().size());
+    var target = mainTarget;
+    if (units.containsKey(target))
+      order.add(target);
+    else
+      target = null;
+    for (var kind : units.keySet()) {
+      if (kind != target)
+        order.add(kind);
     }
+
+    logger.info("Missile attack, destroying defense: flightId={} startUserId={} startBodyId={} targetUserId={}" +
+            " targetBodyId={} arrivalAt='{}' numIpm={} mainTarget={}'",
+        flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
+        body.getId(), flight.getArrivalAt(), numIpm, mainTarget);
 
     final double defFactor = 0.1 + 0.01 * flight.getTargetUser().getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY);
     double power = numIpm * defense.get(UnitKind.INTERPLANETARY_MISSILE).getBaseWeapons() *
