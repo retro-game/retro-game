@@ -761,7 +761,7 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @Override
   public Body getUpdated(long bodyId) {
-    var body = bodyRepository.getOne(bodyId);
+    var body = bodyRepository.getById(bodyId);
     var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     updateResourcesAndShipyard(body, now);
     return body;
@@ -820,7 +820,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public ProductionDto getProduction(Body body) {
     if (body.getCoordinates().getKind() != CoordinatesKind.PLANET) {
       return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -917,9 +916,8 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public ProductionItemsDto getProductionItems(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
+    Body body = bodyRepository.getById(bodyId);
     return getProductionItems(body);
   }
 
@@ -935,32 +933,31 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   @Override
-  @Transactional(readOnly = true)
   public ProductionFactorsDto getProductionFactors(long bodyId) {
-    Body body = bodyRepository.getOne(bodyId);
+    Body body = bodyRepository.getById(bodyId);
     return Converter.convert(body.getProductionFactors());
   }
 
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void setProductionFactors(long bodyId, ProductionFactorsDto factors) {
-    Body body = getUpdated(bodyId);
+    var body = getUpdated(bodyId);
     body.setProductionFactors(Converter.convert(factors));
   }
 
   @Override
-  @Transactional
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void rename(long bodyId, String name) {
-    Body body = bodyRepository.getOne(bodyId);
+    var body = getUpdated(bodyId);
     body.setName(name);
 
     cacheObserver.notifyBodyUpdated(bodyId);
   }
 
   @Override
-  @Transactional
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
   public void setImage(long bodyId, int image) {
-    Body body = bodyRepository.getOne(bodyId);
+    var body = getUpdated(bodyId);
     if (body.getCoordinates().getKind() == CoordinatesKind.PLANET) {
       body.setImage(image);
     }

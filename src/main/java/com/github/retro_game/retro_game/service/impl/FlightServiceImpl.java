@@ -848,7 +848,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   @Override
-  @Transactional(isolation = Isolation.REPEATABLE_READ)
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public void handle(Event event) {
     Flight flight = flightRepository.getOne(event.getParam());
     eventRepository.delete(event);
