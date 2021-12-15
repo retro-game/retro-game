@@ -32,7 +32,7 @@
     </dependency>
     <dependency>
       <groupId>com.vladmihalcea</groupId>
-      <artifactId>hibernate-types-52</artifactId>
+      <artifactId>hibernate-types-55</artifactId>
       <version>2.14.0</version>
     </dependency>
     <dependency>
