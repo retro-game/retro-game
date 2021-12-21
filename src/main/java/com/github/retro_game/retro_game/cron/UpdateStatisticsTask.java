@@ -58,7 +58,7 @@ class UpdateStatisticsTask {
     return "" +
         "with p as (" +
         "      select u.id," +
-        "             coalesce(cast(floor(sum(" + joiner + ") / 1000) as int), 0) as p" +
+        "             coalesce(cast(floor(sum(" + joiner + ") / 1000) as bigint), 0) as p" +
         "        from bodies b" +
         "  right join users u" +
         "          on u.id = b.user_id" +
@@ -85,7 +85,7 @@ class UpdateStatisticsTask {
     return "" +
         "with p as (" +
         "  select u.id," +
-        "         coalesce(cast(floor((" + joiner + ") / 1000) as int), 0) as p" +
+        "         coalesce(cast(floor((" + joiner + ") / 1000) as bigint), 0) as p" +
         "    from users u" +
         ")" +
         "insert into technologies_statistics" +
@@ -108,7 +108,7 @@ class UpdateStatisticsTask {
     return String.format("" +
         "with p as (" +
         "      select u.id," +
-        "             coalesce(cast(floor(sum(tmp.points) / 1000) as int), 0) as p" +
+        "             coalesce(cast(floor(sum(tmp.points) / 1000) as bigint), 0) as p" +
         "        from (select b.user_id as user_id," +
         "                     sum(" + joiner + ") as points" +
         "                from bodies b" +

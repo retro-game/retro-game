@@ -49,8 +49,8 @@ class NoobProtectionServiceImpl implements NoobProtectionService {
     if (selfSummary == null)
       return NoobProtectionRankDto.STRONG;
 
-    long otherPoints = otherSummary.getOverall().getPoints();
-    long selfPoints = selfSummary.getOverall().getPoints();
+    long otherPoints = otherSummary.overall().points();
+    long selfPoints = selfSummary.overall().points();
 
     // Check whether the both players are not protected anymore.
     if (Math.min(otherPoints, selfPoints) > noobProtectionMaxPoints)

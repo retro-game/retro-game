@@ -498,7 +498,7 @@ begin
     create table ' || kind || '_statistics (
       user_id bigint references users not null,
       at timestamptz not null,
-      points int not null,
+      points bigint not null,
       rank int not null,
       primary key (user_id, at)
     )';

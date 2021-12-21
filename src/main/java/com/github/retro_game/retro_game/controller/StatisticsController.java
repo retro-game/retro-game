@@ -63,9 +63,9 @@ public class StatisticsController {
         first = false;
       builder.append(change._1.toInstant().getEpochSecond());
       builder.append(',');
-      builder.append(change._2.getPoints());
+      builder.append(change._2.points());
       builder.append(',');
-      builder.append(change._2.getRank());
+      builder.append(change._2.rank());
     }
 
     model.addAttribute("bodyId", bodyId);
@@ -100,13 +100,13 @@ public class StatisticsController {
       builder.append(',');
 
       StatisticsDistributionDto d = change._2;
-      builder.append(d.getBuildings());
+      builder.append(d.buildings());
       builder.append(',');
-      builder.append(d.getTechnologies());
+      builder.append(d.technologies());
       builder.append(',');
-      builder.append(d.getFleet());
+      builder.append(d.fleet());
       builder.append(',');
-      builder.append(d.getDefense());
+      builder.append(d.defense());
     }
 
     model.addAttribute("bodyId", bodyId);

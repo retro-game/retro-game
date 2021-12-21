@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,10 +87,10 @@ public class StatisticsServiceImpl implements StatisticsService {
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public List<Tuple2<Date, StatisticsDistributionDto>> getDistributionChanges(long bodyId, long userId,
                                                                               StatisticsPeriodDto period) {
-    Iterator<BuildingsStatistics> buildingsIt = fetch(buildingsStatisticsRepository, period, userId).iterator();
-    Iterator<TechnologiesStatistics> technologiesIt = fetch(technologiesStatisticsRepository, period, userId).iterator();
-    Iterator<FleetStatistics> fleetIt = fetch(fleetStatisticsRepository, period, userId).iterator();
-    Iterator<DefenseStatistics> defenseIt = fetch(defenseStatisticsRepository, period, userId).iterator();
+    var buildingsIt = fetch(buildingsStatisticsRepository, period, userId).iterator();
+    var technologiesIt = fetch(technologiesStatisticsRepository, period, userId).iterator();
+    var fleetIt = fetch(fleetStatisticsRepository, period, userId).iterator();
+    var defenseIt = fetch(defenseStatisticsRepository, period, userId).iterator();
 
     List<Tuple2<Date, StatisticsDistributionDto>> distribution = new ArrayList<>();
     while (buildingsIt.hasNext() && technologiesIt.hasNext() && fleetIt.hasNext() && defenseIt.hasNext()) {

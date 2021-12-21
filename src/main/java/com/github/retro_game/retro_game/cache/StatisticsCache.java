@@ -106,14 +106,14 @@ public class StatisticsCache {
   }
 
   private List<RankingEntryDto> createRanking(Map<Long, PointsAndRankPairDto> statistics, Map<Long, String> names) {
-    return Collections.unmodifiableList(statistics.entrySet().stream()
+    return statistics.entrySet().stream()
         .map(e -> {
           long id = e.getKey();
           PointsAndRankPairDto pair = e.getValue();
-          return new RankingEntryDto(id, names.get(id), pair.getPoints(), pair.getRank());
+          return new RankingEntryDto(id, names.get(id), pair.points(), pair.rank());
         })
-        .sorted(Comparator.comparing(RankingEntryDto::getRank))
-        .collect(Collectors.toList()));
+        .sorted(Comparator.comparing(RankingEntryDto::rank))
+        .toList();
   }
 
   @Nullable

@@ -11,7 +11,7 @@ public abstract class Statistics {
   private StatisticsKey key;
 
   @Column(name = "points", insertable = false, nullable = false, updatable = false)
-  private int points;
+  private long points;
 
   @Column(name = "rank", insertable = false, nullable = false, updatable = false)
   private int rank;
@@ -28,7 +28,7 @@ public abstract class Statistics {
     return key;
   }
 
-  public int getPoints() {
+  public long getPoints() {
     return points;
   }
 

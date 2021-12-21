@@ -98,7 +98,7 @@ class GalaxyServiceImpl implements GalaxyService {
       }
 
       StatisticsSummaryDto summary = statisticsCache.getUserSummary(slot.getUserId());
-      int rank = summary == null ? 0 : summary.getOverall().getRank();
+      int rank = summary == null ? 0 : summary.overall().rank();
 
       long activityAt = activities.getOrDefault(slot.getPlanetId(), 0L);
       if (slot.getMoonId() != null) {
