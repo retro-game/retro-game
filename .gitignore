@@ -11,3 +11,4 @@ target/
 # Skins
 src/main/resources/public/static/skins/*
 !src/main/resources/public/static/skins/Empty
+!src/main/resources/public/static/skins/GoW
