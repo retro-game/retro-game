@@ -120,128 +120,140 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public BuildingsAndQueuePairDto getBuildingsAndQueuePair(long bodyId) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
-    User user = body.getUser();
-    Resources resources = body.getResources();
-    final int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
-
-    State state = new State(body, null);
-
-    SortedMap<Integer, BuildingQueueEntry> buildingQueue = body.getBuildingQueue();
-    int size = buildingQueue.size();
-    List<BuildingQueueEntryDto> queue = new ArrayList<>(size);
-    if (size > 0) {
-      Iterator<Map.Entry<Integer, BuildingQueueEntry>> it = buildingQueue.entrySet().iterator();
-      Map.Entry<Integer, BuildingQueueEntry> next = it.next();
-      boolean first = true;
-      long finishAt = 0;
-      boolean upMovable = false;
-      do {
-        Map.Entry<Integer, BuildingQueueEntry> entry = next;
-        next = it.hasNext() ? it.next() : null;
-
-        BuildingQueueEntry queueEntry = entry.getValue();
-        BuildingKind kind = queueEntry.kind();
-        BuildingQueueAction action = queueEntry.action();
-
-        int levelFrom = state.buildings.getOrDefault(kind, 0);
-        assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
-        int levelTo = levelFrom + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
-        assert levelTo >= 0;
-
-        var cost = ItemCostUtils.getCost(kind, levelTo);
-        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, levelTo);
-
-        long requiredTime;
-        if (first) {
-          Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, bodyId);
-          Assert.isTrue(event.isPresent(), "Event must be present");
-          finishAt = event.get().getAt().toInstant().getEpochSecond();
-          long now = body.getUpdatedAt().toInstant().getEpochSecond();
-          requiredTime = finishAt - now;
-        } else {
-          if (action == BuildingQueueAction.CONSTRUCT) {
-            requiredTime = getConstructionTime(cost, state.buildings);
-          } else {
-            requiredTime = getDestructionTime(cost, state.buildings);
-          }
-          finishAt += requiredTime;
-        }
-
-        // Check dependencies of subsequent entries.
-        SortedMap<Integer, BuildingQueueEntry> tail = buildingQueue.tailMap(entry.getKey());
-        boolean downMovable = canSwapTop(state, tail);
-        boolean cancelable = canRemoveTop(state, tail);
-
-        // Moving down or cancelling the first entry is equivalent to building the second one, which is the reason
-        // for checking resources.
-        if (first && next != null) {
-          BuildingQueueAction nextAction = next.getValue().action();
-          BuildingKind nextKind = next.getValue().kind();
-
-          assert nextAction == BuildingQueueAction.CONSTRUCT || nextAction == BuildingQueueAction.DESTROY;
-          int nextLevel = state.buildings.getOrDefault(nextKind, 0) +
-              (nextAction == BuildingQueueAction.CONSTRUCT ? 1 : -1);
-          assert nextLevel >= 0;
-
-          var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
-          nextCost.sub(cost);
-          if (!resources.greaterOrEqual(nextCost)) {
-            downMovable = cancelable = false;
-          }
-
-          var nextRequiredEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevel);
-          if (nextRequiredEnergy > totalEnergy) {
-            downMovable = cancelable = false;
-          }
-
-          var nextItem = Item.get(nextKind);
-          if (!ItemRequirementsUtils.meetsTechnologiesRequirements(nextItem, user)) {
-            downMovable = cancelable = false;
-          }
-        }
-
-        queue.add(new BuildingQueueEntryDto(Converter.convert(kind), entry.getKey(), levelFrom, levelTo,
-            Converter.convert(cost), requiredEnergy, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable,
-            cancelable));
-
-        if (action == BuildingQueueAction.CONSTRUCT) {
-          state.construct(kind);
-        } else {
-          state.destroy(kind);
-        }
-
-        first = false;
-        upMovable = downMovable;
-      } while (next != null);
-    }
-
-    boolean canConstruct = state.usedFields < state.maxFields && queue.size() < buildingQueueCapacity;
-    List<BuildingDto> buildings = new ArrayList<>();
-    for (Map.Entry<BuildingKind, BuildingItem> entry : BuildingItem.getAll().entrySet()) {
-      BuildingKind kind = entry.getKey();
-      BuildingItem item = entry.getValue();
-      boolean meetsRequirements = item.meetsSpecialRequirements(body) &&
-          ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) && (!queue.isEmpty() ||
-          ItemRequirementsUtils.meetsTechnologiesRequirements(item, user));
-      var futureLevel = state.buildings.get(kind);
-      if (meetsRequirements || futureLevel > 0) {
-        var currentLevel = body.getBuildingLevel(kind);
-
-        var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
-        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
-        long constructionTime = getConstructionTime(cost, state.buildings);
-        boolean canConstructNow = canConstruct && meetsRequirements &&
-            (!queue.isEmpty() || (resources.greaterOrEqual(cost) && totalEnergy >= requiredEnergy));
-
-        buildings.add(new BuildingDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost),
-            requiredEnergy, constructionTime, canConstructNow));
-      }
-    }
-    // Keep the order defined in the service layer.
-    buildings.sort(Comparator.comparing(BuildingDto::getKind));
-
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var production = bodyServiceInternal.getProduction(body);
+    var state = new State(body, null);
+    var queue = getQueueAndUpdateState(state, body, production);
+    var buildings = getBuildings(state, body, production, queue.size());
     return new BuildingsAndQueuePairDto(buildings, queue);
+  }
+
+  private static int getLevelWithAction(int curLevel, BuildingQueueAction action) {
+    assert action == BuildingQueueAction.CONSTRUCT || action == BuildingQueueAction.DESTROY;
+    var nextLevel = curLevel + (action == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    assert nextLevel >= 0;
+    return nextLevel;
+  }
+
+  private List<BuildingQueueEntryDto> getQueueAndUpdateState(State state, Body body, ProductionDto production) {
+    var queue = body.getBuildingQueue();
+    var ret = new ArrayList<BuildingQueueEntryDto>(queue.size());
+
+    if (queue.size() == 0) {
+      return ret;
+    }
+
+    var it = queue.entrySet().iterator();
+    var next = it.next();
+    var first = true;
+    var finishAt = 0L;
+    var upMovable = false;
+    do {
+      var cur = next;
+      next = it.hasNext() ? it.next() : null;
+
+      var curKind = cur.getValue().kind();
+      var curAction = cur.getValue().action();
+
+      var curLevelFrom = state.buildings.getOrDefault(curKind, 0);
+      var curLevelTo = getLevelWithAction(curLevelFrom, curAction);
+      var curCost = ItemCostUtils.getCost(curKind, curLevelTo);
+      var curEnergy = ItemCostUtils.getRequiredEnergy(curKind, curLevelTo);
+
+      if (first) {
+        var event = eventRepository.findFirstByKindAndParam(EventKind.BUILDING_QUEUE, body.getId());
+        Assert.isTrue(event.isPresent(), "Event must be present");
+        finishAt = event.get().getAt().toInstant().getEpochSecond();
+      } else {
+        long requiredTime;
+        if (curAction == BuildingQueueAction.CONSTRUCT) {
+          requiredTime = getConstructionTime(curCost, state.buildings);
+        } else {
+          requiredTime = getDestructionTime(curCost, state.buildings);
+        }
+        finishAt += requiredTime;
+      }
+
+      // Check dependencies of the subsequent entries.
+      var tail = queue.tailMap(cur.getKey());
+      var downMovable = canSwapTop(state, tail);
+      var cancelable = canRemoveTop(state, tail);
+
+      // Moving down or cancelling the first entry is equivalent to building the second one, which is the reason
+      // for checking resources.
+      if (first && next != null) {
+        var nextKind = next.getValue().kind();
+        var nextAction = next.getValue().action();
+
+        var nextLevelFrom = state.buildings.getOrDefault(nextKind, 0);
+        var nextLevelTo = getLevelWithAction(nextLevelFrom, nextAction);
+        var nextCost = ItemCostUtils.getCost(nextKind, nextLevelTo);
+        var nextEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevelTo);
+
+        // If we cancel the current building, we will have curCost more resources.
+        nextCost.sub(curCost);
+
+        if (!body.getResources().greaterOrEqual(nextCost) || nextEnergy > production.totalEnergy() ||
+            !ItemRequirementsUtils.meetsTechnologiesRequirements(Item.get(nextKind), body.getUser())) {
+          downMovable = cancelable = false;
+        }
+      }
+
+      ret.add(new BuildingQueueEntryDto(Converter.convert(curKind), cur.getKey(), curLevelFrom, curLevelTo,
+          Converter.convert(curCost), curEnergy, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable,
+          cancelable));
+
+      if (curAction == BuildingQueueAction.CONSTRUCT) {
+        state.construct(curKind);
+      } else {
+        state.destroy(curKind);
+      }
+
+      first = false;
+      upMovable = downMovable;
+    } while (next != null);
+
+    return ret;
+  }
+
+  private List<BuildingDto> getBuildings(State state, Body body, ProductionDto production, int queueSize) {
+    var buildings = new ArrayList<BuildingDto>(BuildingKindDto.values().length);
+
+    for (var entry : BuildingItem.getAll().entrySet()) {
+      var kind = entry.getKey();
+      var item = entry.getValue();
+
+      var currentLevel = body.getBuildingLevel(kind);
+      var futureLevel = state.buildings.get(kind);
+
+      var meetsRequirements = item.meetsSpecialRequirements(body) &&
+          ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) &&
+          (queueSize > 0 || ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()));
+
+      // Show the building even if it doesn't meet the requirements.
+      var show = futureLevel > 0 || meetsRequirements;
+      if (!show) {
+        continue;
+      }
+
+      var nextLevel = futureLevel + 1;
+      var cost = ItemCostUtils.getCost(kind, nextLevel);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, nextLevel);
+      var constructionTime = getConstructionTime(cost, state.buildings);
+
+      var hasEnoughFields = state.usedFields < state.maxFields;
+      var isQueueNotFull = queueSize < buildingQueueCapacity;
+      var hasEnoughResources = body.getResources().greaterOrEqual(cost);
+      var hasEnoughEnergy = production.totalEnergy() >= requiredEnergy;
+      var canConstructNow = hasEnoughFields && isQueueNotFull && meetsRequirements &&
+          (queueSize > 0 || (hasEnoughResources && hasEnoughEnergy));
+
+      buildings.add(
+          new BuildingDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
+              constructionTime, canConstructNow));
+    }
+
+    return buildings;
   }
 
   @Override
@@ -275,7 +287,7 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
     var first = buildingQueue.get(buildingQueue.firstKey());
     assert first != null;
-    var level = body.getBuildingLevel(first.kind()) + (first.action() == BuildingQueueAction.CONSTRUCT ? 1 : -1);
+    var level = getLevelWithAction(body.getBuildingLevel(first.kind()), first.action());
     return Optional.of(new OngoingBuildingDto(first.kind(), level));
   }
 
