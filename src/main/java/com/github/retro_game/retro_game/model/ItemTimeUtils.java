@@ -1,5 +1,6 @@
 package com.github.retro_game.retro_game.model;
 
+import com.github.retro_game.retro_game.dto.ProductionDto;
 import com.github.retro_game.retro_game.entity.Resources;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -88,8 +89,29 @@ public class ItemTimeUtils {
     ms /= 1 + shipyardLevel;
     ms >>= naniteFactoryLevel;
     ms /= unitConstructionSpeed;
-    if (ms >= 1000)
+    if (ms >= 1000) {
       return ms / 1000 * 1000;
+    }
     return Math.max(minShipyardTime, ms);
+  }
+
+  // Other
+
+  public static Long calcAccumulateTime(Resources resources, ProductionDto production) {
+    var m = calcAccumulateTime(resources.getMetal(), production.metalProduction());
+    var c = calcAccumulateTime(resources.getCrystal(), production.crystalProduction());
+    var d = calcAccumulateTime(resources.getDeuterium(), production.deuteriumProduction());
+    if (m == null || c == null || d == null) {
+      return null;
+    }
+    return Math.max(Math.max(m, c), d);
+  }
+
+  private static Long calcAccumulateTime(double resources, int production) {
+    assert production >= 0;
+    if (resources > 0 && production == 0) {
+      return null;
+    }
+    return (long) Math.ceil(resources / (production / 3600.0));
   }
 }

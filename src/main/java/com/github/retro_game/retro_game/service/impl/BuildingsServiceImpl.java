@@ -2,10 +2,7 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
-import com.github.retro_game.retro_game.model.Item;
-import com.github.retro_game.retro_game.model.ItemCostUtils;
-import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
-import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.*;
 import com.github.retro_game.retro_game.model.building.BuildingItem;
 import com.github.retro_game.retro_game.repository.BodyRepository;
 import com.github.retro_game.retro_game.repository.EventRepository;
@@ -241,6 +238,24 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
       var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, nextLevel);
       var constructionTime = getConstructionTime(cost, state.buildings);
 
+      var missingResources = new Resources(cost);
+      missingResources.sub(body.getResources());
+      missingResources.max(0.0);
+      Date costAccumulatedAt = null;
+      var neededSmallCargoes = 0L;
+      var neededLargeCargoes = 0L;
+      if (missingResources.getMetal() > 0.0 || missingResources.getCrystal() > 0.0 ||
+          missingResources.getDeuterium() > 0.0) {
+        neededSmallCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.SMALL_CARGO, missingResources);
+        neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
+
+        var accumulateTime = ItemTimeUtils.calcAccumulateTime(missingResources, production);
+        if (accumulateTime != null) {
+          var now = body.getUpdatedAt();
+          costAccumulatedAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + accumulateTime));
+        }
+      }
+
       var hasEnoughFields = state.usedFields < state.maxFields;
       var isQueueNotFull = queueSize < buildingQueueCapacity;
       var hasEnoughResources = body.getResources().greaterOrEqual(cost);
@@ -250,7 +265,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
 
       buildings.add(
           new BuildingDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
-              constructionTime, canConstructNow));
+              constructionTime, Converter.convert(missingResources), neededSmallCargoes, neededLargeCargoes,
+              costAccumulatedAt, canConstructNow));
     }
 
     return buildings;
@@ -315,7 +331,8 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
 
     var item = Item.get(k);
-    if (!item.meetsSpecialRequirements(body) || !ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) ||
+    if (!item.meetsSpecialRequirements(body) ||
+        !ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) ||
         (queue.isEmpty() && !ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()))) {
       logger.info("Constructing building failed, requirements not met: bodyId={} kind={}", bodyId, k);
       throw new RequirementsNotMetException();

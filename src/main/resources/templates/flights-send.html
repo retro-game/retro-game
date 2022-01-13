@@ -193,7 +193,7 @@
       <tr>
         <td th:text="#{metal}">Metal</td>
         <td>
-          <input id="metal" name="metal" type="number">
+          <input id="metal" name="metal" type="number" th:value="${metal != null ? metal : ''}">
           <button data-set-max-resource="metal" th:text="#{max}">Max</button>
           <button data-set data-set-for="metal" data-set-value="" th:text="#{reset}">Reset</button>
         </td>
@@ -201,7 +201,7 @@
       <tr>
         <td th:text="#{crystal}">Crystal</td>
         <td>
-          <input id="crystal" name="crystal" type="number">
+          <input id="crystal" name="crystal" type="number" th:value="${crystal != null ? crystal : ''}">
           <button data-set-max-resource="crystal" th:text="#{max}">Max</button>
           <button data-set data-set-for="crystal" data-set-value="" th:text="#{reset}">Reset</button>
         </td>
@@ -209,7 +209,7 @@
       <tr>
         <td th:text="#{deuterium}">Deuterium</td>
         <td>
-          <input id="deuterium" name="deuterium" type="number">
+          <input id="deuterium" name="deuterium" type="number" th:value="${deuterium != null ? deuterium : ''}">
           <button data-set-max-resource="deuterium" th:text="#{max}">Max</button>
           <button data-set data-set-for="deuterium" data-set-value="" th:text="#{reset}">Reset</button>
         </td>

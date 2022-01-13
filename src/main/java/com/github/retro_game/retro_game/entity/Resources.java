@@ -56,6 +56,12 @@ public class Resources {
     deuterium = Math.floor(deuterium);
   }
 
+  public void max(double scalar) {
+    metal = Math.max(metal, scalar);
+    crystal = Math.max(crystal, scalar);
+    deuterium = Math.max(deuterium, scalar);
+  }
+
   public boolean less(Resources rhs) {
     return metal < rhs.metal && crystal < rhs.crystal && deuterium < rhs.deuterium;
   }

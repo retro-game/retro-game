@@ -126,6 +126,9 @@ public class FlightsController {
                      @RequestParam(required = false) Integer position,
                      @RequestParam(required = false) CoordinatesKindDto kind,
                      @RequestParam(required = false) MissionDto mission,
+                     @RequestParam(required = false) Long metal,
+                     @RequestParam(required = false) Long crystal,
+                     @RequestParam(required = false) Long deuterium,
                      @RequestParam(required = false) Map<String, String> params,
                      @RequestParam(required = false) FlightErrorDto error,
                      Model model) {
@@ -148,6 +151,9 @@ public class FlightsController {
     model.addAttribute("position", p);
     model.addAttribute("kind", k);
     model.addAttribute("mission", mission);
+    model.addAttribute("metal", metal);
+    model.addAttribute("crystal", crystal);
+    model.addAttribute("deuterium", deuterium);
     model.addAttribute("params", params);
     model.addAttribute("error", error);
     model.addAttribute("ctx", ctx);

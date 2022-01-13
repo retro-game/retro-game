@@ -11,6 +11,10 @@ public class ResourcesDto {
     this.deuterium = deuterium;
   }
 
+  public double total() {
+    return metal + crystal + deuterium;
+  }
+
   public double getMetal() {
     return metal;
   }
