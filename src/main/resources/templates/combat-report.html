@@ -14,7 +14,17 @@
 <body>
 <div class="container">
   <div>
-    <div>
+    <div th:if="${report == null}">
+      <table>
+        <tr>
+          <th th:text="#{error}">Error</th>
+        </tr>
+        <tr>
+          <td th:text="#{reportDoesNotExist}">This report does not exist.</td>
+        </tr>
+      </table>
+    </div>
+    <div th:if="${report != null}">
       <p th:text="#{onDateFollowingFleetsMetInBattleFormat(${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')})}">
         On 2006-06-06 03:00:00 the following fleets met in battle:
       </p>

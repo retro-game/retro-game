@@ -2,7 +2,9 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.cache.UserInfoCache;
 import com.github.retro_game.retro_game.dto.CombatReportCombatantDto;
+import com.github.retro_game.retro_game.dto.CombatReportDto;
 import com.github.retro_game.retro_game.service.CombatReportService;
+import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +26,21 @@ public class CombatReportController {
 
   @GetMapping("/combat-report")
   public String combatReport(@RequestParam UUID id, Model model) {
-    var report = combatReportService.get(id);
-    var userIds =
-        Stream.concat(report.attackers().stream(), report.defenders().stream()).map(CombatReportCombatantDto::userId)
-            .collect(Collectors.toSet());
-    var userInfos = userInfoCache.getAll(userIds);
+    CombatReportDto report = null;
+    try {
+      report = combatReportService.get(id);
+    } catch (ReportDoesNotExistException ignored) {
+    }
     model.addAttribute("report", report);
-    model.addAttribute("userInfos", userInfos);
+
+    if (report != null) {
+      var userIds =
+          Stream.concat(report.attackers().stream(), report.defenders().stream()).map(CombatReportCombatantDto::userId)
+              .collect(Collectors.toSet());
+      var userInfos = userInfoCache.getAll(userIds);
+      model.addAttribute("userInfos", userInfos);
+    }
+
     return "combat-report";
   }
 }
