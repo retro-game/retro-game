@@ -8,7 +8,7 @@ import com.github.retro_game.retro_game.entity.CombatReport;
 import com.github.retro_game.retro_game.entity.Resources;
 import com.github.retro_game.retro_game.repository.CombatReportRepository;
 import com.github.retro_game.retro_game.security.CustomUser;
-import com.github.retro_game.retro_game.service.exception.ReportDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,7 +60,7 @@ public class CombatReportServiceImpl implements CombatReportServiceInternal {
     var reportOpt = combatReportRepository.findById(id);
     if (reportOpt.isEmpty()) {
       logger.warn("Getting combat report failed, report doesn't exist: userId={} reportId={}", userId, id);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     var report = reportOpt.get();
 

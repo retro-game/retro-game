@@ -6,7 +6,7 @@ import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.ActivityService;
-import com.github.retro_game.retro_game.service.exception.ReportDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedReportAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +162,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     if (!reportOptional.isPresent()) {
       logger.warn("Deleting simplified combat report failed, report doesn't exist: userId={} reportId={}",
           userId, reportId);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     SimplifiedCombatReport report = reportOptional.get();
 
@@ -303,14 +303,14 @@ class ReportServiceImpl implements ReportServiceInternal {
     Optional<EspionageReport> reportOptional = espionageReportRepository.findById(id);
     if (!reportOptional.isPresent()) {
       logger.warn("Getting espionage report failed, report doesn't exist: userId={} reportId={}", userId, id);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     EspionageReport report = reportOptional.get();
 
     byte[] t = Base64.getUrlDecoder().decode(token);
     if (!MessageDigest.isEqual(t, report.getToken())) {
       logger.warn("Getting espionage report failed, wrong token: userId={} reportId={}", userId, id);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
 
     logger.info("Getting espionage report: userId={} reportId={}", userId, id);
@@ -400,7 +400,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     Optional<EspionageReport> reportOptional = espionageReportRepository.findById(reportId);
     if (!reportOptional.isPresent()) {
       logger.warn("Deleting espionage report failed, report doesn't exist: userId={} reportId={}", userId, reportId);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     EspionageReport report = reportOptional.get();
 
@@ -492,7 +492,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     Optional<HarvestReport> reportOptional = harvestReportRepository.findById(reportId);
     if (!reportOptional.isPresent()) {
       logger.warn("Deleting harvest report failed, report doesn't exist: userId={} reportId={}", userId, reportId);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     HarvestReport report = reportOptional.get();
 
@@ -560,7 +560,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     Optional<TransportReport> reportOptional = transportReportRepository.findById(reportId);
     if (!reportOptional.isPresent()) {
       logger.warn("Deleting transport report failed, report doesn't exist: userId={} reportId={}", userId, reportId);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     TransportReport report = reportOptional.get();
 
@@ -675,7 +675,7 @@ class ReportServiceImpl implements ReportServiceInternal {
     Optional<OtherReport> reportOptional = otherReportRepository.findById(reportId);
     if (!reportOptional.isPresent()) {
       logger.warn("Deleting other report failed, report doesn't exist: userId={} reportId={}", userId, reportId);
-      throw new ReportDoesntExistException();
+      throw new ReportDoesNotExistException();
     }
     OtherReport report = reportOptional.get();
 

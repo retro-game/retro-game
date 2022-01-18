@@ -11,7 +11,7 @@ import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.PrivateMessageService;
 import com.github.retro_game.retro_game.service.exception.PrivateMessageDoesNotExist;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedPrivateMessageAccessException;
-import com.github.retro_game.retro_game.service.exception.UserDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.UserDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +44,7 @@ class PrivateMessagesServiceImpl implements PrivateMessageService {
     if (!userRepository.existsById(recipientId)) {
       logger.warn("Sending private message failed, recipient does not exist: userId={} recipientId={}", userId,
           recipientId);
-      throw new UserDoesntExistException();
+      throw new UserDoesNotExistException();
     }
 
     logger.info("Sending private message: userId={} recipientId={}", userId, recipientId);

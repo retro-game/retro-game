@@ -492,7 +492,7 @@ class AllianceServiceImpl implements AllianceServiceInternal {
       logger.warn("Kicking user from alliance failed, user to be kicked does not exist: userId={} allianceId={} " +
               "userIdToKick={}",
           tuple.user.getId(), allianceId, userIdToKick);
-      throw new UserDoesntExistException();
+      throw new UserDoesNotExistException();
     }
     User userToKick = optionalUserToKick.get();
 

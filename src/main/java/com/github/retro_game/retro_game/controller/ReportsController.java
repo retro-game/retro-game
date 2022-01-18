@@ -7,7 +7,7 @@ import com.github.retro_game.retro_game.controller.form.DeleteReportResponse;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.ReportService;
 import com.github.retro_game.retro_game.service.UserService;
-import com.github.retro_game.retro_game.service.exception.ReportDoesntExistException;
+import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedReportAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -147,7 +147,7 @@ public class ReportsController {
     try {
       reportService.deleteSimplifiedCombatReport(form.getBodyId(), form.getReportId());
       response.setSuccess(true);
-    } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
+    } catch (ReportDoesNotExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
     return response;
@@ -195,7 +195,7 @@ public class ReportsController {
     try {
       reportService.deleteEspionageReport(form.getBodyId(), form.getReportId());
       response.setSuccess(true);
-    } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
+    } catch (ReportDoesNotExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
     return response;
@@ -241,7 +241,7 @@ public class ReportsController {
     try {
       reportService.deleteHarvestReport(form.getBodyId(), form.getReportId());
       response.setSuccess(true);
-    } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
+    } catch (ReportDoesNotExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
     return response;
@@ -287,7 +287,7 @@ public class ReportsController {
     try {
       reportService.deleteTransportReport(form.getBodyId(), form.getReportId());
       response.setSuccess(true);
-    } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
+    } catch (ReportDoesNotExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
     return response;
@@ -329,7 +329,7 @@ public class ReportsController {
     try {
       reportService.deleteOtherReport(form.getBodyId(), form.getReportId());
       response.setSuccess(true);
-    } catch (ReportDoesntExistException | UnauthorizedReportAccessException e) {
+    } catch (ReportDoesNotExistException | UnauthorizedReportAccessException e) {
       response.setSuccess(false);
     }
     return response;

@@ -148,7 +148,7 @@ class PartyServiceImpl implements PartyService {
     if (!inviteeOptional.isPresent()) {
       logger.info("Inviting user to party failed, user doesn't exist: userId={} partyId={} inviteeName='{}'", userId,
           partyId, inviteeName);
-      throw new UserDoesntExistException();
+      throw new UserDoesNotExistException();
     }
     User invitee = inviteeOptional.get();
 

@@ -134,7 +134,7 @@ class UserServiceImpl implements UserServiceInternal {
   @Override
   public boolean checkCurrentUserPassword(String password) {
     long userId = CustomUser.getCurrentUserId();
-    String encodedPassword = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new).getPassword();
+    String encodedPassword = userRepository.findById(userId).orElseThrow(UserDoesNotExistException::new).getPassword();
     return passwordEncoder.matches(password, encodedPassword);
   }
 
@@ -155,7 +155,7 @@ class UserServiceImpl implements UserServiceInternal {
 
   @Override
   public String getName(long userId) {
-    return userRepository.findById(userId).orElseThrow(UserDoesntExistException::new).getName();
+    return userRepository.findById(userId).orElseThrow(UserDoesNotExistException::new).getName();
   }
 
   @Override
@@ -166,7 +166,7 @@ class UserServiceImpl implements UserServiceInternal {
   @Override
   public UserSettingsDto getCurrentUserSettings() {
     long userId = CustomUser.getCurrentUserId();
-    User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
+    User user = userRepository.findById(userId).orElseThrow(UserDoesNotExistException::new);
     return getUserSettings(user);
   }
 
@@ -191,7 +191,7 @@ class UserServiceImpl implements UserServiceInternal {
       flags |= UserFlag.STICKY_MOONS;
 
     long userId = CustomUser.getCurrentUserId();
-    User user = userRepository.findById(userId).orElseThrow(UserDoesntExistException::new);
+    User user = userRepository.findById(userId).orElseThrow(UserDoesNotExistException::new);
     user.setLanguage(settings.getLanguage());
     user.setSkin(settings.getSkin());
     user.setNumProbes(settings.getNumProbes());
@@ -353,7 +353,7 @@ class UserServiceImpl implements UserServiceInternal {
     Optional<User> userOptional = userRepository.findByNameIgnoreCase(name);
     if (!userOptional.isPresent()) {
       logger.info("Banning user failed, user doesn't exist: adminId={}", adminId);
-      throw new UserDoesntExistException();
+      throw new UserDoesNotExistException();
     }
     User user = userOptional.get();
 
@@ -382,7 +382,7 @@ class UserServiceImpl implements UserServiceInternal {
     Optional<User> userOptional = userRepository.findByNameIgnoreCase(name);
     if (!userOptional.isPresent()) {
       logger.info("Unbanning user failed, user doesn't exist: adminId={}", adminId);
-      throw new UserDoesntExistException();
+      throw new UserDoesNotExistException();
     }
     User user = userOptional.get();
 
