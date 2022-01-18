@@ -7,8 +7,6 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 
 public interface ReportService {
-  CombatReportDto getCombatReport(long id, String token);
-
   EspionageReportDto getEspionageReport(long id, String token);
 
   ReportsSummaryDto getSummary(long bodyId);

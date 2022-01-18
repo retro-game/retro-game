@@ -219,9 +219,10 @@ create index events_kind_param_idx
 -- Combat reports
 
 create table combat_reports (
-  id bigserial primary key,
-  token bytea not null,
+  id uuid primary key,
   at timestamptz not null,
+  attackers bigint[] not null,
+  defenders bigint[] not null,
   result int not null check (result between 0 and 2),
   attackers_loss bigint not null check (attackers_loss >= 0),
   defenders_loss bigint not null check (defenders_loss >= 0),
@@ -260,8 +261,7 @@ create table simplified_combat_reports (
   debris_crystal bigint not null check (debris_crystal >= 0),
   moon_chance real not null,
   moon_given boolean not null,
-  combat_report_id bigint references combat_reports on delete cascade,
-  token bytea
+  combat_report_id uuid
 );
 
 create index simplified_combat_reports_user_id_deleted_at_idx

@@ -1,8 +1,5 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.battleengine.BattleOutcome;
-import com.github.retro_game.retro_game.battleengine.Combatant;
-import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
@@ -41,7 +38,6 @@ import java.util.stream.Stream;
 class ReportServiceImpl implements ReportServiceInternal {
   private static final int TOKEN_BITS = 128;
   private static final Logger logger = LoggerFactory.getLogger(ReportServiceImpl.class);
-  private final CombatReportRepository combatReportRepository;
   private final EspionageReportRepository espionageReportRepository;
   private final HarvestReportRepository harvestReportRepository;
   private final OtherReportRepository otherReportRepository;
@@ -51,12 +47,10 @@ class ReportServiceImpl implements ReportServiceInternal {
   private BodyServiceInternal bodyServiceInternal;
   private ActivityService activityService;
 
-  public ReportServiceImpl(CombatReportRepository combatReportRepository,
-                           EspionageReportRepository espionageReportRepository,
+  public ReportServiceImpl(EspionageReportRepository espionageReportRepository,
                            HarvestReportRepository harvestReportRepository, OtherReportRepository otherReportRepository,
                            SimplifiedCombatReportRepository simplifiedCombatReportRepository,
                            TransportReportRepository transportReportRepository, UserRepository userRepository) {
-    this.combatReportRepository = combatReportRepository;
     this.espionageReportRepository = espionageReportRepository;
     this.harvestReportRepository = harvestReportRepository;
     this.otherReportRepository = otherReportRepository;
@@ -84,7 +78,8 @@ class ReportServiceImpl implements ReportServiceInternal {
   }
 
   @Override
-  @Cacheable(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @Cacheable(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public ReportsSummaryDto getSummary(long bodyId) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);
@@ -103,293 +98,6 @@ class ReportServiceImpl implements ReportServiceInternal {
   }
 
   @Override
-  @Transactional
-  public CombatReport createCombatReport(Date at, List<Combatant> attackers, List<Combatant> defenders,
-                                         BattleOutcome battleOutcome, BattleResult result, Resources attackersLoss,
-                                         Resources defendersLoss, Resources plunder, long debrisMetal,
-                                         long debrisCrystal, double moonChance, boolean moonGiven, int seed,
-                                         long executionTime) {
-    long aLoss = (long) (attackersLoss.getMetal() + attackersLoss.getCrystal() + attackersLoss.getDeuterium());
-    long dLoss = (long) (defendersLoss.getMetal() + defendersLoss.getCrystal() + defendersLoss.getDeuterium());
-
-    try {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      DataOutputStream stream = new DataOutputStream(byteArrayOutputStream);
-
-      storeCombatants(stream, attackers);
-      storeCombatants(stream, defenders);
-
-      int numRounds = battleOutcome.getNumRounds();
-      assert numRounds >= 1 && numRounds <= 256;
-      stream.writeByte(numRounds - 1);
-
-      var attackersOutcomes = battleOutcome.getAttackersOutcomes();
-      var defendersOutcomes = battleOutcome.getDefendersOutcomes();
-      for (int round = 0; round < numRounds; round++) {
-        storeCombatantsOutcomes(stream, attackers, attackersOutcomes, round);
-        storeCombatantsOutcomes(stream, defenders, defendersOutcomes, round);
-      }
-
-      CombatReport report = new CombatReport();
-      report.setToken(generateRandomToken());
-      report.setAt(at);
-      report.setResult(result);
-      report.setAttackersLoss(aLoss);
-      report.setDefendersLoss(dLoss);
-      report.setPlunder(plunder);
-      report.setDebrisMetal(debrisMetal);
-      report.setDebrisCrystal(debrisCrystal);
-      report.setMoonChance(moonChance);
-      report.setMoonGiven(moonGiven);
-      report.setSeed(seed);
-      report.setExecutionTime(executionTime);
-      report.setData(byteArrayOutputStream.toByteArray());
-      return combatReportRepository.save(report);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  @Override
-  public CombatReportDto getCombatReport(long id, String token) {
-    long userId = 0;
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth != null && auth.getPrincipal() instanceof CustomUser) {
-      userId = ((CustomUser) auth.getPrincipal()).getUserId();
-    }
-
-    Optional<CombatReport> reportOptional = combatReportRepository.findById(id);
-    if (!reportOptional.isPresent()) {
-      logger.warn("Getting combat report failed, report doesn't exist: userId={} reportId={}", userId, id);
-      throw new ReportDoesntExistException();
-    }
-    CombatReport report = reportOptional.get();
-
-    byte[] t = Base64.getUrlDecoder().decode(token);
-    if (!MessageDigest.isEqual(t, report.getToken())) {
-      logger.warn("Getting combat report failed, wrong token: userId={} reportId={}", userId, id);
-      throw new ReportDoesntExistException();
-    }
-
-    logger.info("Getting combat report: userId={} reportId={}", userId, id);
-    try {
-      byte[] data = report.getData();
-
-      DataInputStream stream = new DataInputStream(new ByteArrayInputStream(data));
-      Map<Long, User> users = findUsers(stream);
-
-      stream = new DataInputStream(new ByteArrayInputStream(data));
-      List<CombatReportCombatantDto> attackers = loadCombatants(stream, users);
-      List<CombatReportCombatantDto> defenders = loadCombatants(stream, users);
-      List<CombatReportRoundDto> rounds = loadRounds(stream, users);
-
-      return new CombatReportDto(report.getAt(), attackers, defenders, rounds, Converter.convert(report.getResult()),
-          report.getAttackersLoss(), report.getDefendersLoss(), Converter.convert(report.getPlunder()),
-          report.getDebrisMetal(), report.getDebrisCrystal(), report.getMoonChance(), report.isMoonGiven(),
-          report.getSeed(), report.getExecutionTime());
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
-  private void storeCombatants(DataOutputStream stream, List<Combatant> combatants) throws IOException {
-    int numCombatants = combatants.size();
-    assert numCombatants >= 1 && numCombatants <= 256;
-    stream.writeByte(numCombatants - 1);
-    for (Combatant combatant : combatants) {
-      storeCombatant(stream, combatant);
-    }
-  }
-
-  private List<CombatReportCombatantDto> loadCombatants(DataInputStream stream, Map<Long, User> users)
-      throws IOException {
-    int numCombatants = stream.readUnsignedByte() + 1;
-    List<CombatReportCombatantDto> combatants = new ArrayList<>(numCombatants);
-    for (int i = 0; i < numCombatants; i++) {
-      combatants.add(loadCombatant(stream, users));
-    }
-    return combatants;
-  }
-
-  private void storeCombatant(DataOutputStream stream, Combatant combatant) throws IOException {
-    stream.writeLong(combatant.getUserId());
-
-    Coordinates coords = combatant.getCoordinates();
-    stream.writeInt(coords.getGalaxy());
-    stream.writeInt(coords.getSystem());
-    stream.writeInt(coords.getPosition());
-    stream.writeByte(coords.getKind().ordinal());
-
-    stream.writeByte(combatant.getWeaponsTechnology());
-    stream.writeByte(combatant.getShieldingTechnology());
-    stream.writeByte(combatant.getArmorTechnology());
-
-    var unitGroups = combatant.getUnitGroups();
-    assert UnitKind.values().length <= Byte.MAX_VALUE;
-    stream.writeByte((int) unitGroups.values().stream().filter(i -> i != 0).count() - 1);
-    for (var entry : unitGroups.entrySet()) {
-      var kind = entry.getKey();
-      var count = entry.getValue();
-      if (count != 0) {
-        assert count > 0;
-        stream.writeByte(kind.ordinal());
-        stream.writeLong(count);
-      }
-    }
-  }
-
-  private CombatReportCombatantDto loadCombatant(DataInputStream stream, Map<Long, User> users) throws IOException {
-    long id = stream.readLong();
-    assert id > 0;
-    User user = users.get(id);
-    String name = user != null ? user.getName() : "[deleted]";
-
-    int g = stream.readInt();
-    int s = stream.readInt();
-    int p = stream.readInt();
-    CoordinatesKind k = CoordinatesKind.values()[stream.readUnsignedByte()];
-    CoordinatesDto coords = Converter.convert(new Coordinates(g, s, p, k));
-
-    int weaponsTechnology = stream.readUnsignedByte();
-    int shieldingTechnology = stream.readUnsignedByte();
-    int armorTechnology = stream.readUnsignedByte();
-
-    int numGroups = stream.readUnsignedByte() + 1;
-    Map<UnitKindDto, CombatReportUnitGroupDto> unitGroups = new EnumMap<>(UnitKindDto.class);
-    for (int i = 0; i < numGroups; i++) {
-      UnitKind kind = UnitKind.values()[stream.readUnsignedByte()];
-      long numUnits = stream.readLong();
-      assert numUnits > 0;
-
-      UnitItem item = UnitItem.getAll().get(kind);
-      double weapons = (1.0 + 0.1 * weaponsTechnology) * item.getBaseWeapons();
-      double shields = (1.0 + 0.1 * shieldingTechnology) * item.getBaseShield();
-      double armor = (1.0 + 0.1 * armorTechnology) * item.getBaseArmor();
-
-      unitGroups.put(Converter.convert(kind), new CombatReportUnitGroupDto(numUnits, weapons, shields, armor));
-    }
-
-    return new CombatReportCombatantDto(name, coords, weaponsTechnology, shieldingTechnology, armorTechnology,
-        unitGroups);
-  }
-
-  private void storeCombatantsOutcomes(DataOutputStream stream, List<Combatant> combatants,
-                                       List<CombatantOutcome> outcomes, int round) throws IOException {
-    int[] numActiveGroups = outcomes.stream()
-        .mapToInt(outcome -> (int) outcome.getNthRoundUnitGroupsStats(round).values().stream()
-            .filter(s -> s.getTimesFired() > 0)
-            .count())
-        .toArray();
-
-    int numActiveCombatants = (int) Arrays.stream(numActiveGroups)
-        .filter(n -> n != 0)
-        .count();
-    assert numActiveCombatants >= 1 && numActiveCombatants <= 256;
-    stream.writeByte(numActiveCombatants - 1);
-
-    for (int i = 0; i < outcomes.size(); i++) {
-      if (numActiveGroups[i] != 0) {
-        var combatant = combatants.get(i);
-        stream.writeLong(combatant.getUserId());
-
-        assert numActiveGroups[i] <= 256;
-        stream.writeByte(numActiveGroups[i] - 1);
-
-        var outcome = outcomes.get(i);
-        var unitGroupsStats = outcome.getNthRoundUnitGroupsStats(round);
-        for (var entry : unitGroupsStats.entrySet()) {
-          var kind = entry.getKey();
-          var stats = entry.getValue();
-          var active = stats.getTimesFired() > 0;
-          if (active) {
-            stream.writeByte(kind.ordinal());
-            stream.writeLong(stats.getTimesFired());
-            stream.writeLong(stats.getTimesWasShot());
-            stream.writeLong((long) stats.getShieldDamageDealt());
-            stream.writeLong((long) stats.getHullDamageDealt());
-            stream.writeLong((long) stats.getShieldDamageTaken());
-            stream.writeLong((long) stats.getHullDamageTaken());
-            stream.writeLong(stats.getNumRemainingUnits());
-          }
-        }
-      }
-    }
-  }
-
-  private List<CombatReportRoundDto> loadRounds(DataInputStream stream, Map<Long, User> users) throws IOException {
-    int numRounds = stream.readUnsignedByte() + 1;
-    List<CombatReportRoundDto> rounds = new ArrayList<>(numRounds);
-    for (int i = 0; i < numRounds; i++) {
-      List<CombatReportRoundCombatantDto> attackers = loadRoundCombatants(stream, users);
-      List<CombatReportRoundCombatantDto> defenders = loadRoundCombatants(stream, users);
-      rounds.add(new CombatReportRoundDto(attackers, defenders));
-    }
-    return rounds;
-  }
-
-  private List<CombatReportRoundCombatantDto> loadRoundCombatants(DataInputStream stream, Map<Long, User> users)
-      throws IOException {
-    int numActiveCombatants = stream.readUnsignedByte() + 1;
-    List<CombatReportRoundCombatantDto> combatants = new ArrayList<>(numActiveCombatants);
-    for (int i = 0; i < numActiveCombatants; i++) {
-      combatants.add(loadRoundCombatant(stream, users));
-    }
-    return combatants;
-  }
-
-  private CombatReportRoundCombatantDto loadRoundCombatant(DataInputStream stream, Map<Long, User> users)
-      throws IOException {
-    long id = stream.readLong();
-    User user = users.get(id);
-    String name = user != null ? user.getName() : "[deleted]";
-    Map<UnitKindDto, CombatReportRoundUnitGroupDto> unitGroups = loadRoundUnitGroups(stream);
-    return new CombatReportRoundCombatantDto(name, unitGroups);
-  }
-
-  private Map<UnitKindDto, CombatReportRoundUnitGroupDto> loadRoundUnitGroups(DataInputStream stream)
-      throws IOException {
-    int numActiveGroups = stream.readUnsignedByte() + 1;
-    Map<UnitKindDto, CombatReportRoundUnitGroupDto> groups = new EnumMap<>(UnitKindDto.class);
-    for (int i = 0; i < numActiveGroups; i++) {
-      UnitKind kind = UnitKind.values()[stream.readUnsignedByte()];
-      long timesFired = stream.readLong();
-      long timesWasShot = stream.readLong();
-      long shieldDamageDealt = stream.readLong();
-      long hullDamageDealt = stream.readLong();
-      long shieldDamageTaken = stream.readLong();
-      long hullDamageTaken = stream.readLong();
-      long numRemainingUnits = stream.readLong();
-      groups.put(Converter.convert(kind), new CombatReportRoundUnitGroupDto(numRemainingUnits, timesFired, timesWasShot,
-          shieldDamageDealt, hullDamageDealt, shieldDamageTaken, hullDamageTaken));
-    }
-    return groups;
-  }
-
-  private Map<Long, User> findUsers(DataInputStream stream) throws IOException {
-    Set<Long> ids = new HashSet<>();
-    for (int i = 0; i < 2; i++) {
-      int numCombatants = stream.readUnsignedByte() + 1;
-      for (int j = 0; j < numCombatants; j++) {
-        long id = stream.readLong();
-        ids.add(id);
-
-        // Skip coordinates.
-        stream.skipBytes(4 + 4 + 4 + 1);
-
-        // Skip technologies.
-        stream.skipBytes(3);
-
-        // Skip unit groups.
-        int numGroups = stream.readUnsignedByte() + 1;
-        stream.skipBytes(numGroups * 9);
-      }
-    }
-
-    return userRepository.findByIdIn(ids).stream().collect(Collectors.toMap(User::getId, user -> user));
-  }
-
-  @Override
-  @Transactional
   @CacheEvict(cacheNames = "reportsSummaries", key = "#user.id")
   public void createSimplifiedCombatReport(User user, boolean isAttacker, Date at, User enemy, Coordinates coordinates,
                                            BattleResult result, int numRounds, Resources attackersLoss,
@@ -416,31 +124,17 @@ class ReportServiceImpl implements ReportServiceInternal {
     long aLoss = (long) (attackersLoss.getMetal() + attackersLoss.getCrystal() + attackersLoss.getDeuterium());
     long dLoss = (long) (defendersLoss.getMetal() + defendersLoss.getCrystal() + defendersLoss.getDeuterium());
 
-    SimplifiedCombatReport report = new SimplifiedCombatReport();
-    report.setUser(user);
-    report.setDeleted(false);
-    report.setAt(at);
-    report.setEnemyId(enemy.getId());
-    report.setEnemyName(enemy.getName());
-    report.setCoordinates(coordinates);
-    report.setResult(res);
-    report.setAttackersLoss(aLoss);
-    report.setDefendersLoss(dLoss);
-    report.setPlunder(plunder);
-    report.setDebrisMetal(debrisMetal);
-    report.setDebrisCrystal(debrisCrystal);
-    report.setMoonChance(moonChance);
-    report.setMoonGiven(moonGiven);
-    if (!lostContact && combatReport != null) {
-      report.setCombatReportId(combatReport.getId());
-      report.setToken(combatReport.getToken());
-    }
+    var combatReportId = !lostContact && combatReport != null ? combatReport.getId() : null;
+    var report =
+        new SimplifiedCombatReport(0, user, false, at, enemy.getId(), enemy.getName(), coordinates, res, aLoss, dLoss,
+            plunder, debrisMetal, debrisCrystal, moonChance, moonGiven, combatReportId);
     simplifiedCombatReportRepository.save(report);
   }
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @CacheEvict(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<SimplifiedCombatReportDto> getSimplifiedCombatReports(long bodyId,
                                                                     SimplifiedCombatReportSortOrderDto sortOrder,
                                                                     Sort.Direction direction, Pageable pageable) {
@@ -448,19 +142,13 @@ class ReportServiceImpl implements ReportServiceInternal {
     User user = userRepository.getOne(userId);
     user.setCombatReportsSeenAt(Date.from(Instant.now()));
 
-    List<SimplifiedCombatReport> reports = simplifiedCombatReportRepository.findReports(user,
-        Converter.convert(sortOrder), direction, pageable);
-    List<SimplifiedCombatReportDto> ret = new ArrayList<>(reports.size());
-    for (SimplifiedCombatReport report : reports) {
-      Long combatReportId = report.getCombatReportId();
-      String token = null;
-      if (combatReportId != null) {
-        token = Base64.getUrlEncoder().withoutPadding().encodeToString(report.getToken());
-      }
+    var reports = simplifiedCombatReportRepository.findReports(user, Converter.convert(sortOrder), direction, pageable);
+    var ret = new ArrayList<SimplifiedCombatReportDto>(reports.size());
+    for (var report : reports) {
       ret.add(new SimplifiedCombatReportDto(report.getId(), report.getAt(), report.getEnemyId(), report.getEnemyName(),
           Converter.convert(report.getCoordinates()), Converter.convert(report.getResult()), report.getAttackersLoss(),
           report.getDefendersLoss(), Converter.convert(report.getPlunder()), report.getDebrisMetal(),
-          report.getDebrisCrystal(), report.getMoonChance(), report.isMoonGiven(), combatReportId, token));
+          report.getDebrisCrystal(), report.getMoonChance(), report.isMoonGiven(), report.getCombatReportId()));
     }
     return ret;
   }
@@ -667,7 +355,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @CacheEvict(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<SimplifiedEspionageReportDto> getSimplifiedEspionageReports(long bodyId,
                                                                           EspionageReportSortOrderDto sortOrder,
                                                                           Sort.Direction direction, Pageable pageable) {
@@ -783,7 +472,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @CacheEvict(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<HarvestReportDto> getHarvestReports(long bodyId, HarvestReportSortOrderDto sortOrder,
                                                   Sort.Direction direction, Pageable pageable) {
     long userId = CustomUser.getCurrentUserId();
@@ -850,7 +540,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @CacheEvict(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<TransportReportDto> getTransportReports(long bodyId, TransportReportSortOrderDto sortOrder,
                                                       Sort.Direction direction, Pageable pageable) {
     long userId = CustomUser.getCurrentUserId();
@@ -963,7 +654,8 @@ class ReportServiceImpl implements ReportServiceInternal {
 
   @Override
   @Transactional
-  @CacheEvict(cacheNames = "reportsSummaries", key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
+  @CacheEvict(cacheNames = "reportsSummaries",
+      key = "T(com.github.retro_game.retro_game.security.CustomUser).currentUserId")
   public List<OtherReportDto> getOtherReports(long bodyId, Pageable pageable) {
     long userId = CustomUser.getCurrentUserId();
     User user = userRepository.getOne(userId);

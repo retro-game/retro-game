@@ -54,6 +54,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private final UserRepository userRepository;
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
+  private CombatReportServiceInternal combatReportServiceInternal;
   private EventScheduler eventScheduler;
   private NoobProtectionService noobProtectionService;
   private ReportServiceInternal reportServiceInternal;
@@ -94,6 +95,11 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Autowired
   void setEventScheduler(EventScheduler eventScheduler) {
     this.eventScheduler = eventScheduler;
+  }
+
+  @Autowired
+  public void setCombatReportServiceInternal(CombatReportServiceInternal combatReportServiceInternal) {
+    this.combatReportServiceInternal = combatReportServiceInternal;
   }
 
   @Autowired
@@ -1343,11 +1349,11 @@ class FlightServiceImpl implements FlightServiceInternal {
     // Generate reports.
 
     CombatReport combatReport = null;
-    long combatReportId = 0;
+    UUID combatReportId = null;
     if (fight) {
-      combatReport = reportServiceInternal.createCombatReport(arrivalAt, attackers, defenders, battleOutcome, result,
-          attackersLoss, defendersLoss, plunder, debrisMetal, debrisCrystal, moonChance, moonGiven, seed,
-          executionTime);
+      combatReport =
+          combatReportServiceInternal.create(arrivalAt, attackers, defenders, battleOutcome, result, attackersLoss,
+              defendersLoss, plunder, debrisMetal, debrisCrystal, moonChance, moonGiven, seed, executionTime);
       combatReportId = combatReport.getId();
     }
 

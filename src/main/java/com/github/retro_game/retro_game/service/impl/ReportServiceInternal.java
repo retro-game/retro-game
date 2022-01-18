@@ -1,7 +1,5 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.battleengine.BattleOutcome;
-import com.github.retro_game.retro_game.battleengine.Combatant;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.service.ReportService;
 
@@ -9,11 +7,6 @@ import java.util.Date;
 import java.util.List;
 
 interface ReportServiceInternal extends ReportService {
-  CombatReport createCombatReport(Date at, List<Combatant> attackers, List<Combatant> defenders,
-                                  BattleOutcome battleOutcome, BattleResult result, Resources attackersLoss,
-                                  Resources defendersLoss, Resources plunder, long debrisMetal, long debrisCrystal,
-                                  double moonChance, boolean moonGiven, int seed, long executionTime);
-
   void createSimplifiedCombatReport(User user, boolean isAttacker, Date at, User enemy, Coordinates coordinates,
                                     BattleResult result, int numRounds, Resources attackersLoss,
                                     Resources defendersLoss, Resources plunder, long debrisMetal,

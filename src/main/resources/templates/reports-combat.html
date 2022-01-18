@@ -97,8 +97,7 @@
         </td>
         <td th:text="${#numbers.formatDecimal(100.0 * report.moonChance, 1, 'DEFAULT', 2, 'DEFAULT') + '%' + (report.moonGiven == true ? ' ✓' : '')}"></td>
         <td class="report-actions">
-          <a th:if="${report.combatReportId != null}" class="btn"
-             th:href="@{/combat-report(id=${report.combatReportId},token=${report.token})}">F</a>
+          <a th:if="${report.combatReportId != null}" class="btn" th:href="@{/combat-report(id=${report.combatReportId})}">F</a>
           <a th:unless="${report.combatReportId != null}" class="btn disabled" data-tooltip
              th:with="tooltip=#{${report.combatReportId != null ? 'openFullReport' : (report.result == T(com.github.retro_game.retro_game.dto.CombatResultDto).WIN ? 'noBattle' : 'lostContact')}}"
              th:data-tooltip-title="${tooltip}"

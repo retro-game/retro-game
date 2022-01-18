@@ -9,10 +9,12 @@
 <div class="container">
   <div>
     <div>
-      <div th:fragment="round-combatants(combatants, namePrefix)" class="combat-report-combatants">
+      <div th:fragment="round-combatants(combatants, namePrefix, userInfos)" class="combat-report-combatants">
         <table th:each="combatant : ${combatants}">
-          <tr>
-            <th th:text="${namePrefix + ' ' + combatant.name}"></th>
+          <tr th:with="
+              userInfo=${userInfos.get(combatant.userId)},
+              name=${userInfo != null ? userInfo.name : '[deleted]'}">
+            <th th:text="${namePrefix + ' ' + name}"></th>
           </tr>
           <tr>
             <td>

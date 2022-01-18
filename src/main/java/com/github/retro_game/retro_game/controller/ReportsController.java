@@ -63,12 +63,6 @@ public class ReportsController {
     this.userService = userService;
   }
 
-  @GetMapping("/combat-report")
-  public String combatReport(@RequestParam long id, @RequestParam @NotBlank String token, Model model) {
-    model.addAttribute("report", reportService.getCombatReport(id, token));
-    return "combat-report";
-  }
-
   @GetMapping("/espionage-report")
   public String espionageReport(@RequestParam long id, @RequestParam @NotBlank String token, Model model) {
     EspionageReportDto report = reportService.getEspionageReport(id, token);

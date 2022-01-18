@@ -18,14 +18,14 @@
       <p th:text="#{onDateFollowingFleetsMetInBattleFormat(${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')})}">
         On 2006-06-06 03:00:00 the following fleets met in battle:
       </p>
-      <div th:replace="combat-report-combatants :: combatants(${report.attackers}, #{attacker})"></div>
-      <div th:replace="combat-report-combatants :: combatants(${report.defenders}, #{defender})"></div>
+      <div th:replace="combat-report-combatants :: combatants(${report.attackers}, #{attacker}, ${userInfos})"></div>
+      <div th:replace="combat-report-combatants :: combatants(${report.defenders}, #{defender}, ${userInfos})"></div>
       <th:block th:each="round,iter : ${report.rounds}">
         <p th:text="#{roundFormat(${iter.index + 1})}">
           Round 3:
         </p>
-        <table th:replace="combat-report-round-combatants :: round-combatants(${round.attackers}, #{attacker})"></table>
-        <table th:replace="combat-report-round-combatants :: round-combatants(${round.defenders}, #{defender})"></table>
+        <table th:replace="combat-report-round-combatants :: round-combatants(${round.attackers}, #{attacker}, ${userInfos})"></table>
+        <table th:replace="combat-report-round-combatants :: round-combatants(${round.defenders}, #{defender}, ${userInfos})"></table>
       </th:block>
       <hr>
       <p th:switch="${report.result}">
@@ -65,8 +65,12 @@
       <p th:if="${report.moonGiven}" th:text="#{combatReportMoonGiven}">
         A moon was created!
       </p>
-      <span th:utext="${'<!-- seed=' + report.seed + ' -->'}" th:remove="tag"></span>
-      <span th:utext="${'<!-- executionTime=' + report.executionTime + 'ns -->'}" th:remove="tag"></span>
+      <p>
+        <span th:text="#{seed}">Seed</span>:
+        <strong th:text="${report.seed}"></strong>
+        <span th:text="#{executionTime}">Execution time</span>:
+        <strong th:text="${#numbers.formatInteger(report.executionTime, 1, 'DEFAULT')}"></strong> ns
+      </p>
     </div>
   </div>
 </div>
