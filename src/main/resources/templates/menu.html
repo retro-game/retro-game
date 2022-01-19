@@ -67,6 +67,9 @@
       <li>
         <a th:href="@{/records(body=${bodyId})}" th:text="#{records}">Records</a>
       </li>
+      <li th:if="${@environment.getProperty('retro-game.hall-of-fame-enabled') == 'true'}">
+        <a th:href="@{/hall-of-fame(body=${bodyId})}" th:text="#{hallOfFame}">Hall of Fame</a>
+      </li>
       <li>
         <a th:href="@{/technology-tree(body=${bodyId})}" th:text="#{techTree}">Tech Tree</a>
       </li>

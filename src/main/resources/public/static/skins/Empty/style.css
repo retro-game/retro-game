@@ -484,3 +484,15 @@ strong {
 .record-new {
   color: #0f0;
 }
+
+.win {
+  color: #0f0;
+}
+
+.loss {
+  color: #f00;
+}
+
+.draw {
+  color: #ff0;
+}

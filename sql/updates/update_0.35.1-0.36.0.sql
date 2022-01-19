@@ -25,6 +25,13 @@ create table combat_reports (
   data bytea not null
 );
 
+create index combat_reports_loss_idx
+          on combat_reports ((attackers_loss + defenders_loss) desc);
+create index combat_reports_plunder_idx
+          on combat_reports ((plunder_metal + plunder_crystal + plunder_deuterium) desc);
+create index combat_reports_debris_idx
+          on combat_reports ((debris_metal + debris_crystal) desc);
+
 create table simplified_combat_reports (
   id bigserial primary key,
   user_id bigint references users on delete cascade not null,
