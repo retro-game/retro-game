@@ -15,19 +15,21 @@
          th:text="#{${'items.' + entry.key + '.name'}}"></a>
     </td>
     <td>
-      <ul th:with="requirements=${entry.value.buildings}">
+      <ul th:with="buildings=${ctx.curBody.buildings},requirements=${entry.value.buildings}">
         <li th:each="requirement : ${requirements}">
-          <span th:class="${ctx.curBody.buildings.getOrDefault(requirement.key, 0) < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
+          <span th:with="level=${buildings.getOrDefault(requirement.key, 0)}"
+                th:class="${level < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
             <span th:text="#{${'items.' + requirement.key + '.name'}}"></span>
-            (<span th:text="${requirement.value}"></span>)
+            (<span th:text="${level + '/' + requirement.value}"></span>)
           </span>
         </li>
       </ul>
-      <ul th:with="requirements=${entry.value.technologies}">
+      <ul th:with="technologies=${ctx.technologies},requirements=${entry.value.technologies}">
         <li th:each="requirement : ${requirements}">
-          <span th:class="${ctx.technologies.getOrDefault(requirement.key, 0) < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
+          <span th:with="level=${technologies.getOrDefault(requirement.key, 0)}"
+                th:class="${level < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
             <span th:text="#{${'items.' + requirement.key + '.name'}}"></span>
-            (<span th:text="${requirement.value}"></span>)
+            (<span th:text="${level + '/' + requirement.value}"></span>)
           </span>
         </li>
       </ul>
