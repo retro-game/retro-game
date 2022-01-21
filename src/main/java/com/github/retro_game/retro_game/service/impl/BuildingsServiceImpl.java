@@ -24,8 +24,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service("buildingsService")
-class BuildingsServiceImpl implements BuildingsServiceInternal {
+@Service
+public class BuildingsServiceImpl implements BuildingsServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(BuildingsServiceImpl.class);
   private final int buildingQueueCapacity;
   private final int fieldsPerTerraformerLevel;
@@ -270,14 +270,6 @@ class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
 
     return buildings;
-  }
-
-  @Override
-  public int getLevel(long bodyId, BuildingKindDto kind) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
-    BuildingKind k = Converter.convert(kind);
-
-    return body.getBuildingLevel(k);
   }
 
   @Override

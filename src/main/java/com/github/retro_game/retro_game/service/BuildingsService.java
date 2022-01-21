@@ -6,8 +6,6 @@ import com.github.retro_game.retro_game.dto.BuildingsAndQueuePairDto;
 public interface BuildingsService {
   BuildingsAndQueuePairDto getBuildingsAndQueuePair(long bodyId);
 
-  int getLevel(long bodyId, BuildingKindDto kind);
-
   void construct(long bodyId, BuildingKindDto kind);
 
   void destroy(long bodyId, BuildingKindDto kind);
