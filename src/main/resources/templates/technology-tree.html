@@ -25,7 +25,7 @@
       </ul>
       <ul th:with="requirements=${entry.value.technologies}">
         <li th:each="requirement : ${requirements}">
-          <span th:class="${@technologyService.getLevel(bodyId, requirement.key) < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
+          <span th:class="${ctx.technologies.getOrDefault(requirement.key, 0) < requirement.value ? 'requirement-not-met' : 'requirement-met'}">
             <span th:text="#{${'items.' + requirement.key + '.name'}}"></span>
             (<span th:text="${requirement.value}"></span>)
           </span>

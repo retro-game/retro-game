@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service("technologyService")
+@Service
 public class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
   private final int technologyQueueCapacity;
