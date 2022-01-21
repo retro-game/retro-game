@@ -4,8 +4,6 @@ import com.github.retro_game.retro_game.dto.TechnologiesAndQueuePairDto;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 
 public interface TechnologyService {
-  int getLevel(long bodyId, TechnologyKindDto kind);
-
   TechnologiesAndQueuePairDto getTechnologiesAndQueuePair(long bodyId);
 
   void research(long bodyId, TechnologyKindDto kind);
