@@ -1,10 +1,6 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.cache.BodyInfoCache;
-import com.github.retro_game.retro_game.dto.TechnologiesAndQueuePairDto;
-import com.github.retro_game.retro_game.dto.TechnologyDto;
-import com.github.retro_game.retro_game.dto.TechnologyKindDto;
-import com.github.retro_game.retro_game.dto.TechnologyQueueEntryDto;
+import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.Item;
 import com.github.retro_game.retro_game.model.ItemCostUtils;
@@ -31,11 +27,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("technologyService")
-class TechnologyServiceImpl implements TechnologyServiceInternal {
+public class TechnologyServiceImpl implements TechnologyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(TechnologyServiceImpl.class);
   private final int technologyQueueCapacity;
   private final ItemTimeUtils itemTimeUtils;
-  private final BodyInfoCache bodyInfoCache;
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
   private final int maxRequiredLabLevel;
@@ -43,11 +38,10 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   private EventScheduler eventScheduler;
 
   public TechnologyServiceImpl(@Value("${retro-game.technology-queue-capacity}") int technologyQueueCapacity,
-                               ItemTimeUtils itemTimeUtils, BodyInfoCache bodyInfoCache, EventRepository eventRepository,
+                               ItemTimeUtils itemTimeUtils, EventRepository eventRepository,
                                UserRepository userRepository) {
     this.technologyQueueCapacity = technologyQueueCapacity;
     this.itemTimeUtils = itemTimeUtils;
-    this.bodyInfoCache = bodyInfoCache;
     this.eventRepository = eventRepository;
     this.userRepository = userRepository;
     this.maxRequiredLabLevel = getMaxRequiredLabLevel();
@@ -81,126 +75,149 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public TechnologiesAndQueuePairDto getTechnologiesAndQueuePair(long bodyId) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var production = bodyServiceInternal.getProduction(body);
+    var user = body.getUser();
+    var state = user.getTechnologies();
+    var effectiveLevelTables = getEffectiveLevelTables(user, user.getBodies().keySet());
+    var queue = getQueueAndUpdateState(state, user, effectiveLevelTables);
+    var technologies = getTechnologies(state, body, production, effectiveLevelTables, queue.size());
+    return new TechnologiesAndQueuePairDto(technologies, queue);
+  }
 
-    User user = body.getUser();
-    long userId = user.getId();
+  private List<TechnologyQueueEntryDto> getQueueAndUpdateState(EnumMap<TechnologyKind, Integer> state, User user,
+                                                               Map<Long, int[]> effectiveLevelTables) {
+    var queue = user.getTechnologyQueue();
+    var ret = new ArrayList<TechnologyQueueEntryDto>(queue.size());
 
-    Map<Long, int[]> effectiveLevelTables = getEffectiveLevelTables(user, user.getBodies().keySet());
+    if (queue.size() == 0) {
+      return ret;
+    }
 
-    var futureTechs = user.getTechnologies();
+    var it = queue.entrySet().iterator();
+    var next = it.next();
+    var first = true;
+    var finishAt = 0L;
+    var upMovable = false;
+    do {
+      var cur = next;
+      next = it.hasNext() ? it.next() : null;
 
-    SortedMap<Integer, TechnologyQueueEntry> techQueue = user.getTechnologyQueue();
-    int size = techQueue.size();
-    List<TechnologyQueueEntryDto> queue = new ArrayList<>(size);
-    if (size > 0) {
-      Iterator<Map.Entry<Integer, TechnologyQueueEntry>> it = techQueue.entrySet().iterator();
-      Map.Entry<Integer, TechnologyQueueEntry> next = it.next();
-      boolean first = true;
-      long finishAt = 0;
-      boolean upMovable = false;
-      do {
-        Map.Entry<Integer, TechnologyQueueEntry> entry = next;
-        next = it.hasNext() ? it.next() : null;
+      var curKind = cur.getValue().kind();
+      var curBodyId = cur.getValue().bodyId();
 
-        TechnologyQueueEntry queueEntry = entry.getValue();
-        TechnologyKind kind = queueEntry.kind();
+      var curLevelFrom = state.getOrDefault(curKind, 0);
+      var curLevelTo = curLevelFrom + 1;
+      var curCost = ItemCostUtils.getCost(curKind, curLevelTo);
+      var curEnergy = ItemCostUtils.getRequiredEnergy(curKind, curLevelTo);
 
-        var level = futureTechs.get(kind) + 1;
-        var cost = ItemCostUtils.getCost(kind, level);
-        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, level);
+      var requiredLabLevel = Item.get(curKind).getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
+      var effectiveLabLevel = effectiveLevelTables.get(curBodyId)[requiredLabLevel];
+      var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
 
-        var item = Item.get(kind);
-        int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
-        int effectiveLabLevel = effectiveLevelTables.get(queueEntry.bodyId())[requiredLabLevel];
-        var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
+      if (first) {
+        var event = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, user.getId());
+        Assert.isTrue(event.isPresent(), "Event must be present");
+        finishAt = event.get().getAt().toInstant().getEpochSecond();
+      } else {
+        var requiredTime = itemTimeUtils.getTechnologyResearchTime(curCost, effectiveLabLevel, irnLevel);
+        finishAt += requiredTime;
+      }
 
-        long requiredTime;
-        if (first) {
-          Optional<Event> event = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, userId);
-          Assert.isTrue(event.isPresent(), "Event must be present");
-          finishAt = event.get().getAt().toInstant().getEpochSecond();
-        } else {
-          requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
-          finishAt += requiredTime;
+      // Check dependencies of the subsequent entries.
+      var tail = queue.tailMap(cur.getKey());
+      var downMovable = canSwapTop(state, tail);
+      var cancelable = canRemoveTop(state, tail);
+
+      // Moving down or cancelling the first entry is equivalent to building the second one, which is the reason
+      // for checking resources.
+      if (first && next != null) {
+        var nextKind = next.getValue().kind();
+        var nextBodyId = next.getValue().bodyId();
+
+        var nextLevelFrom = state.getOrDefault(nextKind, 0);
+        var nextLevelTo = nextLevelFrom + 1;
+        var nextCost = ItemCostUtils.getCost(nextKind, nextLevelTo);
+        var nextEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevelTo);
+
+        var nextBody = bodyServiceInternal.getUpdated(nextBodyId);
+        if (curBodyId == nextBodyId) {
+          // If we cancel the first entry, we will get some resources back. Thus, we can use these resources to
+          // research the second one, because both are being researched on the same planet.
+          nextCost.sub(curCost);
+        }
+        if (!nextBody.getResources().greaterOrEqual(nextCost)) {
+          downMovable = cancelable = false;
         }
 
-        // Check dependencies of subsequent entries.
-        SortedMap<Integer, TechnologyQueueEntry> tail = techQueue.tailMap(entry.getKey());
-        boolean downMovable = canSwapTop(futureTechs, tail);
-        boolean cancelable = canRemoveTop(futureTechs, tail);
-
-        // If we cancel the first entry we immediately start the second one, thus we need to check resources.
-        if (first && next != null) {
-          Body currentBody = bodyServiceInternal.getUpdated(entry.getValue().bodyId());
-          Body nextBody = bodyServiceInternal.getUpdated(next.getValue().bodyId());
-          TechnologyKind nextKind = next.getValue().kind();
-          var nextLevel = futureTechs.get(nextKind) + 1;
-          var nextCost = ItemCostUtils.getCost(nextKind, nextLevel);
-          if (currentBody.getId() == nextBody.getId()) {
-            // If we cancel the first entry, we will getSlots some resources back. Thus we can use these resources to
-            // research the second one, because both are being researched on the same body.
-            nextCost.sub(cost);
-          }
-          if (!nextBody.getResources().greaterOrEqual(nextCost)) {
+        if (nextEnergy > 0) {
+          var energy = bodyServiceInternal.getProduction(nextBody).totalEnergy();
+          if (nextEnergy > energy) {
             downMovable = cancelable = false;
           }
-
-          var nextRequiredEnergy = ItemCostUtils.getRequiredEnergy(nextKind, nextLevel);
-          if (nextRequiredEnergy > 0) {
-            int totalEnergy = bodyServiceInternal.getProduction(nextBody).totalEnergy();
-            if (nextRequiredEnergy > totalEnergy) {
-              downMovable = cancelable = false;
-            }
-          }
         }
-
-        var entryBodyInfo = bodyInfoCache.get(queueEntry.bodyId());
-        queue.add(new TechnologyQueueEntryDto(Converter.convert(kind), entry.getKey(), level, Converter.convert(cost),
-            requiredEnergy, queueEntry.bodyId(), entryBodyInfo.getName(), entryBodyInfo.getCoordinates(),
-            effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), downMovable, upMovable, cancelable));
-
-        futureTechs.put(kind, futureTechs.get(kind) + 1);
-
-        first = false;
-        upMovable = downMovable;
-      } while (next != null);
-    }
-
-    Resources resources = body.getResources();
-    int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
-    boolean canResearch = queue.size() < technologyQueueCapacity;
-    int[] currentBodyTable = effectiveLevelTables.get(bodyId);
-    List<TechnologyDto> techs = new ArrayList<>();
-    for (Map.Entry<TechnologyKind, TechnologyItem> entry : TechnologyItem.getAll().entrySet()) {
-      TechnologyKind kind = entry.getKey();
-      TechnologyItem item = entry.getValue();
-      boolean meetsRequirements = ItemRequirementsUtils.meetsBuildingsRequirements(item, body) &&
-          ItemRequirementsUtils.meetsTechnologiesRequirements(item, futureTechs);
-      var futureLevel = futureTechs.get(kind);
-      if (meetsRequirements || futureLevel > 0) {
-        var currentLevel = user.getTechnologyLevel(kind);
-
-        var cost = ItemCostUtils.getCost(kind, futureLevel + 1);
-        var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, futureLevel + 1);
-
-        int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
-        int effectiveLabLevel = currentBodyTable[requiredLabLevel];
-        var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
-
-        long researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
-
-        boolean canResearchNow = canResearch && meetsRequirements &&
-            (!queue.isEmpty() || (resources.greaterOrEqual(cost) && totalEnergy >= requiredEnergy));
-
-        techs.add(new TechnologyDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost),
-            requiredEnergy, researchTime, effectiveLabLevel, canResearchNow));
       }
-    }
-    // Keep the order defined in the service layer.
-    techs.sort(Comparator.comparing(TechnologyDto::getKind));
 
-    return new TechnologiesAndQueuePairDto(techs, queue);
+      var entry =
+          new TechnologyQueueEntryDto(Converter.convert(curKind), cur.getKey(), curLevelTo, Converter.convert(curCost),
+              curEnergy, curBodyId, effectiveLabLevel, Date.from(Instant.ofEpochSecond(finishAt)), downMovable,
+              upMovable, cancelable);
+      ret.add(entry);
+
+      // Update the state.
+      state.put(curKind, curLevelTo);
+
+      first = false;
+      upMovable = downMovable;
+    } while (next != null);
+
+    return ret;
+  }
+
+  private List<TechnologyDto> getTechnologies(EnumMap<TechnologyKind, Integer> state, Body body,
+                                              ProductionDto production, Map<Long, int[]> effectiveLevelTables,
+                                              int queueSize) {
+    var user = body.getUser();
+    var effectiveLevelTable = effectiveLevelTables.get(body.getId());
+    var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
+
+    var technologies = new ArrayList<TechnologyDto>(TechnologyKindDto.values().length);
+    for (var entry : TechnologyItem.getAll().entrySet()) {
+      var kind = entry.getKey();
+      var item = entry.getValue();
+
+      var currentLevel = user.getTechnologyLevel(kind);
+      var futureLevel = state.getOrDefault(kind, 0);
+
+      var meetsRequirements = ItemRequirementsUtils.meetsBuildingsRequirements(item, body) &&
+          ItemRequirementsUtils.meetsTechnologiesRequirements(item, state);
+
+      var show = futureLevel > 0 || meetsRequirements;
+      if (!show) {
+        continue;
+      }
+
+      var nextLevel = futureLevel + 1;
+      var cost = ItemCostUtils.getCost(kind, nextLevel);
+      var requiredEnergy = ItemCostUtils.getRequiredEnergy(kind, nextLevel);
+
+      var requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
+      var effectiveLabLevel = effectiveLevelTable[requiredLabLevel];
+      var researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
+
+      var isQueueNotFull = queueSize < technologyQueueCapacity;
+      var hasEnoughResources = body.getResources().greaterOrEqual(cost);
+      var hasEnoughEnergy = production.totalEnergy() >= requiredEnergy;
+      var canResearchNow =
+          isQueueNotFull && meetsRequirements && (queueSize > 0 || (hasEnoughResources && hasEnoughEnergy));
+
+      var technology =
+          new TechnologyDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
+              researchTime, effectiveLabLevel, canResearchNow);
+      technologies.add(technology);
+    }
+
+    return technologies;
   }
 
   @Override
@@ -220,8 +237,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     Body body = bodyServiceInternal.getUpdated(bodyId);
 
     var futureTechs = user.getTechnologies();
-    queue.values().stream()
-        .map(TechnologyQueueEntry::kind)
+    queue.values().stream().map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     var item = Item.get(k);
@@ -234,8 +250,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     var sequenceNumber = 1;
     if (!queue.isEmpty()) {
       sequenceNumber = queue.lastKey() + 1;
-      logger.info("Researching technology successful, appending to queue: bodyId={} kind={} sequenceNumber={}",
-          bodyId, k, sequenceNumber);
+      logger.info("Researching technology successful, appending to queue: bodyId={} kind={} sequenceNumber={}", bodyId,
+          k, sequenceNumber);
     } else {
       var level = futureTechs.get(k) + 1;
 
@@ -294,13 +310,12 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     var tail = queue.tailMap(sequenceNumber);
 
     var futureTechs = user.getTechnologies();
-    head.values().stream()
-        .map(TechnologyQueueEntry::kind)
+    head.values().stream().map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canSwapTop(futureTechs, tail)) {
-      logger.info("Moving down entry in technology queue failed, cannot swap top: userId={} sequenceNumber={}",
-          userId, sequenceNumber);
+      logger.info("Moving down entry in technology queue failed, cannot swap top: userId={} sequenceNumber={}", userId,
+          sequenceNumber);
       throw new CannotMoveException();
     }
 
@@ -315,8 +330,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     if (!head.isEmpty()) {
       // The entry is not the first in the queue, just swap it with the next.
       logger.info("Moving down entry in technology queue successful, the entry isn't the first: userId={}" +
-              " sequenceNumber={}",
-          userId, sequenceNumber);
+          " sequenceNumber={}", userId, sequenceNumber);
     } else {
       // The first entry.
 
@@ -359,8 +373,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, userId);
       if (!eventOptional.isPresent()) {
-        logger.error("Moving down entry in technology queue failed, the event is not present: userId={}" +
-                " sequenceNumber={}",
+        logger.error(
+            "Moving down entry in technology queue failed, the event is not present: userId={}" + " sequenceNumber={}",
             userId, sequenceNumber);
         throw new MissingEventException();
       }
@@ -368,15 +382,14 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var item = Item.get(secondKind);
       int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
-      int[] table = getEffectiveLevelTables(user, Collections.singletonList(secondBody.getId()))
-          .get(secondBody.getId());
+      int[] table =
+          getEffectiveLevelTables(user, Collections.singletonList(secondBody.getId())).get(secondBody.getId());
       int effectiveLabLevel = table[requiredLabLevel];
       var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
       var requiredTime = itemTimeUtils.getTechnologyResearchTime(secondCost, effectiveLabLevel, irnLevel);
 
       logger.info("Moving down entry in technology queue successful, the entry is the first, adding an event for the" +
-              " next entry: userId={} sequenceNumber={}",
-          userId, sequenceNumber);
+          " next entry: userId={} sequenceNumber={}", userId, sequenceNumber);
       Date at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
       event.setAt(at);
       eventScheduler.schedule(event);
@@ -404,8 +417,8 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
     var head = queue.headMap(sequenceNumber);
     if (head.isEmpty()) {
-      logger.info("Moving up entry in technology queue failed, the entry is first: bodyId={} sequenceNumber={}",
-          userId, sequenceNumber);
+      logger.info("Moving up entry in technology queue failed, the entry is first: bodyId={} sequenceNumber={}", userId,
+          sequenceNumber);
       throw new CannotMoveException();
     }
 
@@ -430,21 +443,19 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     var tail = queue.tailMap(sequenceNumber);
 
     var futureTechs = user.getTechnologies();
-    head.values().stream()
-        .map(TechnologyQueueEntry::kind)
+    head.values().stream().map(TechnologyQueueEntry::kind)
         .forEach(techKind -> futureTechs.put(techKind, futureTechs.get(techKind) + 1));
 
     if (!canRemoveTop(futureTechs, tail)) {
-      logger.info("Cancelling entry in technology queue failed, cannot remove top: userId={} sequenceNumber={}",
-          userId, sequenceNumber);
+      logger.info("Cancelling entry in technology queue failed, cannot remove top: userId={} sequenceNumber={}", userId,
+          sequenceNumber);
       throw new CannotCancelException();
     }
 
     if (!head.isEmpty()) {
       // The entry is not the first in the queue, just remove it.
       logger.info("Cancelling entry in technology queue successful, the entry isn't the first: userId={}" +
-              " sequenceNumber={}",
-          userId, sequenceNumber);
+          " sequenceNumber={}", userId, sequenceNumber);
       var entry = queue.remove(sequenceNumber);
       assert entry != null;
     } else {
@@ -465,9 +476,9 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       Optional<Event> eventOptional = eventRepository.findFirstByKindAndParam(EventKind.TECHNOLOGY_QUEUE, userId);
       if (!eventOptional.isPresent()) {
-        logger.error("Cancelling in technology queue failed, the event is not present: userId={}" +
-                " sequenceNumber={}",
-            userId, sequenceNumber);
+        logger.error(
+            "Cancelling in technology queue failed, the event is not present: userId={}" + " sequenceNumber={}", userId,
+            sequenceNumber);
         throw new MissingEventException();
       }
       Event event = eventOptional.get();
@@ -509,15 +520,13 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
         var item = Item.get(kind);
         int requiredLabLevel = item.getBuildingsRequirements().getOrDefault(BuildingKind.RESEARCH_LAB, 0);
-        int[] table = getEffectiveLevelTables(user, Collections.singletonList(nextBody.getId()))
-            .get(nextBody.getId());
+        int[] table = getEffectiveLevelTables(user, Collections.singletonList(nextBody.getId())).get(nextBody.getId());
         int effectiveLabLevel = table[requiredLabLevel];
         var irnLevel = user.getTechnologyLevel(TechnologyKind.INTERGALACTIC_RESEARCH_NETWORK);
         var requiredTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
 
         logger.info("Cancelling entry in technology queue successful, the entry is the first, modifying the event:" +
-                "userId={} sequenceNumber={}",
-            userId, sequenceNumber);
+            "userId={} sequenceNumber={}", userId, sequenceNumber);
         Date at = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + requiredTime));
         event.setAt(at);
         eventScheduler.schedule(event);
@@ -572,8 +581,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       var cost = ItemCostUtils.getCost(entry.kind(), level);
       if (!body.getResources().greaterOrEqual(cost)) {
         logger.info("Handling technology queue, removing entry, not enough resources: userId={} bodyId={} kind={}" +
-                " sequenceNumber={}",
-            userId, entry.bodyId(), entry.kind(), seq);
+            " sequenceNumber={}", userId, entry.bodyId(), entry.kind(), seq);
         it.remove();
         continue;
       }
@@ -583,8 +591,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
         int totalEnergy = bodyServiceInternal.getProduction(body).totalEnergy();
         if (requiredEnergy > totalEnergy) {
           logger.info("Handling technology queue, removing entry, not enough energy: userId={} bodyId={} kind={}" +
-                  " sequenceNumber={}",
-              userId, entry.bodyId(), entry.kind(), seq);
+              " sequenceNumber={}", userId, entry.bodyId(), entry.kind(), seq);
           it.remove();
           continue;
         }
@@ -593,14 +600,13 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
       var item = Item.get(entry.kind());
       if (!ItemRequirementsUtils.meetsRequirements(item, body)) {
         logger.info("Handling technology queue, removing entry, requirements not met: userId={} bodyId={} kind={}" +
-                " sequenceNumber={}",
-            userId, entry.bodyId(), entry.kind(), seq);
+            " sequenceNumber={}", userId, entry.bodyId(), entry.kind(), seq);
         it.remove();
         continue;
       }
 
-      logger.info("Handling technology queue, creating an event: userId={} bodyId={} kind={} sequenceNumber={}",
-          userId, entry.bodyId(), entry.kind(), seq);
+      logger.info("Handling technology queue, creating an event: userId={} bodyId={} kind={} sequenceNumber={}", userId,
+          entry.bodyId(), entry.kind(), seq);
 
       body.getResources().sub(cost);
 
@@ -629,8 +635,7 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
     var bodies = user.getBodies();
     var labs = bodies.entrySet().stream()
         .map(entry -> Tuple.of(entry.getKey(), entry.getValue().getBuildingLevel(BuildingKind.RESEARCH_LAB)))
-        .sorted(Comparator.comparingInt(Tuple2<Long, Integer>::_2).reversed())
-        .collect(Collectors.toList());
+        .sorted(Comparator.comparingInt(Tuple2<Long, Integer>::_2).reversed()).collect(Collectors.toList());
 
     Map<Long, int[]> tables = new HashMap<>(bodiesIds.size());
     for (long bodyId : bodiesIds) {
@@ -638,17 +643,13 @@ class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       int[] table = new int[maxRequiredLabLevel + 1];
       Arrays.fill(table, 0, Math.min(maxRequiredLabLevel, currentBodyLabLevel) + 1, currentBodyLabLevel);
-      labs.stream()
-          .filter(tuple -> tuple._1 != bodyId)
-          .limit(irnLevel)
-          .mapToInt(Tuple2::_2)
-          .forEach(level -> {
-            for (int i = Math.min(maxRequiredLabLevel, level); i >= 0; i--) {
-              if (table[i] != 0) {
-                table[i] += level;
-              }
-            }
-          });
+      labs.stream().filter(tuple -> tuple._1 != bodyId).limit(irnLevel).mapToInt(Tuple2::_2).forEach(level -> {
+        for (int i = Math.min(maxRequiredLabLevel, level); i >= 0; i--) {
+          if (table[i] != 0) {
+            table[i] += level;
+          }
+        }
+      });
 
       tables.put(bodyId, table);
     }

@@ -1,6 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.activity.Activity;
+import com.github.retro_game.retro_game.dto.BodyInfoDto;
 import com.github.retro_game.retro_game.dto.TechnologyKindDto;
 import com.github.retro_game.retro_game.dto.TechnologyQueueErrorDto;
 import com.github.retro_game.retro_game.service.TechnologyService;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.NotNull;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Controller
 @Validated
@@ -36,10 +39,13 @@ public class TechnologiesController {
                              @RequestParam(name = "error", required = false) TechnologyQueueErrorDto error,
                              Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
+    var pair = technologyService.getTechnologiesAndQueuePair(bodyId);
+    var bodiesInfo = ctx.bodies().stream().collect(Collectors.toMap(BodyInfoDto::getId, Function.identity()));
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
     model.addAttribute("error", error);
-    model.addAttribute("pair", technologyService.getTechnologiesAndQueuePair(bodyId));
+    model.addAttribute("pair", pair);
+    model.addAttribute("bodiesInfo", bodiesInfo);
     return "technologies";
   }
 

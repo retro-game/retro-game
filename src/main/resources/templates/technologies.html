@@ -37,10 +37,10 @@
             (${entry.requiredEnergy == 0} ? '' : '<p>' + #{energy} + ': <strong>' + ${#numbers.formatInteger(entry.requiredEnergy, 1, 'DEFAULT')} + '</strong></p>')"
           th:text="${entry.level}">
       </td>
-      <td>
+      <td th:with="info=${bodiesInfo.get(entry.bodyId)}">
         <a th:href="@{/technologies(body=${entry.bodyId})}" th:title="#{goToThisPlanet}"
-           th:text="${entry.bodyName}"></a>
-        <a th:with="c=${entry.bodyCoordinates}"
+           th:text="${info.name}"></a>
+        <a th:with="c=${info.coordinates}"
            th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
            th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
       </td>
