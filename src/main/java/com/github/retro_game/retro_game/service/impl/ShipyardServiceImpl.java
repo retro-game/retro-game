@@ -5,6 +5,7 @@ import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.model.Item;
 import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
 import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.service.exception.*;
 import io.vavr.Tuple;
@@ -40,9 +41,10 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public UnitsAndQueuePairDto getUnitsAndQueuePair(long bodyId, UnitTypeDto type) {
     var body = bodyServiceInternal.getUpdated(bodyId);
+    var production = bodyServiceInternal.getProduction(body);
     var state = new EnumMap<UnitKind, Integer>(UnitKind.class);
     var queue = getQueueAndUpdateState(state, body);
-    var units = getUnits(state, body, type);
+    var units = getUnits(state, body, production, type);
     return new UnitsAndQueuePairDto(units, queue);
   }
 
@@ -89,7 +91,8 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
     return ret;
   }
 
-  private List<UnitDto> getUnits(EnumMap<UnitKind, Integer> state, Body body, UnitTypeDto type) {
+  private List<UnitDto> getUnits(EnumMap<UnitKind, Integer> state, Body body, ProductionDto production,
+                                 UnitTypeDto type) {
     Map<UnitKind, UnitItem> items;
     if (type == null) {
       items = UnitItem.getAll();
@@ -120,6 +123,13 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
       var cost = item.getCost();
       var time = getConstructionTime(cost, body);
 
+      var missingResources = new Resources(cost);
+      missingResources.sub(body.getResources());
+      missingResources.max(0.0);
+      var neededSmallCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.SMALL_CARGO, missingResources);
+      var neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
+      var accumulationTime = ItemTimeUtils.calcAccumulationTime(body.getUpdatedAt(), missingResources, production);
+
       var maxBuildable = 0;
       if (meetsRequirements) {
         maxBuildable = Integer.MAX_VALUE;
@@ -143,8 +153,8 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
         }
       }
 
-      var unit =
-          new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time, maxBuildable);
+      var unit = new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time,
+          Converter.convert(missingResources), neededSmallCargoes, neededLargeCargoes, accumulationTime, maxBuildable);
       units.add(unit);
     }
 

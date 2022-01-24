@@ -37,7 +37,7 @@
           th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
     </tr>
   </table>
-  <table th:with="onVacation=${ctx.onVacation},r=${ctx.curBody.resources}">
+  <table th:with="r=${ctx.curBody.resources}">
     <tr>
       <th colspan="3" th:text="#{shipyard}">Shipyard</th>
     </tr>
@@ -73,20 +73,15 @@
             <strong th:text="#{sendMissiles}">Send missiles</strong>
           </a>
         </p>
-        <p th:with="cost=${unit.cost}">
-          <span th:text="#{metal}">Metal</span>:
-          <strong th:class="${r.metal < cost.metal ? 'requirement-not-met' : 'requirement-met'}"
-                  th:text="${#numbers.formatInteger(cost.metal, 1, 'DEFAULT')}">200</strong>
-          <span th:text="#{crystal}">Crystal</span>:
-          <strong th:class="${r.crystal < cost.crystal ? 'requirement-not-met' : 'requirement-met'}"
-                  th:text="${#numbers.formatInteger(cost.crystal, 1, 'DEFAULT')}">50</strong>
-          <span th:text="#{deuterium}">Deuterium</span>:
-          <strong th:class="${r.deuterium < cost.deuterium ? 'requirement-not-met' : 'requirement-met'}"
-                  th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
-        </p>
+        <th:block
+            th:replace="item-cost :: item-cost(${ctx.curBody}, ${unit.cost}, 0, ${r}, ${unit.missingResources}, ${unit.neededSmallCargoes}, ${unit.neededLargeCargoes})"></th:block>
         <p>
           <span th:text="#{buildingTime}">Building time</span>:
-          <strong th:text="${@formatterService.formatTimeMs(unit.buildingTime)}">01:02:03</strong>
+          <strong th:text="${@formatterService.formatTime(unit.buildingTime)}">01:02:03</strong>
+          <th:block th:if="${unit.accumulationTime != null}">
+            <span th:text="#{accumulationTime}">Accumulation time</span>:
+            <strong th:text="${#dates.format(unit.accumulationTime, 'yyyy-MM-dd HH:mm:ss')}"></strong>
+          </th:block>
         </p>
       </td>
       <td class="item-actions">
@@ -96,7 +91,7 @@
           <input name="kind" type="hidden" th:value="${unit.kind}">
           <input th:id="'count_' + ${unit.kind}" name="count" type="number" value="0" min="1"
                  th:max="${unit.maxBuildable}" required>
-          <button th:disabled="${onVacation}" th:text="#{build}">Build</button>
+          <button th:disabled="${ctx.onVacation}" th:text="#{build}">Build</button>
         </form>
         <button th:if="${unit.maxBuildable >= 1}" data-set th:data-set-for="'count_' + ${unit.kind}"
                 th:data-set-value="${unit.maxBuildable}"
