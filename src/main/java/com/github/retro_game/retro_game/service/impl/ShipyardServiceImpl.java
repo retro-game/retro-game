@@ -22,7 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-class ShipyardServiceImpl implements ShipyardServiceInternal {
+public class ShipyardServiceImpl implements ShipyardServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(ShipyardServiceImpl.class);
   private final ItemTimeUtils itemTimeUtils;
   private BodyServiceInternal bodyServiceInternal;
@@ -39,27 +39,31 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
   @Override
   @Transactional(isolation = Isolation.REPEATABLE_READ, readOnly = true)
   public UnitsAndQueuePairDto getUnitsAndQueuePair(long bodyId, UnitTypeDto type) {
-    Body body = bodyServiceInternal.getUpdated(bodyId);
+    var body = bodyServiceInternal.getUpdated(bodyId);
+    var state = new EnumMap<UnitKind, Integer>(UnitKind.class);
+    var queue = getQueueAndUpdateState(state, body);
+    var units = getUnits(state, body, type);
+    return new UnitsAndQueuePairDto(units, queue);
+  }
 
-    Map<UnitKind, Integer> inQueue = new EnumMap<>(UnitKind.class);
+  private List<ShipyardQueueEntryDto> getQueueAndUpdateState(EnumMap<UnitKind, Integer> state, Body body) {
+    var queue = body.getShipyardQueue();
+    var ret = new ArrayList<ShipyardQueueEntryDto>(queue.size());
 
-    var shipyardQueue = body.getShipyardQueue();
-    var queue = new ArrayList<ShipyardQueueEntryDto>(shipyardQueue.size());
-    boolean first = true;
-    long finishAt = 0;
-    for (ShipyardQueueEntry entry : shipyardQueue) {
-      UnitKind kind = entry.kind();
-      int count = entry.count();
+    var first = true;
+    var finishAt = 0L;
+    for (var entry : queue) {
+      var kind = entry.kind();
+      var count = entry.count();
       assert count >= 1;
-
-      inQueue.put(kind, inQueue.getOrDefault(kind, 0) + count);
 
       var item = Item.get(kind);
 
-      Resources cost = new Resources(item.getCost());
-      cost.mul(count);
+      var unitCost = item.getCost();
+      var totalCost = new Resources(unitCost);
+      totalCost.mul(count);
 
-      var constructionTime = getConstructionTime(item.getCost(), body);
+      var constructionTime = getConstructionTime(unitCost, body);
 
       if (first) {
         finishAt = body.getShipyardStartAt().toInstant().getEpochSecond();
@@ -75,10 +79,17 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
         finishAt += (count + numPerSec - 1) / numPerSec;
       }
 
-      queue.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, Converter.convert(cost),
+      ret.add(new ShipyardQueueEntryDto(Converter.convert(kind), count, Converter.convert(totalCost),
           Date.from(Instant.ofEpochSecond(finishAt))));
+
+      // Update the state.
+      state.put(kind, state.getOrDefault(kind, 0) + count);
     }
 
+    return ret;
+  }
+
+  private List<UnitDto> getUnits(EnumMap<UnitKind, Integer> state, Body body, UnitTypeDto type) {
     Map<UnitKind, UnitItem> items;
     if (type == null) {
       items = UnitItem.getAll();
@@ -89,63 +100,74 @@ class ShipyardServiceImpl implements ShipyardServiceInternal {
       items = UnitItem.getFleet();
     }
 
-    Resources resources = body.getResources();
+    var resources = body.getResources();
 
-    List<UnitDto> units = new ArrayList<>(items.size());
+    var units = new ArrayList<UnitDto>(items.size());
     for (var entry : items.entrySet()) {
       var kind = entry.getKey();
       var item = entry.getValue();
 
       var currentCount = body.getUnitsCount(kind);
-      var futureCount = currentCount + inQueue.getOrDefault(kind, 0);
+      var futureCount = currentCount + state.getOrDefault(kind, 0);
 
       var meetsRequirements = ItemRequirementsUtils.meetsRequirements(item, body);
 
       // Don't show the unit if there is no unit on the body and requirements are not met.
-      if (futureCount == 0 && !meetsRequirements) continue;
+      if (futureCount == 0 && !meetsRequirements) {
+        continue;
+      }
 
-      var time = getConstructionTime(item.getCost(), body);
       var cost = item.getCost();
+      var time = getConstructionTime(cost, body);
 
-      int maxBuildable = 0;
+      var maxBuildable = 0;
       if (meetsRequirements) {
         maxBuildable = Integer.MAX_VALUE;
 
-        if (cost.getMetal() > 0.0)
+        if (cost.getMetal() > 0.0) {
           maxBuildable = (int) (resources.getMetal() / cost.getMetal());
-        if (cost.getCrystal() > 0.0)
+        }
+        if (cost.getCrystal() > 0.0) {
           maxBuildable = Math.min(maxBuildable, (int) (resources.getCrystal() / cost.getCrystal()));
-        if (cost.getDeuterium() > 0.0)
+        }
+        if (cost.getDeuterium() > 0.0) {
           maxBuildable = Math.min(maxBuildable, (int) (resources.getDeuterium() / cost.getDeuterium()));
+        }
 
         if (kind == UnitKind.SMALL_SHIELD_DOME || kind == UnitKind.LARGE_SHIELD_DOME) {
-          if (futureCount >= 1) {
-            maxBuildable = 0;
-          } else if (maxBuildable > 1) {
-            maxBuildable = 1;
-          }
+          var max = calcMaxDomes(state, body, kind);
+          maxBuildable = Math.min(maxBuildable, max);
         } else if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
-          int nAnti = body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) +
-              inQueue.getOrDefault(UnitKind.ANTI_BALLISTIC_MISSILE, 0);
-          int nInter = body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE) +
-              inQueue.getOrDefault(UnitKind.INTERPLANETARY_MISSILE, 0);
-          int max = 10 * body.getBuildingLevel(BuildingKind.MISSILE_SILO) - (nAnti + 2 * nInter);
-          if (kind == UnitKind.INTERPLANETARY_MISSILE) {
-            max /= 2;
-          }
+          var max = calcMaxMissiles(state, body, kind);
           maxBuildable = Math.min(maxBuildable, max);
         }
       }
 
-      var unit = new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time,
-          maxBuildable);
+      var unit =
+          new UnitDto(Converter.convert(kind), currentCount, futureCount, Converter.convert(cost), time, maxBuildable);
       units.add(unit);
     }
 
-    // Keep the order defined in the service layer.
-    units.sort(Comparator.comparing(UnitDto::kind));
+    return units;
+  }
 
-    return new UnitsAndQueuePairDto(units, queue);
+  private static int calcMaxDomes(Map<UnitKind, Integer> state, Body body, UnitKind kind) {
+    var count = body.getUnitsCount(kind) + state.getOrDefault(kind, 0);
+    return count == 0 ? 1 : 0;
+  }
+
+  private static int calcMaxMissiles(Map<UnitKind, Integer> state, Body body, UnitKind kind) {
+    var capacity = body.getBuildingLevel(BuildingKind.MISSILE_SILO) * 10;
+    var numABM =
+        body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) + state.getOrDefault(UnitKind.ANTI_BALLISTIC_MISSILE, 0);
+    var numIPM =
+        body.getUnitsCount(UnitKind.INTERPLANETARY_MISSILE) + state.getOrDefault(UnitKind.INTERPLANETARY_MISSILE, 0);
+    var max = capacity - (numABM + 2 * numIPM);
+    assert max >= 0;
+    if (kind == UnitKind.INTERPLANETARY_MISSILE) {
+      max /= 2;
+    }
+    return max;
   }
 
   @Override
