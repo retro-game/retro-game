@@ -89,9 +89,9 @@
         <p>
           <span th:text="#{constructionTime}">Construction time</span>:
           <strong th:text="${@formatterService.formatTime(building.constructionTime)}">01:02:03</strong>
-          <th:block th:if="${building.costAccumulatedAt != null}">
-            <span th:text="#{accumulatedAt}">Accumulated at</span>:
-            <strong th:text="${#dates.format(building.costAccumulatedAt, 'yyyy-MM-dd HH:mm:ss')}"></strong>
+          <th:block th:if="${building.accumulationTime != null}">
+            <span th:text="#{accumulationTime}">Accumulation time</span>:
+            <strong th:text="${#dates.format(building.accumulationTime, 'yyyy-MM-dd HH:mm:ss')}"></strong>
           </th:block>
         </p>
       </td>

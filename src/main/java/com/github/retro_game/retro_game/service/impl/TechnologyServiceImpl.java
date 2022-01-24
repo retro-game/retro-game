@@ -2,10 +2,7 @@ package com.github.retro_game.retro_game.service.impl;
 
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
-import com.github.retro_game.retro_game.model.Item;
-import com.github.retro_game.retro_game.model.ItemCostUtils;
-import com.github.retro_game.retro_game.model.ItemRequirementsUtils;
-import com.github.retro_game.retro_game.model.ItemTimeUtils;
+import com.github.retro_game.retro_game.model.*;
 import com.github.retro_game.retro_game.model.technology.TechnologyItem;
 import com.github.retro_game.retro_game.repository.EventRepository;
 import com.github.retro_game.retro_game.repository.UserRepository;
@@ -198,6 +195,13 @@ public class TechnologyServiceImpl implements TechnologyServiceInternal {
       var effectiveLabLevel = effectiveLevelTable[requiredLabLevel];
       var researchTime = itemTimeUtils.getTechnologyResearchTime(cost, effectiveLabLevel, irnLevel);
 
+      var missingResources = new Resources(cost);
+      missingResources.sub(body.getResources());
+      missingResources.max(0.0);
+      var neededSmallCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.SMALL_CARGO, missingResources);
+      var neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
+      var accumulationTime = ItemTimeUtils.calcAccumulationTime(body.getUpdatedAt(), missingResources, production);
+
       var isQueueNotFull = queueSize < technologyQueueCapacity;
       var hasEnoughResources = body.getResources().greaterOrEqual(cost);
       var hasEnoughEnergy = production.totalEnergy() >= requiredEnergy;
@@ -206,7 +210,8 @@ public class TechnologyServiceImpl implements TechnologyServiceInternal {
 
       var technology =
           new TechnologyDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
-              researchTime, effectiveLabLevel, canResearchNow);
+              researchTime, effectiveLabLevel, Converter.convert(missingResources), neededSmallCargoes,
+              neededLargeCargoes, accumulationTime, canResearchNow);
       technologies.add(technology);
     }
 

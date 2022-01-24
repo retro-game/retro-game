@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.util.Date;
 
 // A helper for time calculation. The methods return the number of seconds required to get an item.
 @Component
@@ -34,18 +36,12 @@ public class ItemTimeUtils {
 
   @PostConstruct
   private void checkProperties() {
-    Assert.isTrue(buildingConstructionSpeed >= 1,
-        "retro-game.building-construction-speed must be at least 1");
-    Assert.isTrue(buildingDestructionSpeed >= 1,
-        "retro-game.building-destruction-speed must be at least 1");
-    Assert.isTrue(technologyResearchSpeed >= 1,
-        "retro-game.technology-research-speed must be at least 1");
-    Assert.isTrue(unitConstructionSpeed >= 1,
-        "retro-game.unit-construction-speed must be at least 1");
-    Assert.isTrue(irnBoostFactor >= 0.0,
-        "retro-game.irn-boost-factor should be greater than or equal to 0");
-    Assert.isTrue(minShipyardTime >= 1,
-        "retro-game.min-shipyard-time must be at least 1");
+    Assert.isTrue(buildingConstructionSpeed >= 1, "retro-game.building-construction-speed must be at least 1");
+    Assert.isTrue(buildingDestructionSpeed >= 1, "retro-game.building-destruction-speed must be at least 1");
+    Assert.isTrue(technologyResearchSpeed >= 1, "retro-game.technology-research-speed must be at least 1");
+    Assert.isTrue(unitConstructionSpeed >= 1, "retro-game.unit-construction-speed must be at least 1");
+    Assert.isTrue(irnBoostFactor >= 0.0, "retro-game.irn-boost-factor should be greater than or equal to 0");
+    Assert.isTrue(minShipyardTime >= 1, "retro-game.min-shipyard-time must be at least 1");
   }
 
   // Buildings
@@ -97,17 +93,27 @@ public class ItemTimeUtils {
 
   // Other
 
-  public static Long calcAccumulateTime(Resources resources, ProductionDto production) {
-    var m = calcAccumulateTime(resources.getMetal(), production.metalProduction());
-    var c = calcAccumulateTime(resources.getCrystal(), production.crystalProduction());
-    var d = calcAccumulateTime(resources.getDeuterium(), production.deuteriumProduction());
+  // Returns the date when the resources will be available given the production. If the resources are already available
+  // or cannot be accumulated (e.g., when there is no production), this function returns null.
+  public static Date calcAccumulationTime(Date from, Resources resources, ProductionDto production) {
+    var duration = calcAccumulationDuration(resources, production);
+    if (duration == null || duration == 0) {
+      return null;
+    }
+    return Date.from(Instant.ofEpochSecond(from.toInstant().getEpochSecond() + duration));
+  }
+
+  public static Long calcAccumulationDuration(Resources resources, ProductionDto production) {
+    var m = calcAccumulationDuration(resources.getMetal(), production.metalProduction());
+    var c = calcAccumulationDuration(resources.getCrystal(), production.crystalProduction());
+    var d = calcAccumulationDuration(resources.getDeuterium(), production.deuteriumProduction());
     if (m == null || c == null || d == null) {
       return null;
     }
     return Math.max(Math.max(m, c), d);
   }
 
-  private static Long calcAccumulateTime(double resources, int production) {
+  private static Long calcAccumulationDuration(double resources, int production) {
     assert production >= 0;
     if (resources > 0 && production == 0) {
       return null;

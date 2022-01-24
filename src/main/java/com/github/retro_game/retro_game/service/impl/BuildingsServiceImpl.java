@@ -241,20 +241,9 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
       var missingResources = new Resources(cost);
       missingResources.sub(body.getResources());
       missingResources.max(0.0);
-      Date costAccumulatedAt = null;
-      var neededSmallCargoes = 0L;
-      var neededLargeCargoes = 0L;
-      if (missingResources.getMetal() > 0.0 || missingResources.getCrystal() > 0.0 ||
-          missingResources.getDeuterium() > 0.0) {
-        neededSmallCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.SMALL_CARGO, missingResources);
-        neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
-
-        var accumulateTime = ItemTimeUtils.calcAccumulateTime(missingResources, production);
-        if (accumulateTime != null) {
-          var now = body.getUpdatedAt();
-          costAccumulatedAt = Date.from(Instant.ofEpochSecond(now.toInstant().getEpochSecond() + accumulateTime));
-        }
-      }
+      var neededSmallCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.SMALL_CARGO, missingResources);
+      var neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
+      var accumulationTime = ItemTimeUtils.calcAccumulationTime(body.getUpdatedAt(), missingResources, production);
 
       var hasEnoughFields = state.usedFields < state.maxFields;
       var isQueueNotFull = queueSize < buildingQueueCapacity;
@@ -266,7 +255,7 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
       buildings.add(
           new BuildingDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
               constructionTime, Converter.convert(missingResources), neededSmallCargoes, neededLargeCargoes,
-              costAccumulatedAt, canConstructNow));
+              accumulationTime, canConstructNow));
     }
 
     return buildings;
