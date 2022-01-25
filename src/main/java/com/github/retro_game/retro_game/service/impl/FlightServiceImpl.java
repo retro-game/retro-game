@@ -1033,7 +1033,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
       // Process the result.
 
-      numRounds = battleOutcome.getNumRounds();
+      numRounds = battleOutcome.numRounds();
       Map<UnitKind, UnitItem> items = UnitItem.getAll();
 
       // Helper for flights.
@@ -1053,7 +1053,7 @@ class FlightServiceImpl implements FlightServiceInternal {
                 UnitKind kind = entry.getKey();
                 var count = entry.getValue();
 
-                int remaining = (int) outcome.getNthRoundUnitGroupsStats(nRounds - 1).get(kind).getNumRemainingUnits();
+                int remaining = (int) outcome.getNthRoundUnitGroupsStats(nRounds - 1).get(kind).numRemainingUnits();
                 totalRemaining += remaining;
                 int diff = count - remaining;
                 assert diff >= 0;
@@ -1072,14 +1072,14 @@ class FlightServiceImpl implements FlightServiceInternal {
           };
 
       // Attackers' flights.
-      var attackersOutcomes = battleOutcome.getAttackersOutcomes();
+      var attackersOutcomes = battleOutcome.attackersOutcomes();
       Tuple4<Integer, Resources, Long, Long> at = handleFlights.apply(Tuple.of(attackersFlights, attackersOutcomes));
       int attackersTotalRemaining = at._1;
       attackersLoss = at._2;
       debrisMetal += at._3;
       debrisCrystal += at._4;
 
-      var defendersOutcomes = battleOutcome.getDefendersOutcomes();
+      var defendersOutcomes = battleOutcome.defendersOutcomes();
 
       // Defenders' flights.
       Tuple4<Integer, Resources, Long, Long> dt = handleFlights.apply(Tuple.of(defendersFlights, defendersOutcomes));
@@ -1101,7 +1101,7 @@ class FlightServiceImpl implements FlightServiceInternal {
 
           boolean isDefense = UnitItem.getDefense().containsKey(kind);
 
-          int remaining = (int) outcome.getNthRoundUnitGroupsStats(numRounds - 1).get(kind).getNumRemainingUnits();
+          int remaining = (int) outcome.getNthRoundUnitGroupsStats(numRounds - 1).get(kind).numRemainingUnits();
           defendersTotalRemaining += remaining;
           int diff = count - remaining;
           assert diff >= 0;

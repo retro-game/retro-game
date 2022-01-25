@@ -66,19 +66,19 @@ public class CombatReportSerialization {
   }
 
   private static void storeCombatant(DataOutputStream stream, Combatant combatant) throws IOException {
-    stream.writeLong(combatant.getUserId());
+    stream.writeLong(combatant.userId());
 
-    var coords = combatant.getCoordinates();
+    var coords = combatant.coordinates();
     stream.writeInt(coords.getGalaxy());
     stream.writeInt(coords.getSystem());
     stream.writeInt(coords.getPosition());
     stream.writeByte(coords.getKind().ordinal());
 
-    stream.writeByte(combatant.getWeaponsTechnology());
-    stream.writeByte(combatant.getShieldingTechnology());
-    stream.writeByte(combatant.getArmorTechnology());
+    stream.writeByte(combatant.weaponsTechnology());
+    stream.writeByte(combatant.shieldingTechnology());
+    stream.writeByte(combatant.armorTechnology());
 
-    var unitGroups = combatant.getUnitGroups();
+    var unitGroups = combatant.unitGroups();
     assert UnitKind.values().length <= Byte.MAX_VALUE;
     var numGroups = (int) unitGroups.values().stream().filter(i -> i != 0).count();
     stream.writeByte(numGroups);
@@ -128,12 +128,12 @@ public class CombatReportSerialization {
 
   private static void storeRounds(DataOutputStream stream, List<Combatant> attackers, List<Combatant> defenders,
                                   BattleOutcome battleOutcome) throws IOException {
-    var numRounds = battleOutcome.getNumRounds();
+    var numRounds = battleOutcome.numRounds();
     assert numRounds >= 0 && numRounds <= 255;
     stream.writeByte(numRounds);
 
-    var attackersOutcomes = battleOutcome.getAttackersOutcomes();
-    var defendersOutcomes = battleOutcome.getDefendersOutcomes();
+    var attackersOutcomes = battleOutcome.attackersOutcomes();
+    var defendersOutcomes = battleOutcome.defendersOutcomes();
     for (var round = 0; round < numRounds; round++) {
       storeRoundCombatants(stream, attackers, attackersOutcomes, round);
       storeRoundCombatants(stream, defenders, defendersOutcomes, round);
@@ -154,7 +154,7 @@ public class CombatReportSerialization {
   private static void storeRoundCombatants(DataOutputStream stream, List<Combatant> combatants,
                                            List<CombatantOutcome> outcomes, int round) throws IOException {
     int[] numActiveGroups = outcomes.stream().mapToInt(
-        outcome -> (int) outcome.getNthRoundUnitGroupsStats(round).values().stream().filter(s -> s.getTimesFired() > 0)
+        outcome -> (int) outcome.getNthRoundUnitGroupsStats(round).values().stream().filter(s -> s.timesFired() > 0)
             .count()).toArray();
 
     var numActiveCombatants = (int) Arrays.stream(numActiveGroups).filter(n -> n != 0).count();
@@ -164,7 +164,7 @@ public class CombatReportSerialization {
     for (var i = 0; i < outcomes.size(); i++) {
       var numActive = numActiveGroups[i];
       if (numActive > 0) {
-        var userId = combatants.get(i).getUserId();
+        var userId = combatants.get(i).userId();
         var unitGroupsStats = outcomes.get(i).getNthRoundUnitGroupsStats(round);
         storeRoundCombatant(stream, userId, unitGroupsStats, numActive);
       }
@@ -202,16 +202,16 @@ public class CombatReportSerialization {
     for (var entry : unitGroupsStats.entrySet()) {
       var kind = entry.getKey();
       var stats = entry.getValue();
-      var active = stats.getTimesFired() > 0;
+      var active = stats.timesFired() > 0;
       if (active) {
         stream.writeByte(kind.ordinal());
-        stream.writeLong(stats.getTimesFired());
-        stream.writeLong(stats.getTimesWasShot());
-        stream.writeLong((long) stats.getShieldDamageDealt());
-        stream.writeLong((long) stats.getHullDamageDealt());
-        stream.writeLong((long) stats.getShieldDamageTaken());
-        stream.writeLong((long) stats.getHullDamageTaken());
-        stream.writeLong(stats.getNumRemainingUnits());
+        stream.writeLong(stats.timesFired());
+        stream.writeLong(stats.timesWasShot());
+        stream.writeLong((long) stats.shieldDamageDealt());
+        stream.writeLong((long) stats.hullDamageDealt());
+        stream.writeLong((long) stats.shieldDamageTaken());
+        stream.writeLong((long) stats.hullDamageTaken());
+        stream.writeLong(stats.numRemainingUnits());
       }
     }
   }

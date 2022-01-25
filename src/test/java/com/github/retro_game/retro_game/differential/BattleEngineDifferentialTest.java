@@ -55,7 +55,7 @@ public class BattleEngineDifferentialTest {
     for (var i = 0; i < lhs.size(); i++) {
       var a = lhs.get(i);
       var b = rhs.get(i);
-      Assertions.assertEquals(a.getUnitGroupsStats(), b.getUnitGroupsStats());
+      Assertions.assertEquals(a.unitGroupsStats(), b.unitGroupsStats());
     }
   }
 
@@ -80,8 +80,8 @@ public class BattleEngineDifferentialTest {
       javaTime += t2 - t1;
       nativeTime += t3 - t2;
 
-      assertOutcomesEqual(javaOutcome.getAttackersOutcomes(), nativeOutcome.getAttackersOutcomes());
-      assertOutcomesEqual(javaOutcome.getDefendersOutcomes(), nativeOutcome.getDefendersOutcomes());
+      assertOutcomesEqual(javaOutcome.attackersOutcomes(), nativeOutcome.attackersOutcomes());
+      assertOutcomesEqual(javaOutcome.defendersOutcomes(), nativeOutcome.defendersOutcomes());
     }
 
     System.out.printf("Battle Engine Perf: java=%,dns native=%,dns\n", javaTime, nativeTime);

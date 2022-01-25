@@ -40,12 +40,12 @@ public class BattleEngineUnitTest {
     var outcome0 = battleEngine.fight(attackers, defenders, 0);
     var outcome1 = battleEngine.fight(attackers, defenders, 1);
     Assertions.assertEquals(
-        outcome0.getAttackersOutcomes().get(0).getUnitGroupsStats(),
-        outcome1.getAttackersOutcomes().get(0).getUnitGroupsStats()
+        outcome0.attackersOutcomes().get(0).unitGroupsStats(),
+        outcome1.attackersOutcomes().get(0).unitGroupsStats()
     );
     Assertions.assertEquals(
-        outcome0.getDefendersOutcomes().get(0).getUnitGroupsStats(),
-        outcome1.getDefendersOutcomes().get(0).getUnitGroupsStats()
+        outcome0.defendersOutcomes().get(0).unitGroupsStats(),
+        outcome1.defendersOutcomes().get(0).unitGroupsStats()
     );
   }
 }

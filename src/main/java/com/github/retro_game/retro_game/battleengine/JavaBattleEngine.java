@@ -45,35 +45,11 @@ public final class JavaBattleEngine implements BattleEngine {
     }
   }
 
-  private static final class Stats {
-    private final int[] numRemainingUnits;
-    private final long[] timesFired;
-    private final long[] timesWasShot;
-    private final float[] shieldDamageDealt;
-    private final float[] hullDamageDealt;
-    private final float[] shieldDamageTaken;
-    private final float[] hullDamageTaken;
-
-    private Stats(int[] numRemainingUnits, long[] timesFired, long[] timesWasShot, float[] shieldDamageDealt,
-                  float[] hullDamageDealt, float[] shieldDamageTaken, float[] hullDamageTaken) {
-      this.numRemainingUnits = numRemainingUnits;
-      this.timesFired = timesFired;
-      this.timesWasShot = timesWasShot;
-      this.shieldDamageDealt = shieldDamageDealt;
-      this.hullDamageDealt = hullDamageDealt;
-      this.shieldDamageTaken = shieldDamageTaken;
-      this.hullDamageTaken = hullDamageTaken;
-    }
+  private record Stats(int[] numRemainingUnits, long[] timesFired, long[] timesWasShot, float[] shieldDamageDealt,
+                       float[] hullDamageDealt, float[] shieldDamageTaken, float[] hullDamageTaken) {
   }
 
-  private static final class Party {
-    private final Units units;
-    private final Stats stats;
-
-    private Party(Units units, Stats stats) {
-      this.units = units;
-      this.stats = stats;
-    }
+  private record Party(Units units, Stats stats) {
   }
 
   private static Units makeUnits(Combatant[] combatants) {
@@ -81,7 +57,7 @@ public final class JavaBattleEngine implements BattleEngine {
     assert combatants.length <= Byte.MAX_VALUE;
 
     var totalUnits = Arrays.stream(combatants)
-        .mapToLong(c -> c.getUnitGroups().values().stream().mapToLong(Long::longValue).sum())
+        .mapToLong(c -> c.unitGroups().values().stream().mapToLong(Long::longValue).sum())
         .sum();
     if (totalUnits > Integer.MAX_VALUE) {
       // We cannot make bigger arrays in Java.
@@ -96,10 +72,10 @@ public final class JavaBattleEngine implements BattleEngine {
     var n = 0;
     for (var i = 0; i < combatants.length; i++) {
       var combatant = combatants[i];
-      for (var item : combatant.getUnitGroups().entrySet()) {
+      for (var item : combatant.unitGroups().entrySet()) {
         var kind = item.getKey().ordinal();
         var count = item.getValue();
-        var maxHull = 0.1f * unitsAttributes[kind].armor * (1.0f + 0.1f * combatant.getArmorTechnology());
+        var maxHull = 0.1f * unitsAttributes[kind].armor * (1.0f + 0.1f * combatant.armorTechnology());
         for (var j = 0; j < count; j++) {
           hulls[n] = maxHull;
           kinds[n] = (byte) kind;
@@ -138,7 +114,7 @@ public final class JavaBattleEngine implements BattleEngine {
       var kind = units.kinds[i];
       var id = units.ids[i];
       var combatant = combatants[id];
-      var shield = unitsAttributes[kind].shield * (1.0f + 0.1f * combatant.getShieldingTechnology());
+      var shield = unitsAttributes[kind].shield * (1.0f + 0.1f * combatant.shieldingTechnology());
       units.shields[i] = shield;
     }
   }
@@ -164,7 +140,7 @@ public final class JavaBattleEngine implements BattleEngine {
       final var shooterStatsIdx = attackerId * MAX_ROUNDS * UnitKind.values().length +
           round * UnitKind.values().length + shooterKind;
 
-      final var damage = unitsAttributes[shooterKind].weapons * (1.0f + 0.1f * attacker.getWeaponsTechnology());
+      final var damage = unitsAttributes[shooterKind].weapons * (1.0f + 0.1f * attacker.weaponsTechnology());
 
       while (true) {
         // Pick a random target.
@@ -189,7 +165,7 @@ public final class JavaBattleEngine implements BattleEngine {
           // Does the shooter break through the shield at all?
           if (hullDamage < 0.0f) {
             // All damage absorbed by the shield. Calculate the shield damage including the bouncing effect.
-            var maxShield = unitsAttributes[targetKind].shield * (1.0f + 0.1f * defender.getShieldingTechnology());
+            var maxShield = unitsAttributes[targetKind].shield * (1.0f + 0.1f * defender.shieldingTechnology());
             var shieldDamage = 0.01f * (float) Math.floor(100.0f * damage / maxShield) * maxShield;
             shield -= shieldDamage;
 
@@ -213,7 +189,7 @@ public final class JavaBattleEngine implements BattleEngine {
 
           if (hull != 0.0f) {
             // If the target's hull is less than 70%, the target might explode.
-            var maxHull = 0.1f * unitsAttributes[targetKind].armor * (1.0f + 0.1f * defender.getArmorTechnology());
+            var maxHull = 0.1f * unitsAttributes[targetKind].armor * (1.0f + 0.1f * defender.armorTechnology());
             if (hull < 0.7f * maxHull) {
               r = Random.next(r);
               if (hull < (1.0f / Random.MAX * r * maxHull)) {

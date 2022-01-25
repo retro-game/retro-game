@@ -107,10 +107,10 @@ struct Jni {
 
   struct Combatant {
     jclass clazz;
-    jmethodID getWeaponsTechnology;
-    jmethodID getShieldingTechnology;
-    jmethodID getArmorTechnology;
-    jmethodID getUnitGroups;
+    jmethodID weaponsTechnology;
+    jmethodID shieldingTechnology;
+    jmethodID armorTechnology;
+    jmethodID unitGroups;
   } combatant;
 
   struct BattleOutcome {
@@ -248,13 +248,13 @@ struct Jni {
     bool ok = findClass(combatant.clazz, COMBATANT_CLASS_NAME);
     if (!ok)
       return false;
-    ok &= getMethod(combatant.getWeaponsTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
-                    "getWeaponsTechnology", "()I");
-    ok &= getMethod(combatant.getShieldingTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
-                    "getShieldingTechnology", "()I");
-    ok &= getMethod(combatant.getArmorTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
-                    "getArmorTechnology", "()I");
-    ok &= getMethod(combatant.getUnitGroups, combatant.clazz, COMBATANT_CLASS_NAME, "getUnitGroups",
+    ok &= getMethod(combatant.weaponsTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
+                    "weaponsTechnology", "()I");
+    ok &= getMethod(combatant.shieldingTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
+                    "shieldingTechnology", "()I");
+    ok &= getMethod(combatant.armorTechnology, combatant.clazz, COMBATANT_CLASS_NAME,
+                    "armorTechnology", "()I");
+    ok &= getMethod(combatant.unitGroups, combatant.clazz, COMBATANT_CLASS_NAME, "unitGroups",
                     "()Ljava/util/EnumMap;");
     return ok;
   }
@@ -416,20 +416,20 @@ struct Jni {
 
   // Combatant
 
-  std::int32_t Combatant_getWeaponsTechnology(jobject obj) const {
-    return env->CallIntMethod(obj, combatant.getWeaponsTechnology);
+  std::int32_t Combatant_weaponsTechnology(jobject obj) const {
+    return env->CallIntMethod(obj, combatant.weaponsTechnology);
   }
 
-  std::int32_t Combatant_getShieldingTechnology(jobject obj) const {
-    return env->CallIntMethod(obj, combatant.getShieldingTechnology);
+  std::int32_t Combatant_shieldingTechnology(jobject obj) const {
+    return env->CallIntMethod(obj, combatant.shieldingTechnology);
   }
 
-  std::int32_t Combatant_getArmorTechnology(jobject obj) const {
-    return env->CallIntMethod(obj, combatant.getArmorTechnology);
+  std::int32_t Combatant_armorTechnology(jobject obj) const {
+    return env->CallIntMethod(obj, combatant.armorTechnology);
   }
 
-  jobject Combatant_getUnitGroups(jobject obj) const {
-    return env->CallObjectMethod(obj, combatant.getUnitGroups);
+  jobject Combatant_unitGroups(jobject obj) const {
+    return env->CallObjectMethod(obj, combatant.unitGroups);
   }
 
   // BattleOutcome
@@ -576,9 +576,9 @@ bool initUnitsAttributes(const Jni &jni, jobjectArray unitsAttributesArray) {
 }
 
 std::optional<Combatant> loadCombatant(const Jni &jni, jobject combatantObj) {
-  std::int32_t weaponsTechnology = jni.Combatant_getWeaponsTechnology(combatantObj);
-  std::int32_t shieldingTechnology = jni.Combatant_getShieldingTechnology(combatantObj);
-  std::int32_t armorTechnology = jni.Combatant_getArmorTechnology(combatantObj);
+  std::int32_t weaponsTechnology = jni.Combatant_weaponsTechnology(combatantObj);
+  std::int32_t shieldingTechnology = jni.Combatant_shieldingTechnology(combatantObj);
+  std::int32_t armorTechnology = jni.Combatant_armorTechnology(combatantObj);
   if (weaponsTechnology < 0 || shieldingTechnology < 0 || armorTechnology < 0) {
     std::fputs("BattleEngine: Combat technologies cannot be negative\n", stderr);
     return {};
@@ -591,7 +591,7 @@ std::optional<Combatant> loadCombatant(const Jni &jni, jobject combatantObj) {
   }
   std::fill_n(unitGroups.get(), g_numKinds, std::uint64_t{0u});
 
-  jobject unitGroupsObj = jni.Combatant_getUnitGroups(combatantObj);
+  jobject unitGroupsObj = jni.Combatant_unitGroups(combatantObj);
   if (!unitGroupsObj) {
     std::fputs("BattleEngine: unitGroups of Combatant cannot be null\n", stderr);
     return {};

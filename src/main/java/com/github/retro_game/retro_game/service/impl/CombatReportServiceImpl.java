@@ -34,8 +34,8 @@ public class CombatReportServiceImpl implements CombatReportServiceInternal {
                              long executionTime) {
     var id = UUID.randomUUID();
 
-    var attackerIds = attackers.stream().mapToLong(Combatant::getUserId).distinct().toArray();
-    var defenderIds = defenders.stream().mapToLong(Combatant::getUserId).distinct().toArray();
+    var attackerIds = attackers.stream().mapToLong(Combatant::userId).distinct().toArray();
+    var defenderIds = defenders.stream().mapToLong(Combatant::userId).distinct().toArray();
 
     var aLoss = (long) (attackersLoss.getMetal() + attackersLoss.getCrystal() + attackersLoss.getDeuterium());
     var dLoss = (long) (defendersLoss.getMetal() + defendersLoss.getCrystal() + defendersLoss.getDeuterium());
