@@ -63,36 +63,17 @@
         <th colspan="2" th:text="#{target}">Target</th>
       </tr>
       <tr>
-        <td th:text="#{mission}">Mission</td>
         <td>
-          <input id="attack" name="mission" type="radio" value="ATTACK"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).ATTACK}" required>
-          <label for="attack" th:text="#{mission.ATTACK}">Attack</label>
-          <input id="colonization" name="mission" type="radio" value="COLONIZATION"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).COLONIZATION}"
-                 required>
-          <label for="colonization" th:text="#{mission.COLONIZATION}">Colonization</label>
-          <input id="deployment" name="mission" type="radio" value="DEPLOYMENT"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).DEPLOYMENT}"
-                 required>
-          <label for="deployment" th:text="#{mission.DEPLOYMENT}">Deployment</label>
-          <input id="destroy" name="mission" type="radio" value="DESTROY"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).DESTROY}" required>
-          <label for="destroy" th:text="#{mission.DESTROY}">Destroy</label>
-          <input id="espionage" name="mission" type="radio" value="ESPIONAGE"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).ESPIONAGE}"
-                 required>
-          <label for="espionage" th:text="#{mission.ESPIONAGE}">Espionage</label>
-          <input id="harvest" name="mission" type="radio" value="HARVEST"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).HARVEST}" required>
-          <label for="harvest" th:text="#{mission.HARVEST}">Harvest</label>
-          <input id="hold" name="mission" type="radio" value="HOLD"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).HOLD}" required>
-          <label for="hold" th:text="#{mission.HOLD}">Hold</label>
-          <input id="transport" name="mission" type="radio" value="TRANSPORT"
-                 th:checked="${mission == T(com.github.retro_game.retro_game.dto.MissionDto).TRANSPORT}"
-                 required>
-          <label for="transport" th:text="#{mission.TRANSPORT}">Transport</label>
+          <label for="mission" th:text="#{mission}">Mission</label>
+        </td>
+        <td>
+          <select id="mission" name="mission">
+            <th:block th:each="m : ${T(com.github.retro_game.retro_game.dto.MissionDto).values()}">
+              <option th:if="${m != T(com.github.retro_game.retro_game.dto.MissionDto).MISSILE_ATTACK}" th:value="${m}"
+                      th:selected="${(mission == null && m == T(com.github.retro_game.retro_game.dto.MissionDto).TRANSPORT) || (mission == m)}"
+                      th:text="${#messages.msg('mission.' + m)}"></option>
+            </th:block>
+          </select>
         </td>
       </tr>
       <tr id="hold-time" th:data-hold-time-message="#{holdTime}"></tr>
