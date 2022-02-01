@@ -40,7 +40,7 @@ $('#no-resources').click(function () {
 });
 
 $('[name="party"]').click(function () {
-  $('#attack').prop('checked', true);
+  $('#mission').val('ATTACK');
   var form = $('#send-fleet');
   var party = $(this);
   var names = ['galaxy', 'system', 'position', 'kind'];
@@ -59,9 +59,9 @@ function update() {
     holdTime = 0 | val;
   }
 
-  var mission = $('[name="mission"]:checked').attr('id');
+  const mission = $('#mission option:selected').val();
   var holdTimeElem = $('#hold-time');
-  if (mission === 'hold') {
+  if (mission === 'HOLD') {
     if (holdTimeElem.children().length === 0) {
       var msg = holdTimeElem.attr('data-hold-time-message');
       holdTimeElem.html('<td>' + msg + '</td><td><input name="holdTime" type="number" min="0" max="100" value="' + holdTime + '"></td>');
