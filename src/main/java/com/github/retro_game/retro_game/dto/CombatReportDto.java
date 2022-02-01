@@ -1,11 +1,13 @@
 package com.github.retro_game.retro_game.dto;
 
-import java.util.ArrayList;
-import java.util.Date;
+import org.springframework.lang.Nullable;
 
-public record CombatReportDto(Date at, ArrayList<CombatReportCombatantDto> attackers,
-                              ArrayList<CombatReportCombatantDto> defenders, ArrayList<CombatReportRoundDto> rounds,
+import java.util.Date;
+import java.util.List;
+
+public record CombatReportDto(Date at, List<CombatReportCombatantDto> attackers,
+                              List<CombatReportCombatantDto> defenders, List<CombatReportRoundDto> rounds,
                               BattleResultDto result, long attackersLoss, long defendersLoss, ResourcesDto plunder,
-                              long debrisMetal, long debrisCrystal, double moonChance, boolean moonGiven, int seed,
-                              long executionTime) {
+                              long debrisMetal, long debrisCrystal, double moonChance, boolean moonGiven,
+                              @Nullable MoonDestructionResultDto moonDestructionResult, int seed, long executionTime) {
 }

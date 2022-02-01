@@ -1,10 +1,15 @@
 package com.github.retro_game.retro_game.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "events")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Event {
   @Column(name = "id")
   @Id

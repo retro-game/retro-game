@@ -8,7 +8,7 @@ import com.github.retro_game.retro_game.service.BodyService;
 import java.util.Date;
 import java.util.Map;
 
-interface BodyServiceInternal extends BodyService {
+public interface BodyServiceInternal extends BodyService {
   // Returns body with updated resources & shipyard.
   Body getUpdated(long bodyId);
 

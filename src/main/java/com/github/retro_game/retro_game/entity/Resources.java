@@ -1,30 +1,29 @@
 package com.github.retro_game.retro_game.entity;
 
+import lombok.*;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class Resources {
   @Column(name = "metal", nullable = false)
+  @Getter
+  @Setter
   private double metal;
 
   @Column(name = "crystal", nullable = false)
+  @Getter
+  @Setter
   private double crystal;
 
   @Column(name = "deuterium", nullable = false)
+  @Getter
+  @Setter
   private double deuterium;
-
-  public Resources() {
-    metal = 0.0;
-    crystal = 0.0;
-    deuterium = 0.0;
-  }
-
-  public Resources(double metal, double crystal, double deuterium) {
-    this.metal = metal;
-    this.crystal = crystal;
-    this.deuterium = deuterium;
-  }
 
   public Resources(Resources resources) {
     this.metal = resources.metal;
@@ -62,6 +61,10 @@ public class Resources {
     deuterium = Math.max(deuterium, scalar);
   }
 
+  public double total() {
+    return metal + crystal + deuterium;
+  }
+
   public boolean less(Resources rhs) {
     return metal < rhs.metal && crystal < rhs.crystal && deuterium < rhs.deuterium;
   }
@@ -78,36 +81,7 @@ public class Resources {
     return metal >= rhs.metal && crystal >= rhs.crystal && deuterium >= rhs.deuterium;
   }
 
-  public double getMetal() {
-    return metal;
-  }
-
-  public void setMetal(double metal) {
-    this.metal = metal;
-  }
-
-  public double getCrystal() {
-    return crystal;
-  }
-
-  public void setCrystal(double crystal) {
-    this.crystal = crystal;
-  }
-
-  public double getDeuterium() {
-    return deuterium;
-  }
-
-  public void setDeuterium(double deuterium) {
-    this.deuterium = deuterium;
-  }
-
-  @Override
-  public String toString() {
-    return "Resources{" +
-        "metal=" + metal +
-        ", crystal=" + crystal +
-        ", deuterium=" + deuterium +
-        '}';
+  public boolean isNonNegative() {
+    return metal >= 0.0 && crystal >= 0.0 && deuterium >= 0.0;
   }
 }

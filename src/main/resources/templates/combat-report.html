@@ -34,8 +34,10 @@
         <p th:text="#{roundFormat(${iter.index + 1})}">
           Round 3:
         </p>
-        <table th:replace="combat-report-round-combatants :: round-combatants(${round.attackers}, #{attacker}, ${userInfos})"></table>
-        <table th:replace="combat-report-round-combatants :: round-combatants(${round.defenders}, #{defender}, ${userInfos})"></table>
+        <table
+            th:replace="combat-report-round-combatants :: round-combatants(${round.attackers}, #{attacker}, ${userInfos})"></table>
+        <table
+            th:replace="combat-report-round-combatants :: round-combatants(${round.defenders}, #{defender}, ${userInfos})"></table>
       </th:block>
       <hr>
       <p th:switch="${report.result}">
@@ -75,6 +77,24 @@
       <p th:if="${report.moonGiven}" th:text="#{combatReportMoonGiven}">
         A moon was created!
       </p>
+      <th:block th:with="res=${report.moonDestructionResult}">
+        <th:block th:if="${res != null}">
+          <p>
+            <span
+                th:utext="#{combatReportMoonDestructionChanceFormat(${'<strong>' + #numbers.formatDecimal(res.moonDestructionChance * 100.0, 1, 'DEFAULT', 2, 'DEFAULT') + '</strong>'})}">
+            </span>
+            <span th:if="${res.moonDestroyed}" th:text="#{combatReportMoonDestroyed}"></span>
+            <span th:unless="${res.moonDestroyed}" th:text="#{combatReportMoonNotDestroyed}"></span>
+          </p>
+          <p>
+            <span
+                th:utext="#{combatReportDeathStarsDestructionChanceFormat(${'<strong>' + #numbers.formatDecimal(res.deathStarsDestructionChance * 100.0, 1, 'DEFAULT', 2, 'DEFAULT') + '</strong>'})}">
+            </span>
+            <span th:if="${res.deathStarsDestroyed}" th:text="#{combatReportDeathStarsDestroyed}"></span>
+            <span th:unless="${res.deathStarsDestroyed}" th:text="#{combatReportDeathStarsNotDestroyed}"></span>
+          </p>
+        </th:block>
+      </th:block>
       <p>
         <span th:text="#{seed}">Seed</span>:
         <strong th:text="${report.seed}"></strong>

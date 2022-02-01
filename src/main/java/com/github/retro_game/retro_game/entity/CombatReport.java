@@ -78,6 +78,22 @@ public class CombatReport {
   @Getter
   private boolean moonGiven;
 
+  @Column(name = "moon_destruction_chance", updatable = false)
+  @Getter
+  private Double moonDestructionChance;
+
+  @Column(name = "moon_destroyed", updatable = false)
+  @Getter
+  private Boolean moonDestroyed;
+
+  @Column(name = "death_stars_destruction_chance", updatable = false)
+  @Getter
+  private Double deathStarsDestructionChance;
+
+  @Column(name = "death_stars_destroyed", updatable = false)
+  @Getter
+  private Boolean deathStarsDestroyed;
+
   @Column(name = "seed", nullable = false, updatable = false)
   @Getter
   private int seed;

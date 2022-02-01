@@ -207,6 +207,10 @@ public class Flight {
     this.resources = resources;
   }
 
+  public int[] getUnitsArray() {
+    return unitsArray;
+  }
+
   public UnitKind getMainTarget() {
     return mainTarget;
   }

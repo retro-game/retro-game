@@ -19,7 +19,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component
-class EventScheduler implements Runnable {
+public class EventScheduler implements Runnable {
   private static final int WAIT_TIME_STEP_IN_MS = 10;
   private static final int MAX_WAIT_TIME_IN_MS = 3000;
   private static final Logger logger = LoggerFactory.getLogger(EventScheduler.class);
@@ -56,7 +56,7 @@ class EventScheduler implements Runnable {
     this.eventSchedulerThread.execute(this);
   }
 
-  void schedule(Event event) {
+  public void schedule(Event event) {
     eventRepository.save(event);
     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
       @Override
@@ -119,6 +119,7 @@ class EventScheduler implements Runnable {
         } else {
           waitTime = MAX_WAIT_TIME_IN_MS;
           logger.error("Scheduler unexpected error, retrying in {}ms: msg={}", waitTime, e.getMessage());
+          e.printStackTrace();
         }
 
         try {

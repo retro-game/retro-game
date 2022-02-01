@@ -114,13 +114,8 @@ class PartyServiceImpl implements PartyService {
     assert flight.getTargetUser() != null;
     assert flight.getTargetBody() != null;
 
-    Party party = new Party();
-    party.setOwner(user);
-    party.setTargetUser(flight.getTargetUser());
-    party.setTargetBody(flight.getTargetBody());
-    party.setTargetCoordinates(flight.getTargetCoordinates());
-    party.setMission(flight.getMission());
-    party.setUsers(Collections.singletonList(user));
+    var party = new Party(0, user, flight.getTargetUser(), flight.getTargetBody(), flight.getTargetCoordinates(),
+        flight.getMission(), Collections.singletonList(user));
     party = partyRepository.save(party);
     flight.setParty(party);
     logger.info("Creating party: userId={} flightId={} partyId={}", userId, flightId, party.getId());

@@ -2,8 +2,8 @@ package com.github.retro_game.retro_game.differential;
 
 import com.github.retro_game.retro_game.battleengine.Combatant;
 import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
-import com.github.retro_game.retro_game.battleengine.JavaBattleEngine;
-import com.github.retro_game.retro_game.battleengine.NativeBattleEngine;
+import com.github.retro_game.retro_game.battleengine.JavaBattleEngineStrategy;
+import com.github.retro_game.retro_game.battleengine.NativeBattleEngineStrategy;
 import com.github.retro_game.retro_game.entity.Coordinates;
 import com.github.retro_game.retro_game.entity.CoordinatesKind;
 import com.github.retro_game.retro_game.entity.UnitKind;
@@ -20,8 +20,8 @@ import java.util.Random;
 public class BattleEngineDifferentialTest {
   private static final long RANDOM_SEED = 42L;
   private static final int NUM_BATTLES = 1000;
-  private final JavaBattleEngine javaBattleEngine = new JavaBattleEngine();
-  private final NativeBattleEngine nativeBattleEngine = new NativeBattleEngine();
+  private final JavaBattleEngineStrategy javaBattleEngine = new JavaBattleEngineStrategy();
+  private final NativeBattleEngineStrategy nativeBattleEngine = new NativeBattleEngineStrategy();
 
   private static Combatant generateCombatant(Random random) {
     var weaponsTechnology = random.nextInt(30);
@@ -35,11 +35,8 @@ public class BattleEngineDifferentialTest {
       var n = (long) random.nextInt(1000);
       unitGroups.put(kind, n);
     }
-    return new Combatant(
-        1,
-        new Coordinates(1, 1, 1, CoordinatesKind.PLANET),
-        weaponsTechnology, shieldingTechnology, armorTechnology, unitGroups
-    );
+    return new Combatant(1, new Coordinates(1, 1, 1, CoordinatesKind.PLANET), weaponsTechnology, shieldingTechnology,
+        armorTechnology, unitGroups);
   }
 
   private static List<Combatant> generateCombatants(Random random) {

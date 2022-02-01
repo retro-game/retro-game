@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 @ConditionalOnProperty(value = "retro-game.battle-engine", havingValue = "java")
-public final class JavaBattleEngine implements BattleEngine {
+public final class JavaBattleEngineStrategy implements BattleEngineStrategy {
   // Lehmer RNG
   // Using this simple RNG improves the performance of the battle engine by a wide margin.
   // Keep in sync with the RNG in the native battle engine.

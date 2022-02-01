@@ -314,7 +314,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Override
   public Body createMoon(User user, Coordinates coordinates, Date at, double chance) {
     assert coordinates.getKind() == CoordinatesKind.MOON;
-    assert chance >= 0.01 && chance <= 0.2;
 
     Body body = new Body();
     body.setUser(user);
@@ -380,7 +379,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   }
 
   private int generateMoonDiameter(double chance) {
-    assert chance >= 0.01 && chance <= 0.2;
+    chance = Math.max(0.01, Math.min(0.2, chance));
     int r = ThreadLocalRandom.current().nextInt(10, 20 + 1);
     return (int) (1000.0 * Math.sqrt(r + 3 * (int) (100.0 * chance)));
   }

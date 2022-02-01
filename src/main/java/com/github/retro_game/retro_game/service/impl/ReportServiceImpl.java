@@ -101,9 +101,8 @@ class ReportServiceImpl implements ReportServiceInternal {
   @CacheEvict(cacheNames = "reportsSummaries", key = "#user.id")
   public void createSimplifiedCombatReport(User user, boolean isAttacker, Date at, User enemy, Coordinates coordinates,
                                            BattleResult result, int numRounds, Resources attackersLoss,
-                                           Resources defendersLoss, Resources plunder, long debrisMetal,
-                                           long debrisCrystal, double moonChance, boolean moonGiven,
-                                           CombatReport combatReport) {
+                                           Resources defendersLoss, Resources plunder, Resources debris,
+                                           MoonCreationResultDto moonCreationResult, CombatReport combatReport) {
     // 0 rounds (no battle at all) implies attackers win.
     assert numRounds != 0 || result == BattleResult.ATTACKERS_WIN;
     // Draw implies 6 rounds.
@@ -127,7 +126,8 @@ class ReportServiceImpl implements ReportServiceInternal {
     var combatReportId = !lostContact && combatReport != null ? combatReport.getId() : null;
     var report =
         new SimplifiedCombatReport(0, user, false, at, enemy.getId(), enemy.getName(), coordinates, res, aLoss, dLoss,
-            plunder, debrisMetal, debrisCrystal, moonChance, moonGiven, combatReportId);
+            plunder, (long) debris.getMetal(), (long) debris.getCrystal(), moonCreationResult.chance(),
+            moonCreationResult.created(), combatReportId);
     simplifiedCombatReportRepository.save(report);
   }
 

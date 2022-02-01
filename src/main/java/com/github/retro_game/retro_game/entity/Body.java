@@ -206,6 +206,10 @@ public class Body implements Serializable {
     buildingsArray[index] = level;
   }
 
+  public int[] getUnitsArray() {
+    return unitsArray;
+  }
+
   public EnumMap<UnitKind, Integer> getUnits() {
     return SerializationUtils.deserializeItems(UnitKind.class, unitsArray);
   }

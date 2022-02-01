@@ -20,6 +20,10 @@ create table combat_reports (
   debris_crystal bigint not null check (debris_crystal >= 0),
   moon_chance real not null,
   moon_given boolean not null,
+  moon_destruction_chance real,
+  moon_destroyed boolean,
+  death_stars_destruction_chance real,
+  death_stars_destroyed boolean,
   seed int not null,
   execution_time bigint not null,
   data bytea not null

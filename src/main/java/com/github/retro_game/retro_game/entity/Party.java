@@ -1,26 +1,38 @@
 package com.github.retro_game.retro_game.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "parties")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Party {
   @Column(name = "id")
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Getter
   private long id;
 
   @JoinColumn(name = "owner_id", nullable = false, updatable = false)
   @ManyToOne(fetch = FetchType.LAZY)
+  @Getter
   private User owner;
 
   @JoinColumn(name = "target_user_id", nullable = false, updatable = false)
   @ManyToOne(fetch = FetchType.LAZY)
+  @Getter
   private User targetUser;
 
-  @JoinColumn(name = "target_body_id", nullable = false, updatable = false)
+  @JoinColumn(name = "target_body_id", nullable = false)
   @ManyToOne(fetch = FetchType.LAZY)
+  @Getter
+  @Setter
   private Body targetBody;
 
   @Embedded
@@ -30,9 +42,12 @@ public class Party {
       @AttributeOverride(name = "position", column = @Column(name = "target_position")),
       @AttributeOverride(name = "kind", column = @Column(name = "target_kind")),
   })
+  @Getter
+  @Setter
   private Coordinates targetCoordinates;
 
   @Column(name = "mission", nullable = false, updatable = false)
+  @Getter
   private Mission mission;
 
   @JoinTable(
@@ -40,57 +55,7 @@ public class Party {
       joinColumns = @JoinColumn(name = "party_id", referencedColumnName = "id"),
       inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
   @ManyToMany
+  @Getter
+  @Setter
   private List<User> users;
-
-  public long getId() {
-    return id;
-  }
-
-  public User getOwner() {
-    return owner;
-  }
-
-  public void setOwner(User owner) {
-    this.owner = owner;
-  }
-
-  public User getTargetUser() {
-    return targetUser;
-  }
-
-  public void setTargetUser(User targetUser) {
-    this.targetUser = targetUser;
-  }
-
-  public Body getTargetBody() {
-    return targetBody;
-  }
-
-  public void setTargetBody(Body targetBody) {
-    this.targetBody = targetBody;
-  }
-
-  public Coordinates getTargetCoordinates() {
-    return targetCoordinates;
-  }
-
-  public void setTargetCoordinates(Coordinates targetCoordinates) {
-    this.targetCoordinates = targetCoordinates;
-  }
-
-  public Mission getMission() {
-    return mission;
-  }
-
-  public void setMission(Mission mission) {
-    this.mission = mission;
-  }
-
-  public List<User> getUsers() {
-    return users;
-  }
-
-  public void setUsers(List<User> users) {
-    this.users = users;
-  }
 }

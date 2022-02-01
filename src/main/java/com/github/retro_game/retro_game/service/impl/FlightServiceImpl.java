@@ -1,9 +1,5 @@
 package com.github.retro_game.retro_game.service.impl;
 
-import com.github.retro_game.retro_game.battleengine.BattleEngine;
-import com.github.retro_game.retro_game.battleengine.BattleOutcome;
-import com.github.retro_game.retro_game.battleengine.Combatant;
-import com.github.retro_game.retro_game.battleengine.CombatantOutcome;
 import com.github.retro_game.retro_game.cache.BodyInfoCache;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.entity.*;
@@ -14,10 +10,7 @@ import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.ActivityService;
 import com.github.retro_game.retro_game.service.exception.*;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
-import io.vavr.Tuple4;
-import org.apache.commons.lang3.tuple.MutablePair;
+import com.github.retro_game.retro_game.service.impl.missionhandler.AttackMissionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +19,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +34,6 @@ class FlightServiceImpl implements FlightServiceInternal {
   private final boolean astrophysicsBasedColonization;
   private final int maxPlanets;
   private final int fleetSpeed;
-  private final BattleEngine battleEngine;
   private final BodyInfoCache bodyInfoCache;
   private final BodyRepository bodyRepository;
   private final DebrisFieldRepository debrisFieldRepository;
@@ -52,9 +42,9 @@ class FlightServiceImpl implements FlightServiceInternal {
   private final PartyRepository partyRepository;
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
+  private AttackMissionHandler attackMissionHandler;
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
-  private CombatReportServiceInternal combatReportServiceInternal;
   private EventScheduler eventScheduler;
   private NoobProtectionService noobProtectionService;
   private ReportServiceInternal reportServiceInternal;
@@ -63,15 +53,14 @@ class FlightServiceImpl implements FlightServiceInternal {
 
   FlightServiceImpl(@Value("${retro-game.astrophysics-based-colonization}") boolean astrophysicsBasedColonization,
                     @Value("${retro-game.max-planets}") int maxPlanets,
-                    @Value("${retro-game.fleet-speed}") int fleetSpeed,
-                    BattleEngine battleEngine, BodyInfoCache bodyInfoCache, BodyRepository bodyRepository,
-                    DebrisFieldRepository debrisFieldRepository, EventRepository eventRepository,
-                    FlightRepository flightRepository, FlightViewRepository flightViewRepository,
-                    PartyRepository partyRepository, UserRepository userRepository) {
+                    @Value("${retro-game.fleet-speed}") int fleetSpeed, BodyInfoCache bodyInfoCache,
+                    BodyRepository bodyRepository, DebrisFieldRepository debrisFieldRepository,
+                    EventRepository eventRepository, FlightRepository flightRepository,
+                    FlightViewRepository flightViewRepository, PartyRepository partyRepository,
+                    UserRepository userRepository) {
     this.astrophysicsBasedColonization = astrophysicsBasedColonization;
     this.maxPlanets = maxPlanets;
     this.fleetSpeed = fleetSpeed;
-    this.battleEngine = battleEngine;
     this.bodyInfoCache = bodyInfoCache;
     this.bodyRepository = bodyRepository;
     this.debrisFieldRepository = debrisFieldRepository;
@@ -80,6 +69,11 @@ class FlightServiceImpl implements FlightServiceInternal {
     this.flightViewRepository = flightViewRepository;
     this.partyRepository = partyRepository;
     this.userRepository = userRepository;
+  }
+
+  @Autowired
+  public void setAttackMissionHandler(AttackMissionHandler attackMissionHandler) {
+    this.attackMissionHandler = attackMissionHandler;
   }
 
   @Autowired
@@ -95,11 +89,6 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Autowired
   void setEventScheduler(EventScheduler eventScheduler) {
     this.eventScheduler = eventScheduler;
-  }
-
-  @Autowired
-  public void setCombatReportServiceInternal(CombatReportServiceInternal combatReportServiceInternal) {
-    this.combatReportServiceInternal = combatReportServiceInternal;
   }
 
   @Autowired
@@ -864,7 +853,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     }
     switch (flight.getMission()) {
       case ATTACK:
-        handleAttack(flight);
+        attackMissionHandler.handle(flight, false);
         break;
       case COLONIZATION:
         handleColonization(flight);
@@ -873,7 +862,7 @@ class FlightServiceImpl implements FlightServiceInternal {
         handleDeployment(flight);
         break;
       case DESTROY:
-        handleDestroy(flight);
+        attackMissionHandler.handle(flight, true);
         break;
       case ESPIONAGE:
         handleEspionage(flight);
@@ -924,479 +913,6 @@ class FlightServiceImpl implements FlightServiceInternal {
     if (flight.getMission() != Mission.ESPIONAGE) {
       reportServiceInternal.createReturnReport(flight);
     }
-  }
-
-  private void handleAttack(Flight flight) {
-    handleAttackOrDestroy(flight, false);
-  }
-
-  private void handleDestroy(Flight flight) {
-    handleAttackOrDestroy(flight, true);
-  }
-
-  private void handleAttackOrDestroy(Flight flight, boolean destroy) {
-    Random random = ThreadLocalRandom.current();
-
-    Body body = flight.getTargetBody();
-    Coordinates coordinates = new Coordinates(flight.getTargetCoordinates());
-    Date arrivalAt = flight.getArrivalAt();
-
-    // Create activity.
-    activityService.handleBodyActivity(body.getId(), arrivalAt.toInstant().getEpochSecond());
-
-    bodyServiceInternal.updateResourcesAndShipyard(body, arrivalAt);
-
-    List<Flight> attackersFlights;
-    long partyId = 0;
-    Party party = flight.getParty();
-    if (party == null) {
-      attackersFlights = new ArrayList<>(Collections.singletonList(flight));
-    } else {
-      partyId = party.getId();
-      attackersFlights = flightRepository.findByPartyOrderById(flight.getParty());
-
-      // We don't need the party anymore.
-      for (Flight f : attackersFlights) {
-        f.setParty(null);
-      }
-      partyRepository.delete(party);
-    }
-
-    List<Flight> defendersFlights = getHoldingFlights(body, flight.getArrivalAt());
-
-    ArrayList<Combatant> attackers = null;
-    ArrayList<Combatant> defenders = null;
-    BattleOutcome battleOutcome = null;
-    BattleResult result = BattleResult.ATTACKERS_WIN;
-    Resources attackersLoss = new Resources();
-    Resources defendersLoss = new Resources();
-    long debrisMetal = 0;
-    long debrisCrystal = 0;
-    double moonChance = 0.0;
-    boolean moonGiven = false;
-    int seed = 0;
-    long executionTime = 0;
-    int numRounds = 0;
-
-    var bodyGroups = getUnitsForFight(body.getUnits());
-
-    // When there is no units on the target body, we must skip the fight, as the battle engine cannot handle combatants
-    // without units.
-    var fight = !bodyGroups.isEmpty() || !defendersFlights.isEmpty();
-    if (fight) {
-      // Prepare input for the battle engine.
-
-      attackers = new ArrayList<>(attackersFlights.size());
-      for (var f : attackersFlights) {
-        var u = f.getStartUser();
-        var groups = getUnitsForFight(f.getUnits());
-        attackers.add(new Combatant(
-            u.getId(),
-            f.getStartBody().getCoordinates(),
-            u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            groups
-        ));
-      }
-
-      defenders = new ArrayList<>(defendersFlights.size() + (bodyGroups.isEmpty() ? 0 : 1));
-      for (var f : defendersFlights) {
-        User u = f.getStartUser();
-        var groups = getUnitsForFight(f.getUnits());
-        defenders.add(new Combatant(
-            u.getId(),
-            f.getStartBody().getCoordinates(),
-            u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            groups
-        ));
-      }
-      if (!bodyGroups.isEmpty()) {
-        User u = flight.getTargetUser();
-        defenders.add(new Combatant(
-            u.getId(),
-            flight.getTargetCoordinates(),
-            u.getTechnologyLevel(TechnologyKind.WEAPONS_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.SHIELDING_TECHNOLOGY),
-            u.getTechnologyLevel(TechnologyKind.ARMOR_TECHNOLOGY),
-            bodyGroups
-        ));
-      }
-
-      // Fight!
-      seed = random.nextInt();
-      long startTime = System.nanoTime();
-      battleOutcome = battleEngine.fight(attackers, defenders, seed);
-      executionTime = System.nanoTime() - startTime;
-
-      // Process the result.
-
-      numRounds = battleOutcome.numRounds();
-      Map<UnitKind, UnitItem> items = UnitItem.getAll();
-
-      // Helper for flights.
-      final int nRounds = numRounds; // fucking java
-      Function<Tuple2<List<Flight>, List<CombatantOutcome>>, Tuple4<Integer, Resources, Long, Long>> handleFlights =
-          (pair) -> {
-            List<Flight> flights = pair._1;
-            var outcomes = pair._2;
-            int totalRemaining = 0;
-            Resources loss = new Resources();
-            long metal = 0;
-            long crystal = 0;
-            for (int i = 0; i < flights.size(); i++) {
-              Flight f = flights.get(i);
-              CombatantOutcome outcome = outcomes.get(i);
-              for (var entry : f.getUnits().entrySet()) {
-                UnitKind kind = entry.getKey();
-                var count = entry.getValue();
-
-                int remaining = (int) outcome.getNthRoundUnitGroupsStats(nRounds - 1).get(kind).numRemainingUnits();
-                totalRemaining += remaining;
-                int diff = count - remaining;
-                assert diff >= 0;
-
-                f.setUnitsCount(kind, remaining);
-
-                Resources cost = new Resources(items.get(kind).getCost());
-                cost.mul(diff);
-                loss.add(cost);
-
-                metal += cost.getMetal();
-                crystal += cost.getCrystal();
-              }
-            }
-            return Tuple.of(totalRemaining, loss, metal, crystal);
-          };
-
-      // Attackers' flights.
-      var attackersOutcomes = battleOutcome.attackersOutcomes();
-      Tuple4<Integer, Resources, Long, Long> at = handleFlights.apply(Tuple.of(attackersFlights, attackersOutcomes));
-      int attackersTotalRemaining = at._1;
-      attackersLoss = at._2;
-      debrisMetal += at._3;
-      debrisCrystal += at._4;
-
-      var defendersOutcomes = battleOutcome.defendersOutcomes();
-
-      // Defenders' flights.
-      Tuple4<Integer, Resources, Long, Long> dt = handleFlights.apply(Tuple.of(defendersFlights, defendersOutcomes));
-      int defendersTotalRemaining = dt._1;
-      defendersLoss = dt._2;
-      debrisMetal += dt._3;
-      debrisCrystal += dt._4;
-
-      // Defender's body.
-      if (!bodyGroups.isEmpty()) {
-        CombatantOutcome outcome = defendersOutcomes.get(defendersOutcomes.size() - 1);
-        for (var entry : body.getUnits().entrySet()) {
-          UnitKind kind = entry.getKey();
-          var count = entry.getValue();
-
-          if (kind == UnitKind.ANTI_BALLISTIC_MISSILE || kind == UnitKind.INTERPLANETARY_MISSILE) {
-            continue;
-          }
-
-          boolean isDefense = UnitItem.getDefense().containsKey(kind);
-
-          int remaining = (int) outcome.getNthRoundUnitGroupsStats(numRounds - 1).get(kind).numRemainingUnits();
-          defendersTotalRemaining += remaining;
-          int diff = count - remaining;
-          assert diff >= 0;
-
-          Resources cost = new Resources(items.get(kind).getCost());
-          cost.mul(diff);
-          defendersLoss.add(cost);
-
-          if (!isDefense) {
-            debrisMetal += cost.getMetal();
-            debrisCrystal += cost.getCrystal();
-          }
-
-          if (isDefense) {
-            // Rebuild defense.
-            remaining += (int) Math.floor(0.7 * diff);
-          }
-
-          body.setUnitsCount(kind, remaining);
-        }
-      }
-
-      if (defendersTotalRemaining > 0) {
-        result = attackersTotalRemaining > 0 ? BattleResult.DRAW : BattleResult.DEFENDERS_WIN;
-      }
-
-      // Handle debris field and maybe create a moon.
-      if (debrisMetal != 0 || debrisCrystal != 0) {
-        debrisMetal = (long) Math.floor(0.3 * debrisMetal);
-        debrisCrystal = (long) Math.floor(0.3 * debrisCrystal);
-
-        DebrisFieldKey debrisFieldKey = new DebrisFieldKey();
-        debrisFieldKey.setGalaxy(coordinates.getGalaxy());
-        debrisFieldKey.setSystem(coordinates.getSystem());
-        debrisFieldKey.setPosition(coordinates.getPosition());
-
-        DebrisField debrisField = debrisFieldRepository.findById(debrisFieldKey).orElse(null);
-        if (debrisField != null) {
-          debrisField.setMetal(debrisField.getMetal() + debrisMetal);
-          debrisField.setCrystal(debrisField.getCrystal() + debrisCrystal);
-        } else {
-          debrisField = new DebrisField();
-          debrisField.setKey(debrisFieldKey);
-          debrisField.setCreatedAt(arrivalAt);
-          debrisField.setMetal(debrisMetal);
-          debrisField.setCrystal(debrisCrystal);
-        }
-
-        debrisField.setUpdatedAt(arrivalAt);
-        debrisFieldRepository.save(debrisField);
-
-        moonChance = Math.min(0.2, 1e-7 * (debrisMetal + debrisCrystal));
-        if (moonChance >= 0.01 && moonChance > random.nextDouble()) {
-          Coordinates moonCoordinates = new Coordinates(coordinates.getGalaxy(), coordinates.getSystem(),
-              coordinates.getPosition(), CoordinatesKind.MOON);
-          if (!bodyRepository.existsByCoordinates(moonCoordinates)) {
-            moonGiven = true;
-            Body moon = bodyServiceInternal.createMoon(flight.getTargetUser(), moonCoordinates, arrivalAt, moonChance);
-            bodyRepository.save(moon);
-          }
-        }
-      }
-    }
-
-    // Check whether the target is a moon too, as it may have been destroyed before this attack and the flights
-    // redirected to the corresponding planet.
-    if (destroy && result == BattleResult.ATTACKERS_WIN && body.getCoordinates().getKind() == CoordinatesKind.MOON) {
-      int totalDSs = attackersFlights.stream()
-          .mapToInt(f -> f.getUnitsCount(UnitKind.DEATH_STAR))
-          .sum();
-      int diameter = body.getDiameter();
-
-      // Note that even when totalDSs is 0, this algorithm would still work fine.
-
-      double moonDestructionChance = (1.0 - 0.01 * Math.sqrt(diameter)) * Math.sqrt(totalDSs);
-      if (moonDestructionChance > random.nextDouble()) {
-        // Redirect all flights to the corresponding planet.
-
-        Coordinates c = new Coordinates(body.getCoordinates().getGalaxy(), body.getCoordinates().getSystem(),
-            body.getCoordinates().getPosition(), CoordinatesKind.PLANET);
-        Optional<Body> optionalPlanet = bodyRepository.findByCoordinates(c);
-        Assert.isTrue(optionalPlanet.isPresent(), "A moon without a planet shouldn't exist");
-        Body planet = optionalPlanet.get();
-
-        // FIXME: is updating attackers/defenders flights necessary if we update all flights by target body later?
-
-        for (Flight f : attackersFlights) {
-          f.setTargetBody(planet);
-          f.getTargetCoordinates().setKind(CoordinatesKind.PLANET);
-        }
-
-        for (Flight f : defendersFlights) {
-          f.setTargetBody(planet);
-          f.getTargetCoordinates().setKind(CoordinatesKind.PLANET);
-        }
-
-        for (Flight f : flightRepository.findByStartBody(body)) {
-          f.setStartBody(planet);
-        }
-
-        for (Flight f : flightRepository.findByTargetBody(body)) {
-          f.setTargetBody(planet);
-          f.getTargetCoordinates().setKind(CoordinatesKind.PLANET);
-        }
-
-        bodyServiceInternal.destroyMoon(body);
-      }
-
-      double dssDestructionChance = 0.005 * Math.sqrt(diameter);
-      if (dssDestructionChance > random.nextDouble()) {
-        for (Flight f : attackersFlights) {
-          f.setUnitsCount(UnitKind.DEATH_STAR, 0);
-        }
-      }
-    }
-
-    // Save owners of fleets to generate reports later.
-    Set<User> attackersUsers = attackersFlights.stream().map(Flight::getStartUser).collect(Collectors.toSet());
-    Set<User> defendersUsers = defendersFlights.stream().map(Flight::getStartUser).collect(Collectors.toSet());
-    defendersUsers.add(flight.getTargetUser());
-
-    // Delete fleets that have no units left.
-
-    for (Iterator<Flight> it = attackersFlights.iterator(); it.hasNext(); ) {
-      Flight f = it.next();
-      if (f.getTotalUnitsCount() == 0) {
-        flightRepository.delete(f);
-        it.remove();
-      }
-    }
-
-    List<Long> deletedIds = new ArrayList<>();
-    for (Iterator<Flight> it = defendersFlights.iterator(); it.hasNext(); ) {
-      Flight f = it.next();
-      if (f.getTotalUnitsCount() == 0) {
-        deletedIds.add(f.getId());
-        flightRepository.delete(f);
-        it.remove();
-      }
-    }
-    // We need to delete the events as well.
-    List<Event> events = eventRepository.findByKindAndParamIn(EventKind.FLIGHT, deletedIds);
-    eventRepository.deleteAll(events);
-
-    Resources plunder = new Resources();
-    if (result == BattleResult.ATTACKERS_WIN) {
-      // The plunder is max 50% of the body's resources. Each fleet can take at most 1/N of that 50%, where N is the
-      // the number of fleets. We keep capacities of the fleets ordered, so that if a fleet isn't able to take the
-      // possible loot, then the subsequent fleets can take a bit more. Thus, we take as much as possible. The
-      // remaining part of the algorithm is like the original one.
-
-      Resources res = body.getResources();
-      long remMetal = (long) res.getMetal() / 2;
-      long remCrystal = (long) res.getCrystal() / 2;
-      long remDeuterium = (long) res.getDeuterium() / 2;
-
-      Map<Long, Resources> plunders = attackersFlights.stream()
-          .collect(Collectors.toMap(Flight::getId, f -> new Resources()));
-
-      List<MutablePair<Long, Long>> capacities = attackersFlights.stream()
-          .map(f -> {
-            var units = f.getUnits();
-            double capacity = calculateCapacity(units);
-            Resources r = f.getResources();
-            capacity -= r.getMetal() + r.getCrystal() + r.getDeuterium();
-            return MutablePair.of(f.getId(), (long) capacity);
-          })
-          .sorted(Comparator.comparing(MutablePair::getRight))
-          .collect(Collectors.toCollection(ArrayList::new));
-
-      // 1. Fill max 1/3 of the capacity with metal.
-      for (int i = 0; i < capacities.size(); i++) {
-        MutablePair<Long, Long> pair = capacities.get(i);
-        long taken = Math.min(pair.right / 3, remMetal / (capacities.size() - i));
-        pair.right -= taken;
-        remMetal -= taken;
-        Resources p = plunders.get(pair.left);
-        p.setMetal(taken);
-      }
-
-      // 2. Fill max 1/2 of the remaining capacity with crystal.
-      for (int i = 0; i < capacities.size(); i++) {
-        MutablePair<Long, Long> pair = capacities.get(i);
-        long taken = Math.min(pair.right / 2, remCrystal / (capacities.size() - i));
-        pair.right -= taken;
-        remCrystal -= taken;
-        Resources p = plunders.get(pair.left);
-        p.setCrystal(taken);
-      }
-
-      // 3. Fill the rest with deuterium.
-      for (int i = 0; i < capacities.size(); i++) {
-        MutablePair<Long, Long> pair = capacities.get(i);
-        long taken = Math.min(pair.right, remDeuterium / (capacities.size() - i));
-        pair.right -= taken;
-        remDeuterium -= taken;
-        Resources p = plunders.get(pair.left);
-        p.setDeuterium(taken);
-      }
-
-      // 4. If there is still some place, fill the half of it with metal.
-      for (int i = 0; i < capacities.size(); i++) {
-        MutablePair<Long, Long> pair = capacities.get(i);
-        long taken = Math.min(pair.right / 2, remMetal / (capacities.size() - i));
-        pair.right -= taken;
-        remMetal -= taken;
-        Resources p = plunders.get(pair.left);
-        p.setMetal(p.getMetal() + taken);
-      }
-
-      // 5. And the second half with crystal.
-      for (int i = 0; i < capacities.size(); i++) {
-        MutablePair<Long, Long> pair = capacities.get(i);
-        long taken = Math.min(pair.right / 2, remCrystal / (capacities.size() - i));
-        // Updating capacity here isn't needed anymore.
-        remCrystal -= taken;
-        Resources p = plunders.get(pair.left);
-        p.setCrystal(p.getCrystal() + taken);
-      }
-
-      for (Flight f : attackersFlights) {
-        Resources p = plunders.get(f.getId());
-
-        // Update fleet.
-        Resources r = f.getResources();
-        r.setMetal(r.getMetal() + p.getMetal());
-        r.setCrystal(r.getCrystal() + p.getCrystal());
-        r.setDeuterium(r.getDeuterium() + p.getDeuterium());
-        r.floor();
-
-        // Update total plunder.
-        plunder.add(p);
-      }
-
-      // Update the body's resources.
-      plunder.floor();
-      body.getResources().sub(plunder);
-    }
-
-    // Schedule return for all remaining attackers' fleets.
-    for (Flight f : attackersFlights) {
-      scheduleReturn(f);
-    }
-
-    // Generate reports.
-
-    CombatReport combatReport = null;
-    UUID combatReportId = null;
-    if (fight) {
-      combatReport =
-          combatReportServiceInternal.create(arrivalAt, attackers, defenders, battleOutcome, result, attackersLoss,
-              defendersLoss, plunder, debrisMetal, debrisCrystal, moonChance, moonGiven, seed, executionTime);
-      combatReportId = combatReport.getId();
-    }
-
-    for (User user : attackersUsers) {
-      reportServiceInternal.createSimplifiedCombatReport(user, true, flight.getArrivalAt(), flight.getTargetUser(),
-          coordinates, result, numRounds, attackersLoss, defendersLoss, plunder, debrisMetal, debrisCrystal, moonChance,
-          moonGiven, combatReport);
-    }
-
-    for (User user : defendersUsers) {
-      reportServiceInternal.createSimplifiedCombatReport(user, false, flight.getArrivalAt(), flight.getStartUser(),
-          coordinates, result, numRounds, attackersLoss, defendersLoss, plunder, debrisMetal, debrisCrystal, moonChance,
-          moonGiven, combatReport);
-    }
-
-    if (logger.isInfoEnabled()) {
-      String flightsIds = attackersFlights.stream()
-          .map(f -> Long.toString(f.getId()))
-          .collect(Collectors.joining(", "));
-      String startUsersIds = attackersUsers.stream()
-          .map(u -> Long.toString(u.getId()))
-          .collect(Collectors.joining(", "));
-      logger.info("Attack: flightsIds='{}' startUsersIds='{}' partyId={} targetUserId={} targetBodyId={}" +
-              " combatReportId={} plunder={} debris={}",
-          flightsIds, startUsersIds, partyId, flight.getTargetUser().getId(), flight.getTargetBody().getId(),
-          combatReportId, plunder, debrisMetal + debrisCrystal);
-    }
-  }
-
-  // Prepares units for a fight. The battle engine should not have groups with 0 units. Missiles don't participate in
-  // a fight.
-  private static EnumMap<UnitKind, Long> getUnitsForFight(Map<UnitKind, Integer> units) {
-    return units.entrySet().stream()
-        .filter(e -> e.getValue() > 0 &&
-            e.getKey() != UnitKind.ANTI_BALLISTIC_MISSILE && e.getKey() != UnitKind.INTERPLANETARY_MISSILE)
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            entry -> (long) entry.getValue(),
-            (a, b) -> {
-              throw new IllegalStateException();
-            },
-            () -> new EnumMap<>(UnitKind.class)
-        ));
   }
 
   private void handleColonization(Flight flight) {
@@ -1525,7 +1041,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     activityService.handleBodyActivity(body.getId(), flight.getArrivalAt().toInstant().getEpochSecond());
 
     if (counterChance >= 0.01 && counterChance > ThreadLocalRandom.current().nextDouble()) {
-      handleAttack(flight);
+      attackMissionHandler.handle(flight, false);
     } else {
       scheduleReturn(flight);
     }
@@ -1534,10 +1050,8 @@ class FlightServiceImpl implements FlightServiceInternal {
   private void handleHarvest(Flight flight) {
     Coordinates coordinates = flight.getTargetCoordinates();
 
-    DebrisFieldKey debrisFieldKey = new DebrisFieldKey();
-    debrisFieldKey.setGalaxy(coordinates.getGalaxy());
-    debrisFieldKey.setSystem(coordinates.getSystem());
-    debrisFieldKey.setPosition(coordinates.getPosition());
+    var debrisFieldKey =
+        new DebrisFieldKey(coordinates.getGalaxy(), coordinates.getSystem(), coordinates.getPosition());
     Optional<DebrisField> debrisFieldOptional = debrisFieldRepository.findById(debrisFieldKey);
     if (!debrisFieldOptional.isPresent()) {
       logger.error("Harvesting failed, debris field doesn't exist: flightId={} startUserId={} startBodyId={}" +

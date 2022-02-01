@@ -8,12 +8,12 @@ import java.util.List;
 
 @Component
 @ConditionalOnProperty(value = "retro-game.battle-engine", havingValue = "native")
-public final class NativeBattleEngine implements BattleEngine {
+public final class NativeBattleEngineStrategy implements BattleEngineStrategy {
   static {
     System.loadLibrary("BattleEngine");
   }
 
-  public NativeBattleEngine() {
+  public NativeBattleEngineStrategy() {
     var unitsAttributes = UnitAttributes.makeUnitsAttributes();
     var success = init(unitsAttributes);
     Assert.isTrue(success, "Failed to init battle engine");
