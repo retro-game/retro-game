@@ -62,7 +62,7 @@
   </div>
   <div th:unless="${withResources}" th:utext="${#messages.msg('eventMissionFormat.' + kind, mission)}" th:remove="tag">
   </div>
-  <div th:if="${event.partyId}" th:utext="#{eventPartyFormat(partyHtml)}" th:remove="tag"></div>
+  <div th:if="${event.partyId}" th:utext="${#messages.msg('eventPartyFormat', partyHtml)}" th:remove="tag"></div>
 </div>
 </body>
 </html>
