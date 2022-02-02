@@ -42,7 +42,8 @@
             <div th:if="${report.param == null}" th:text="#{otherReportFailedColonization}" th:remove="tag"></div>
             <th:block th:unless="${report.param == null}">
               <div
-                  th:utext="#{otherReportSuccessfulColonizationFormat(${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'})}"
+                  th:with="diameterHtml=${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'}"
+                  th:utext="#{otherReportSuccessfulColonizationFormat(${diameterHtml})}"
                   th:remove="tag"></div>
               <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
                    th:remove="tag"></div>
@@ -56,7 +57,8 @@
           <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
             <div th:utext="#{otherReportEspionageFormat(${start}, ${target})}" th:remove="tag"></div>
             <div
-                th:utext="#{otherReportEspionageCounterChanceFormat(${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'})}"
+                th:with="chanceHtml=${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'}"
+                th:utext="#{otherReportEspionageCounterChanceFormat(${chanceHtml})}"
                 th:remove="tag"></div>
           </th:block>
           <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).RETURN}">
@@ -66,7 +68,8 @@
           </th:block>
           <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).MISSILE_ATTACK}">
             <div
-                th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${#numbers.formatInteger(report.param, 1, 'DEFAULT')})}"
+                th:with="numUnitsHtml=${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'}"
+                th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${numUnitsHtml})}"
                 th:remove="tag"></div>
           </th:block>
         </td>
