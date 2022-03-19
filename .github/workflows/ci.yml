@@ -41,7 +41,7 @@ jobs:
           gen: Unix Makefiles
         - build: windows-cl
           os: windows-latest
-          gen: Visual Studio 16 2019
+          gen: Visual Studio 17 2022
         - build: windows-gcc
           os: windows-latest
           cxx: g++
