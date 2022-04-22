@@ -23,11 +23,6 @@ public class NaniteFactory extends BuildingItem {
   }
 
   @Override
-  public boolean meetsSpecialRequirements(Body body) {
-    return body.getCoordinates().getKind() == CoordinatesKind.PLANET;
-  }
-
-  @Override
   public Resources getBaseCost() {
     return new Resources(1000000.0, 500000.0, 100000.0);
   }
