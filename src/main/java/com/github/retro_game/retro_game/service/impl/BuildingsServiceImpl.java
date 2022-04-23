@@ -30,6 +30,7 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
   private final int buildingQueueCapacity;
   private final int fieldsPerTerraformerLevel;
   private final int fieldsPerLunarBaseLevel;
+  private final boolean allowNanitesOnMoon;
   private final ItemTimeUtils itemTimeUtils;
   private final BodyRepository bodyRepository;
   private final EventRepository eventRepository;
@@ -83,12 +84,14 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
   public BuildingsServiceImpl(@Value("${retro-game.building-queue-capacity}") int buildingQueueCapacity,
                               @Value("${retro-game.fields-per-terraformer-level}") int fieldsPerTerraformerLevel,
                               @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
+                              @Value("${retro-game.allow-nanites-on-moons}") boolean allowNanitesOnMoon,
                               ItemTimeUtils itemTimeUtils,
                               BodyRepository bodyRepository,
                               EventRepository eventRepository) {
     this.buildingQueueCapacity = buildingQueueCapacity;
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
+    this.allowNanitesOnMoon = allowNanitesOnMoon;
     this.itemTimeUtils = itemTimeUtils;
     this.bodyRepository = bodyRepository;
     this.eventRepository = eventRepository;
@@ -223,7 +226,7 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
       var currentLevel = body.getBuildingLevel(kind);
       var futureLevel = state.buildings.get(kind);
 
-      var meetsRequirements = item.meetsSpecialRequirements(body) &&
+      var meetsRequirements = meetsSpecialRequirements(body, item, kind) &&
           ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) &&
           (queueSize > 0 || ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()));
 
@@ -312,7 +315,7 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
 
     var item = Item.get(k);
-    if (!item.meetsSpecialRequirements(body) ||
+    if (!meetsSpecialRequirements(body, item, k) ||
         !ItemRequirementsUtils.meetsBuildingsRequirements(item, state.buildings) ||
         (queue.isEmpty() && !ItemRequirementsUtils.meetsTechnologiesRequirements(item, body.getUser()))) {
       logger.info("Constructing building failed, requirements not met: bodyId={} kind={}", bodyId, k);
@@ -916,5 +919,14 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
     }
 
     return true;
+  }
+
+  private boolean meetsSpecialRequirements (Body body, BuildingItem item, BuildingKind kind) {
+    boolean meetsRequirements = item.meetsSpecialRequirements(body);
+    if (kind == BuildingKind.NANITE_FACTORY && !allowNanitesOnMoon) {
+      meetsRequirements = false;
+    }
+
+    return meetsRequirements;
   }
 }
