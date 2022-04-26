@@ -863,9 +863,9 @@ class BodyServiceImpl implements BodyServiceInternal {
     // Calculate bonus from plasma technology if enabled
     if (plasmaAffectsProduction) {
       var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
-      metalMineProduction = metalMineProduction * plasmaTechLevel / 100;
-      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066);
-      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033);
+      metalMineProduction = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01) + metalMineProduction;
+      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066) + crystalMineProduction;
+      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033) + deuteriumSynthesizerProduction;
     }
 
     // Solar plant.
