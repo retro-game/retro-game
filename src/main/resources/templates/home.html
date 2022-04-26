@@ -27,6 +27,22 @@
           <td th:text="#{successfulRegistration}">Your registration was successful, you can sign in now!</td>
         </tr>
       </table>
+      <table th:if="${param.passwordResetSent}">
+        <tr>
+          <th th:text="#{passwordResetSent}">Password reset email sent</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordResetSent}">Your password reset request was sent, check your email!</td>
+        </tr>
+      </table>
+      <table th:if="${param.passwordWasChanged}">
+        <tr>
+          <th th:text="#{passwordWasChanged}">Your password was changed</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordWasChanged}">Your password was changed, login using new password!</td>
+        </tr>
+      </table>
       <form th:action="@{/}" method="post" autocomplete="on">
         <table>
           <tr>
@@ -58,6 +74,10 @@
       <p>
         <span th:text="#{orJoin}">or join</span>
         <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>.
+      </p>
+      <p>
+        <span th:text="#{forgotPassword}">Forgot password?</span>
+        <a th:href="@{/resetPassword}"><strong th:text="#{forgotPasswordLink}">Reset here</strong></a>.
       </p>
     </div>
   </div>

@@ -38,6 +38,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/combat-report",
             "/espionage-report",
             "/join",
+            "/resetPassword",
+            "/changePassword",
             "/static/**").permitAll()
         // Admin
         .antMatchers("/admin/**").hasRole("ADMIN")
