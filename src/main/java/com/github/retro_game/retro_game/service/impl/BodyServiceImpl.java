@@ -824,7 +824,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Override
   public ProductionDto getProduction(Body body) {
     if (body.getCoordinates().getKind() != CoordinatesKind.PLANET) {
-      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // Base production.
@@ -861,11 +861,17 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerLevel * Math.pow(1.1, deuteriumSynthesizerLevel) * deuteriumSynthesizerFactor);
 
     // Calculate bonus from plasma technology if enabled
+    int plasmaMetalBonus = 0;
+    int plasmaCrystalBonus = 0;
+    int plasmaDeuteriumBonus = 0;
     if (plasmaTechnologyAffectsProduction) {
       var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
-      metalMineProduction = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01) + metalMineProduction;
-      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066) + crystalMineProduction;
-      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033) + deuteriumSynthesizerProduction;
+      plasmaMetalBonus = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01);
+      plasmaCrystalBonus = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066);
+      plasmaDeuteriumBonus = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033);
+      metalMineProduction = plasmaMetalBonus + metalMineProduction;
+      crystalMineProduction = plasmaCrystalBonus + crystalMineProduction;
+      deuteriumSynthesizerProduction = plasmaDeuteriumBonus + deuteriumSynthesizerProduction;
     }
 
     // Solar plant.
@@ -922,7 +928,7 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerCurrentEnergyUsage, deuteriumSynthesizerMaxEnergyUsage, solarPlantEnergyProduction,
         fusionReactorDeuteriumUsage, fusionReactorEnergyProduction, singleSatelliteEnergy,
         solarSatellitesEnergyProduction, metalProduction, crystalProduction, deuteriumProduction, totalEnergy,
-        usedEnergy, availableEnergy);
+        usedEnergy, availableEnergy, plasmaMetalBonus, plasmaCrystalBonus, plasmaDeuteriumBonus);
   }
 
   @Override

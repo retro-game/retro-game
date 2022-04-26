@@ -108,6 +108,14 @@
           </select>
         </td>
       </tr>
+      <tr th:if="${plasmaTechnologyAffectsProduction}">
+        <td th:text="#{items.PLASMA_TECHNOLOGY.name} + ' (' + ${plasmaTechnologyLevel} + ')'"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaMetalBonus, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaCrystalBonus, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaDeuteriumBonus, 1, 'DEFAULT')}"></td>
+        <td>0</td>
+        <td></td>
+      </tr>
       <tr>
         <td>Σ</td>
         <td th:text="${#numbers.formatInteger(production.metalProduction, 1, 'DEFAULT')}"></td>
