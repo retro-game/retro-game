@@ -824,7 +824,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Override
   public ProductionDto getProduction(Body body) {
     if (body.getCoordinates().getKind() != CoordinatesKind.PLANET) {
-      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // Base production.
@@ -859,14 +859,6 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerFactor) * productionSpeed;
     int deuteriumSynthesizerMaxEnergyUsage = (int) Math.ceil(deuteriumSynthesizerBaseEnergyUsage *
         deuteriumSynthesizerLevel * Math.pow(1.1, deuteriumSynthesizerLevel) * deuteriumSynthesizerFactor);
-
-    // Calculate bonus from plasma technology if enabled
-    if (plasmaTechnologyAffectsProduction) {
-      var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
-      metalMineProduction = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01) + metalMineProduction;
-      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066) + crystalMineProduction;
-      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033) + deuteriumSynthesizerProduction;
-    }
 
     // Solar plant.
     int solarPlantLevel = items.getSolarPlantLevel();
@@ -906,15 +898,26 @@ class BodyServiceImpl implements BodyServiceInternal {
     int crystalMineCurrentEnergyUsage = (int) (crystalMineMaxEnergyUsage * efficiency);
     int deuteriumSynthesizerCurrentEnergyUsage = (int) (deuteriumSynthesizerMaxEnergyUsage * efficiency);
 
+    // Calculate bonus from plasma technology if enabled
+    int plasmaMetalBonus = 0;
+    int plasmaCrystalBonus = 0;
+    int plasmaDeuteriumBonus = 0;
+    if (plasmaTechnologyAffectsProduction) {
+      var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
+      plasmaMetalBonus = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01 * efficiency);
+      plasmaCrystalBonus = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066 * efficiency);
+      plasmaDeuteriumBonus = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033 * efficiency);
+    }
+
     // Mines production with efficiency.
     metalMineProduction = (int) (metalMineProduction * efficiency);
     crystalMineProduction = (int) (crystalMineProduction * efficiency);
     deuteriumSynthesizerProduction = (int) (deuteriumSynthesizerProduction * efficiency);
 
     // Final production.
-    int metalProduction = metalBaseProduction + metalMineProduction;
-    int crystalProduction = crystalBaseProduction + crystalMineProduction;
-    int deuteriumProduction = deuteriumBaseProduction + deuteriumSynthesizerProduction - fusionReactorDeuteriumUsage;
+    int metalProduction = metalBaseProduction + metalMineProduction + plasmaMetalBonus;
+    int crystalProduction = crystalBaseProduction + crystalMineProduction + plasmaCrystalBonus;
+    int deuteriumProduction = deuteriumBaseProduction + deuteriumSynthesizerProduction + plasmaDeuteriumBonus - fusionReactorDeuteriumUsage;
 
     return new ProductionDto(efficiency, metalBaseProduction, crystalBaseProduction, deuteriumBaseProduction,
         metalMineProduction, metalMineCurrentEnergyUsage, metalMineMaxEnergyUsage, crystalMineProduction,
@@ -922,7 +925,7 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerCurrentEnergyUsage, deuteriumSynthesizerMaxEnergyUsage, solarPlantEnergyProduction,
         fusionReactorDeuteriumUsage, fusionReactorEnergyProduction, singleSatelliteEnergy,
         solarSatellitesEnergyProduction, metalProduction, crystalProduction, deuteriumProduction, totalEnergy,
-        usedEnergy, availableEnergy);
+        usedEnergy, availableEnergy, plasmaMetalBonus, plasmaCrystalBonus, plasmaDeuteriumBonus);
   }
 
   @Override

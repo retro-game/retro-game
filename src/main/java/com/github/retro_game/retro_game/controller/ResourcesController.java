@@ -6,6 +6,7 @@ import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
 import com.github.retro_game.retro_game.dto.ProductionItemsDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,14 +18,23 @@ import javax.validation.Valid;
 import java.time.Instant;
 import java.util.Date;
 
+import static com.github.retro_game.retro_game.dto.TechnologyKindDto.PLASMA_TECHNOLOGY;
+
 @Controller
 public class ResourcesController {
   private final BodyService bodyService;
   private final UserService userService;
 
-  public ResourcesController(BodyService bodyService, UserService userService) {
+  private final boolean plasmaTechnologyAffectsProduction;
+
+  public ResourcesController(
+          BodyService bodyService,
+          UserService userService,
+          @Value("${retro-game.plasma-technology-affects-production}") boolean plasmaTechnologyAffectsProduction
+  ) {
     this.bodyService = bodyService;
     this.userService = userService;
+    this.plasmaTechnologyAffectsProduction = plasmaTechnologyAffectsProduction;
   }
 
   @GetMapping("/resources")
@@ -71,6 +81,9 @@ public class ResourcesController {
     model.addAttribute("crystal30Days", 24 * 30 * crystal);
     model.addAttribute("deuterium30Days", 24 * 30 * deuterium);
     model.addAttribute("sum30Days", 24 * 30 * sum);
+
+    model.addAttribute("plasmaTechnologyAffectsProduction", plasmaTechnologyAffectsProduction);
+    model.addAttribute("plasmaTechnologyLevel", ctx.technologies().get(PLASMA_TECHNOLOGY));
 
     // Capacity.
 
