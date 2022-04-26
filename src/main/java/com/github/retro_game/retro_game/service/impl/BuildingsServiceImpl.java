@@ -255,6 +255,11 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
       var canConstructNow = hasEnoughFields && isQueueNotFull && meetsRequirements &&
           (queueSize > 0 || (hasEnoughResources && hasEnoughEnergy));
 
+      // If there is any construction in shipyard it should not be possible to build nanites or shipyard
+      if ((kind == BuildingKind.SHIPYARD || kind == BuildingKind.NANITE_FACTORY) && !body.getShipyardQueue().isEmpty()) {
+        canConstructNow = false;
+      }
+
       buildings.add(
           new BuildingDto(Converter.convert(kind), currentLevel, futureLevel, Converter.convert(cost), requiredEnergy,
               constructionTime, Converter.convert(missingResources), neededSmallCargoes, neededLargeCargoes,

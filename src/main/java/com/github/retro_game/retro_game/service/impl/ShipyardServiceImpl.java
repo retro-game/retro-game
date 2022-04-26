@@ -22,6 +22,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.github.retro_game.retro_game.entity.BuildingKind.NANITE_FACTORY;
+import static com.github.retro_game.retro_game.entity.BuildingKind.SHIPYARD;
+
 @Service
 public class ShipyardServiceImpl implements ShipyardServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(ShipyardServiceImpl.class);
@@ -130,8 +133,14 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
       var neededLargeCargoes = ItemUtils.calcNumUnitsForCapacity(UnitKind.LARGE_CARGO, missingResources);
       var accumulationTime = ItemTimeUtils.calcAccumulationTime(body.getUpdatedAt(), missingResources, production);
 
+      var shipyardOrNanitesInConstruction = false;
+      if (!body.getBuildingQueue().isEmpty()) {
+        var nowInConstruction = body.getBuildingQueue().get(body.getBuildingQueue().firstKey()).kind();
+        shipyardOrNanitesInConstruction = nowInConstruction == NANITE_FACTORY || nowInConstruction == SHIPYARD;
+      }
+
       var maxBuildable = 0;
-      if (meetsRequirements) {
+      if (meetsRequirements && !shipyardOrNanitesInConstruction) {
         maxBuildable = Integer.MAX_VALUE;
 
         if (cost.getMetal() > 0.0) {
@@ -363,8 +372,8 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
   }
 
   private long getConstructionTime(Resources cost, Body body) {
-    int shipyardLevel = body.getBuildingLevel(BuildingKind.SHIPYARD);
-    int naniteFactoryLevel = body.getBuildingLevel(BuildingKind.NANITE_FACTORY);
+    int shipyardLevel = body.getBuildingLevel(SHIPYARD);
+    int naniteFactoryLevel = body.getBuildingLevel(NANITE_FACTORY);
     return itemTimeUtils.getUnitConstructionTime(cost, shipyardLevel, naniteFactoryLevel);
   }
 }
