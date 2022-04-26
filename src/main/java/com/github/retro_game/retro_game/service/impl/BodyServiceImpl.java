@@ -58,6 +58,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   private final int fieldsPerTerraformerLevel;
   private final int fieldsPerLunarBaseLevel;
   private final int storageCapacityMultiplier;
+  private final boolean plasmaTechnologyAffectsProduction;
   private final CacheObserver cacheObserver;
   private final BodyInfoCache bodyInfoCache;
   private final UserInfoCache userInfoCache;
@@ -87,6 +88,7 @@ class BodyServiceImpl implements BodyServiceInternal {
                          @Value("${retro-game.fields-per-terraformer-level}") int fieldsPerTerraformerLevel,
                          @Value("${retro-game.fields-per-lunar-base-level}") int fieldsPerLunarBaseLevel,
                          @Value("${retro-game.storage-capacity-multiplier}") int storageCapacityMultiplier,
+                         @Value("${retro-game.plasma-technology-affects-production}") boolean plasmaTechnologyAffectsProduction,
                          CacheObserver cacheObserver,
                          BodyInfoCache bodyInfoCache,
                          UserInfoCache userInfoCache,
@@ -111,6 +113,7 @@ class BodyServiceImpl implements BodyServiceInternal {
     this.fieldsPerTerraformerLevel = fieldsPerTerraformerLevel;
     this.fieldsPerLunarBaseLevel = fieldsPerLunarBaseLevel;
     this.storageCapacityMultiplier = storageCapacityMultiplier;
+    this.plasmaTechnologyAffectsProduction = plasmaTechnologyAffectsProduction;
     this.cacheObserver = cacheObserver;
     this.bodyInfoCache = bodyInfoCache;
     this.userInfoCache = userInfoCache;
@@ -856,6 +859,14 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerFactor) * productionSpeed;
     int deuteriumSynthesizerMaxEnergyUsage = (int) Math.ceil(deuteriumSynthesizerBaseEnergyUsage *
         deuteriumSynthesizerLevel * Math.pow(1.1, deuteriumSynthesizerLevel) * deuteriumSynthesizerFactor);
+
+    // Calculate bonus from plasma technology if enabled
+    if (plasmaTechnologyAffectsProduction) {
+      var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
+      metalMineProduction = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01) + metalMineProduction;
+      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066) + crystalMineProduction;
+      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033) + deuteriumSynthesizerProduction;
+    }
 
     // Solar plant.
     int solarPlantLevel = items.getSolarPlantLevel();
