@@ -12,37 +12,37 @@ import java.util.Date;
 @Table(name = "user_password_reset_tokens")
 public class UserPasswordResetToken {
 
-    @EmbeddedId
-    private UserPasswordResetTokenKey key;
+  @EmbeddedId
+  private UserPasswordResetTokenKey key;
 
-    @Column(name = "encrypted_token", nullable = false)
-    private String encryptedToken;
+  @Column(name = "encrypted_token", nullable = false)
+  private String encryptedToken;
 
-    @Column(name = "expire_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expireAt;
+  @Column(name = "expire_at", nullable = false, updatable = false)
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date expireAt;
 
-    public UserPasswordResetTokenKey getKey() {
-        return key;
-    }
+  public UserPasswordResetTokenKey getKey() {
+    return key;
+  }
 
-    public void setKey(UserPasswordResetTokenKey key) {
-        this.key = key;
-    }
+  public void setKey(UserPasswordResetTokenKey key) {
+    this.key = key;
+  }
 
-    public String getEncryptedToken() {
-        return encryptedToken;
-    }
+  public String getEncryptedToken() {
+    return encryptedToken;
+  }
 
-    public void setEncryptedToken(String encryptedToken) {
-        this.encryptedToken = encryptedToken;
-    }
+  public void setEncryptedToken(String encryptedToken) {
+    this.encryptedToken = encryptedToken;
+  }
 
-    public Date getExpireAt() {
-        return expireAt;
-    }
+  public Date getExpireAt() {
+    return expireAt;
+  }
 
-    public void setExpireAt(Date expireAt) {
-        this.expireAt = expireAt;
-    }
+  public void setExpireAt(Date expireAt) {
+    this.expireAt = expireAt;
+  }
 }

@@ -15,28 +15,28 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UserPasswordResetTokenKey implements Serializable {
 
-    @JoinColumn(name = "user_id", nullable = false, unique = true, updatable = false)
-    @OneToOne(fetch = FetchType.LAZY)
-    private User user;
+  @JoinColumn(name = "user_id", nullable = false, unique = true, updatable = false)
+  @OneToOne(fetch = FetchType.LAZY)
+  private User user;
 
-    public User getUser() {
-        return user;
-    }
+  public User getUser() {
+    return user;
+  }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+  public void setUser(User user) {
+    this.user = user;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserPasswordResetTokenKey that = (UserPasswordResetTokenKey) o;
-        return user.equals(that.user);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserPasswordResetTokenKey that = (UserPasswordResetTokenKey) o;
+    return user.equals(that.user);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(user);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(user);
+  }
 }
