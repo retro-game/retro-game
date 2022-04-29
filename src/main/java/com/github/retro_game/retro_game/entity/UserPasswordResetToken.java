@@ -1,11 +1,15 @@
 package com.github.retro_game.retro_game.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
 
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,28 +25,4 @@ public class UserPasswordResetToken {
   @Column(name = "expire_at", nullable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)
   private Date expireAt;
-
-  public UserPasswordResetTokenKey getKey() {
-    return key;
-  }
-
-  public void setKey(UserPasswordResetTokenKey key) {
-    this.key = key;
-  }
-
-  public String getEncryptedToken() {
-    return encryptedToken;
-  }
-
-  public void setEncryptedToken(String encryptedToken) {
-    this.encryptedToken = encryptedToken;
-  }
-
-  public Date getExpireAt() {
-    return expireAt;
-  }
-
-  public void setExpireAt(Date expireAt) {
-    this.expireAt = expireAt;
-  }
 }

@@ -31,15 +31,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     // @formatter:off
     http
-      .authorizeRequests()
+        .authorizeRequests()
         // Public
         .antMatchers(
             "/",
             "/combat-report",
             "/espionage-report",
             "/join",
-            "/resetPassword",
-            "/changePassword",
+            "/reset-password",
+            "/change-password",
             "/static/**").permitAll()
         // Admin
         .antMatchers("/admin/**").hasRole("ADMIN")
@@ -55,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // Other
         .anyRequest().authenticated()
         .and()
-      .csrf()
+        .csrf()
         .ignoringAntMatchers(
             "/flights/send-probes",
             "/messages/private/delete",
@@ -71,12 +71,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/reports/other/delete",
             "/reports/other/delete-all")
         .and()
-      .formLogin()
+        .formLogin()
         .loginPage("/")
         .usernameParameter("email")
         .successHandler(authenticationSuccessHandler)
         .and()
-      .headers()
+        .headers()
         .addHeaderWriter(new CspHeaderWriter())
         .frameOptions().deny()
         .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER);

@@ -7,7 +7,6 @@ import com.github.retro_game.retro_game.repository.UserPasswordResetTokenReposit
 import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.service.EmailService;
 import com.github.retro_game.retro_game.service.ResetPasswordService;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
+
+import static java.util.UUID.randomUUID;
 
 @Service
 public class ResetPasswordServiceImpl implements ResetPasswordService {
@@ -45,7 +46,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
     user.ifPresent(u -> {
       String plainToken = generateToken();
-      Optional<UserPasswordResetToken> existingToken = userPasswordResetTokenRepository.findByKey_User(u);
+      var existingToken = userPasswordResetTokenRepository.findByKey_User(u);
 
       if (existingToken.isPresent()) {
         userPasswordResetTokenRepository.save(
@@ -92,6 +93,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
   private UserPasswordResetToken updatedToken(String plainToken, UserPasswordResetToken existingToken) {
     existingToken.setEncryptedToken(getEncryptedToken(plainToken));
+    existingToken.setExpireAt(calculateExpiredAt());
     return existingToken;
   }
 
@@ -112,6 +114,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
   }
 
   private static String generateToken() {
-    return RandomStringUtils.randomAlphanumeric(30);
+    return randomUUID().toString();
   }
 }

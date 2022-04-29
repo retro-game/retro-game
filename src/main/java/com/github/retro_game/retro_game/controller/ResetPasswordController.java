@@ -19,13 +19,13 @@ public class ResetPasswordController {
     this.resetPasswordService = resetPasswordService;
   }
 
-  @GetMapping("/resetPassword")
+  @GetMapping("/reset-password")
   public String resetPassword(ResetPasswordRequestForm resetPasswordRequestForm) {
 
     return "reset-password-step-1";
   }
 
-  @GetMapping("/changePassword")
+  @GetMapping("/change-password")
   public String changePassword(
       @RequestParam String token,
       ResetPasswordForm resetPasswordForm
@@ -34,7 +34,7 @@ public class ResetPasswordController {
     return "reset-password-step-2";
   }
 
-  @PostMapping("/resetPassword")
+  @PostMapping("/reset-password")
   public String doResetPassword(@Valid ResetPasswordRequestForm resetPasswordRequestForm, BindingResult bindingResult) {
     if (bindingResult.hasErrors()) {
       return "reset-password-step-1";
@@ -44,7 +44,7 @@ public class ResetPasswordController {
     return "redirect:/?passwordResetSent";
   }
 
-  @PostMapping("/changePassword")
+  @PostMapping("/change-password")
   public String doChangePassword(@RequestParam String token, @Valid ResetPasswordForm resetPasswordForm, BindingResult bindingResult) {
     if (bindingResult.hasErrors()) {
       return "reset-password-step-2";
