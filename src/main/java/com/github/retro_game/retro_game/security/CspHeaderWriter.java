@@ -6,11 +6,26 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class CspHeaderWriter implements HeaderWriter {
+  private final boolean enableJoinCaptcha;
+
+  public CspHeaderWriter(boolean enableJoinCaptcha) {
+    this.enableJoinCaptcha = enableJoinCaptcha;
+  }
+
   @Override
   public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
-    String imgSrc;
+    var uri = request.getRequestURI();
 
-    String uri = request.getRequestURI();
+    String frameSrc, scriptSrc;
+    if (enableJoinCaptcha && "/join".equals(uri)) {
+      frameSrc = "https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/";
+      scriptSrc = "'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/";
+    } else {
+      frameSrc = "'none'";
+      scriptSrc = "'self'";
+    }
+
+    String imgSrc;
     if ("/alliance".equals(uri) || "/alliance/view".equals(uri)) {
       imgSrc = "*";
     } else {
@@ -18,7 +33,7 @@ public class CspHeaderWriter implements HeaderWriter {
     }
 
     response.addHeader("Content-Security-Policy", String.format(
-        "default-src 'none'; connect-src 'self'; img-src %s; script-src 'self'; style-src 'self'",
-        imgSrc));
+        "default-src 'none'; connect-src 'self'; frame-src %s; img-src %s; script-src %s; style-src 'self'",
+        frameSrc, imgSrc, scriptSrc));
   }
 }

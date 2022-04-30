@@ -223,6 +223,11 @@ strong {
   justify-content: space-between;
 }
 
+.center-block {
+  margin: auto;
+  width: 50%;
+}
+
 #top-bar {
   display: flex;
   margin: 1rem 0 1rem 0;

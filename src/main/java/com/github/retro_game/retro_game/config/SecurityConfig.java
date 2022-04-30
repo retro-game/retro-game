@@ -3,6 +3,7 @@ package com.github.retro_game.retro_game.config;
 import com.github.retro_game.retro_game.security.CspHeaderWriter;
 import com.github.retro_game.retro_game.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,11 +19,14 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  private final boolean enableJoinCaptcha;
   private final AuthenticationSuccessHandler authenticationSuccessHandler;
   private final CustomUserDetailsService customUserDetailsService;
 
-  public SecurityConfig(AuthenticationSuccessHandler authenticationSuccessHandler,
+  public SecurityConfig(@Value("${retro-game.enable-join-captcha}") boolean enableJoinCaptcha,
+                        AuthenticationSuccessHandler authenticationSuccessHandler,
                         CustomUserDetailsService customUserDetailsService) {
+    this.enableJoinCaptcha = enableJoinCaptcha;
     this.authenticationSuccessHandler = authenticationSuccessHandler;
     this.customUserDetailsService = customUserDetailsService;
   }
@@ -75,7 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .successHandler(authenticationSuccessHandler)
         .and()
       .headers()
-        .addHeaderWriter(new CspHeaderWriter())
+        .addHeaderWriter(new CspHeaderWriter(enableJoinCaptcha))
         .frameOptions().deny()
         .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER);
     // @formatter:on
