@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.controller.form.CreateHomeworldForm;
-import com.github.retro_game.retro_game.service.BodyService;
+import com.github.retro_game.retro_game.service.BodyCreationService;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Controller;
@@ -16,12 +16,12 @@ import javax.validation.Valid;
 @Controller
 @Validated
 public class CreateHomeworldController {
+  private final BodyCreationService bodyCreationService;
   private final GalaxyService galaxyService;
-  private final BodyService bodyService;
 
-  public CreateHomeworldController(GalaxyService galaxyService, BodyService bodyService) {
+  public CreateHomeworldController(BodyCreationService bodyCreationService, GalaxyService galaxyService) {
+    this.bodyCreationService = bodyCreationService;
     this.galaxyService = galaxyService;
-    this.bodyService = bodyService;
   }
 
   @GetMapping("/create-homeworld")
@@ -36,7 +36,7 @@ public class CreateHomeworldController {
 
   @PostMapping("/create-homeworld")
   public String doCreateHomeworld(@Valid CreateHomeworldForm form) {
-    long bodyId = bodyService.createHomeworld(form.getGalaxy(), form.getSystem(), form.getPosition());
-    return "redirect:/overview?body=" + bodyId;
+    var body = bodyCreationService.createHomeworld(form.getGalaxy(), form.getSystem(), form.getPosition());
+    return "redirect:/overview?body=" + body.getId();
   }
 }

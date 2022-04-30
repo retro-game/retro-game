@@ -9,6 +9,7 @@ import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.security.CustomUser;
 import com.github.retro_game.retro_game.service.ActivityService;
+import com.github.retro_game.retro_game.service.BodyCreationService;
 import com.github.retro_game.retro_game.service.exception.*;
 import com.github.retro_game.retro_game.service.impl.missionhandler.AttackMissionHandler;
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ class FlightServiceImpl implements FlightServiceInternal {
   private AttackMissionHandler attackMissionHandler;
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
+  private BodyCreationService bodyCreationService;
   private EventScheduler eventScheduler;
   private NoobProtectionService noobProtectionService;
   private ReportServiceInternal reportServiceInternal;
@@ -84,6 +86,11 @@ class FlightServiceImpl implements FlightServiceInternal {
   @Autowired
   void setBodyServiceInternal(BodyServiceInternal bodyServiceInternal) {
     this.bodyServiceInternal = bodyServiceInternal;
+  }
+
+  @Autowired
+  public void setBodyCreationService(BodyCreationService bodyCreationService) {
+    this.bodyCreationService = bodyCreationService;
   }
 
   @Autowired
@@ -946,7 +953,7 @@ class FlightServiceImpl implements FlightServiceInternal {
     Resources resources = flight.getResources();
     flight.setResources(new Resources());
 
-    Body colony = bodyServiceInternal.createColony(user, coordinates, flight.getArrivalAt());
+    var colony = bodyCreationService.createColony(user, coordinates, flight.getArrivalAt());
     colony.getResources().add(resources);
     bodyRepository.save(colony);
 

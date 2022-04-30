@@ -11,6 +11,7 @@ import com.github.retro_game.retro_game.model.Item;
 import com.github.retro_game.retro_game.model.unit.UnitItem;
 import com.github.retro_game.retro_game.repository.*;
 import com.github.retro_game.retro_game.service.ActivityService;
+import com.github.retro_game.retro_game.service.BodyCreationService;
 import com.github.retro_game.retro_game.service.impl.BodyServiceInternal;
 import com.github.retro_game.retro_game.service.impl.CombatReportServiceInternal;
 import com.github.retro_game.retro_game.service.impl.ReportServiceInternal;
@@ -52,6 +53,7 @@ public class AttackMissionHandler {
   private final PartyRepository partyRepository;
   private ActivityService activityService;
   private BodyServiceInternal bodyServiceInternal;
+  private BodyCreationService bodyCreationService;
   private CombatReportServiceInternal combatReportServiceInternal;
   private ReportServiceInternal reportServiceInternal;
   private MissionHandlerUtils missionHandlerUtils;
@@ -95,6 +97,11 @@ public class AttackMissionHandler {
   @Autowired
   public void setBodyServiceInternal(BodyServiceInternal bodyServiceInternal) {
     this.bodyServiceInternal = bodyServiceInternal;
+  }
+
+  @Autowired
+  public void setBodyCreationService(BodyCreationService bodyCreationService) {
+    this.bodyCreationService = bodyCreationService;
   }
 
   @Autowired
@@ -481,7 +488,7 @@ public class AttackMissionHandler {
     }
 
     // Create a moon.
-    bodyServiceInternal.createMoon(mainFlight.getTargetUser(), moonCoords, mainFlight.getArrivalAt(), moonChance);
+    bodyCreationService.createMoon(mainFlight.getTargetUser(), moonCoords, mainFlight.getArrivalAt(), moonChance);
     return true;
   }
 

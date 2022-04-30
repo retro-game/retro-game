@@ -1,22 +1,12 @@
 package com.github.retro_game.retro_game.service;
 
 import com.github.retro_game.retro_game.dto.*;
-import com.github.retro_game.retro_game.entity.Body;
-import com.github.retro_game.retro_game.entity.Coordinates;
-import com.github.retro_game.retro_game.entity.User;
 import org.springframework.lang.Nullable;
 
-import java.util.Date;
 import java.util.List;
 
 public interface BodyService {
   BodyContextDto getBodyContext(long bodyId);
-
-  long createHomeworld(int galaxy, int system, int position);
-
-  Body createColony(User user, Coordinates coordinates, Date at);
-
-  Body createMoon(User user, Coordinates coordinates, Date at, double chance);
 
   int getTemperature(long bodyId);
 
