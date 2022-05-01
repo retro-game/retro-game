@@ -3,7 +3,7 @@ package com.github.retro_game.retro_game.integration;
 import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.entity.*;
 import com.github.retro_game.retro_game.repository.UserRepository;
-import com.github.retro_game.retro_game.service.BodyService;
+import com.github.retro_game.retro_game.service.BodyCreationService;
 import com.github.retro_game.retro_game.service.ShipyardService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
@@ -19,7 +19,7 @@ public class ShipyardServiceIntegrationTest extends IntegrationTest {
   @Autowired
   private UserRepository userRepository;
   @Autowired
-  private BodyService bodyService;
+  private BodyCreationService bodyCreationService;
   @Autowired
   private ShipyardService shipyardService;
   @Autowired
@@ -45,7 +45,7 @@ public class ShipyardServiceIntegrationTest extends IntegrationTest {
     coordinates.setPosition(1);
     coordinates.setKind(CoordinatesKind.PLANET);
     var now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    return bodyService.createColony(user, coordinates, now);
+    return bodyCreationService.createColony(user, coordinates, now);
   }
 
   @Test(expected = RequirementsNotMetException.class)

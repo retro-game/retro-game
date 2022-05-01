@@ -30,7 +30,6 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,7 +40,6 @@ class BodyServiceImpl implements BodyServiceInternal {
   private static final Logger logger = LoggerFactory.getLogger(BodyServiceImpl.class);
   private final PlatformTransactionManager platformTransactionManager;
   private final EntityManager entityManager;
-  private final int homeworldDiameter;
   private final int productionSpeed;
   private final int metalBaseProduction;
   private final int crystalBaseProduction;
@@ -71,7 +69,6 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   public BodyServiceImpl(PlatformTransactionManager platformTransactionManager,
                          EntityManager entityManager,
-                         @Value("${retro-game.homeworld-diameter}") int homeworldDiameter,
                          @Value("${retro-game.production-speed}") int productionSpeed,
                          @Value("${retro-game.metal-base-production}") int metalBaseProduction,
                          @Value("${retro-game.crystal-base-production}") int crystalBaseProduction,
@@ -96,7 +93,6 @@ class BodyServiceImpl implements BodyServiceInternal {
                          UserRepository userRepository) {
     this.platformTransactionManager = platformTransactionManager;
     this.entityManager = entityManager;
-    this.homeworldDiameter = homeworldDiameter;
     this.productionSpeed = productionSpeed;
     this.metalBaseProduction = metalBaseProduction;
     this.crystalBaseProduction = crystalBaseProduction;
@@ -143,9 +139,6 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   @PostConstruct
   private void checkProperties() {
-    Assert.isTrue(homeworldDiameter > 0,
-        "retro-game.homeworld-diameter must be greater than 0");
-
     Assert.isTrue(productionSpeed >= 1,
         "retro-game.production-speed must be at least 1");
 
@@ -241,158 +234,6 @@ class BodyServiceImpl implements BodyServiceInternal {
 
   private double calcCapacity(int level) {
     return Math.ceil(1 + Math.pow(1.6, level)) * 50000 * storageCapacityMultiplier;
-  }
-
-  @Override
-  @Transactional(isolation = Isolation.SERIALIZABLE)
-  public long createHomeworld(int galaxy, int system, int position) {
-    long userId = CustomUser.getCurrentUserId();
-    User user = userRepository.getOne(userId);
-
-    if (!user.getBodies().isEmpty()) {
-      logger.warn("Creating homeworld failed, homeworld exists: userId={}", userId);
-      throw new HomeworldExistsException();
-    }
-
-    Coordinates coordinates = new Coordinates(galaxy, system, position, CoordinatesKind.PLANET);
-
-    if (bodyRepository.existsByCoordinates(coordinates)) {
-      logger.warn("Creating homeworld failed, body exists: userId={}, coordinates={}", userId, coordinates);
-      throw new BodyExistsException();
-    }
-
-    logger.info("Creating homeworld: userId={}, coordinates={}", userId, coordinates);
-    Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
-    Body body = new Body();
-    body.setUser(user);
-    body.setCoordinates(coordinates);
-    body.setName("Homeworld");
-    body.setCreatedAt(now);
-    body.setUpdatedAt(now);
-    body.setDiameter(homeworldDiameter);
-    body.setTemperature(generateTemperature(position));
-    body.setType(generatePlanetType(coordinates.getPosition()));
-    body.setImage(ThreadLocalRandom.current().nextInt(1, 11));
-    body.setResources(new Resources(1000.0, 500.0, 0.0));
-    body.setProductionFactors(new ProductionFactors());
-    body.setBuildings(Collections.emptyMap());
-    body.setUnits(Collections.emptyMap());
-    body.setBuildingQueue(Collections.emptySortedMap());
-    body.setShipyardQueue(Collections.emptyList());
-    body = bodyRepository.save(body);
-    var bodyId = body.getId();
-
-    cacheObserver.notifyBodyCreated(userId);
-
-    return bodyId;
-  }
-
-  @Override
-  public Body createColony(User user, Coordinates coordinates, Date at) {
-    assert coordinates.getKind() == CoordinatesKind.PLANET;
-
-    Body body = new Body();
-    body.setUser(user);
-    body.setCoordinates(coordinates);
-    body.setName("Colony");
-    body.setCreatedAt(at);
-    body.setUpdatedAt(at);
-    body.setDiameter(generatePlanetDiameter(coordinates.getPosition()));
-    body.setTemperature(generateTemperature(coordinates.getPosition()));
-    body.setType(generatePlanetType(coordinates.getPosition()));
-    body.setImage(ThreadLocalRandom.current().nextInt(1, 11));
-    body.setResources(new Resources(1000.0, 500.0, 0.0));
-    body.setProductionFactors(new ProductionFactors());
-    body.setBuildings(Collections.emptyMap());
-    body.setUnits(Collections.emptyMap());
-    body.setBuildingQueue(Collections.emptySortedMap());
-    body.setShipyardQueue(Collections.emptyList());
-    body = bodyRepository.save(body);
-
-    cacheObserver.notifyBodyCreated(user.getId());
-
-    return body;
-  }
-
-  @Override
-  public Body createMoon(User user, Coordinates coordinates, Date at, double chance) {
-    assert coordinates.getKind() == CoordinatesKind.MOON;
-
-    Body body = new Body();
-    body.setUser(user);
-    body.setCoordinates(coordinates);
-    body.setName("Moon");
-    body.setCreatedAt(at);
-    body.setUpdatedAt(at);
-    body.setDiameter(generateMoonDiameter(chance));
-    body.setTemperature(generateTemperature(coordinates.getPosition()));
-    body.setType(BodyType.MOON);
-    body.setImage(1);
-    body.setResources(new Resources());
-    body.setProductionFactors(new ProductionFactors());
-    body.setLastJumpAt(at);
-    body.setBuildings(Collections.emptyMap());
-    body.setUnits(Collections.emptyMap());
-    body.setBuildingQueue(Collections.emptySortedMap());
-    body.setShipyardQueue(Collections.emptyList());
-    body = bodyRepository.save(body);
-
-    cacheObserver.notifyBodyCreated(user.getId());
-
-    return body;
-  }
-
-  private BodyType generatePlanetType(int position) {
-    switch (position) {
-      case 1:
-      case 2:
-      case 3:
-        return ThreadLocalRandom.current().nextInt(0, 2) == 0 ? BodyType.DRY : BodyType.DESERT;
-      case 4:
-      case 5:
-      case 6:
-        return BodyType.JUNGLE;
-      case 7:
-      case 8:
-        return BodyType.NORMAL;
-      case 9:
-        return ThreadLocalRandom.current().nextInt(0, 2) == 0 ? BodyType.NORMAL : BodyType.WATER;
-      case 10:
-      case 11:
-      case 12:
-        return BodyType.WATER;
-      case 13:
-        return BodyType.ICE;
-      case 14:
-      case 15:
-        return ThreadLocalRandom.current().nextInt(0, 2) == 0 ? BodyType.ICE : BodyType.GAS;
-      default:
-        throw new IllegalArgumentException();
-    }
-  }
-
-  private int generatePlanetDiameter(int position) {
-    ThreadLocalRandom random = ThreadLocalRandom.current();
-    double x = Math.abs(8 - position);
-    double mean = 200.0 - 10.0 * x;
-    double sd = 60.0 - 5.0 * x;
-    double numFields = mean + sd * random.nextGaussian();
-    numFields = Math.max(numFields, 42.0);
-    return (int) (Math.sqrt(numFields) * 100.0) * 10;
-  }
-
-  private int generateMoonDiameter(double chance) {
-    chance = Math.max(0.01, Math.min(0.2, chance));
-    int r = ThreadLocalRandom.current().nextInt(10, 20 + 1);
-    return (int) (1000.0 * Math.sqrt(r + 3 * (int) (100.0 * chance)));
-  }
-
-  private int generateTemperature(int position) {
-    ThreadLocalRandom random = ThreadLocalRandom.current();
-    double x = 8 - position;
-    double mean = 30.0 + 1.75 * Math.signum(x) * x * x;
-    int temperature = (int) (mean + 10.0 * random.nextGaussian());
-    return Math.max(-60, Math.min(120, temperature));
   }
 
   @Override
@@ -824,7 +665,7 @@ class BodyServiceImpl implements BodyServiceInternal {
   @Override
   public ProductionDto getProduction(Body body) {
     if (body.getCoordinates().getKind() != CoordinatesKind.PLANET) {
-      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      return new ProductionDto(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     // Base production.
@@ -859,14 +700,6 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerFactor) * productionSpeed;
     int deuteriumSynthesizerMaxEnergyUsage = (int) Math.ceil(deuteriumSynthesizerBaseEnergyUsage *
         deuteriumSynthesizerLevel * Math.pow(1.1, deuteriumSynthesizerLevel) * deuteriumSynthesizerFactor);
-
-    // Calculate bonus from plasma technology if enabled
-    if (plasmaTechnologyAffectsProduction) {
-      var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
-      metalMineProduction = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01) + metalMineProduction;
-      crystalMineProduction = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066) + crystalMineProduction;
-      deuteriumSynthesizerProduction = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033) + deuteriumSynthesizerProduction;
-    }
 
     // Solar plant.
     int solarPlantLevel = items.getSolarPlantLevel();
@@ -906,15 +739,26 @@ class BodyServiceImpl implements BodyServiceInternal {
     int crystalMineCurrentEnergyUsage = (int) (crystalMineMaxEnergyUsage * efficiency);
     int deuteriumSynthesizerCurrentEnergyUsage = (int) (deuteriumSynthesizerMaxEnergyUsage * efficiency);
 
+    // Calculate bonus from plasma technology if enabled
+    int plasmaMetalBonus = 0;
+    int plasmaCrystalBonus = 0;
+    int plasmaDeuteriumBonus = 0;
+    if (plasmaTechnologyAffectsProduction) {
+      var plasmaTechLevel = body.getUser().getTechnologyLevel(TechnologyKind.PLASMA_TECHNOLOGY);
+      plasmaMetalBonus = (int) Math.round(metalMineProduction * plasmaTechLevel * 0.01 * efficiency);
+      plasmaCrystalBonus = (int) Math.round(crystalMineProduction * plasmaTechLevel * 0.0066 * efficiency);
+      plasmaDeuteriumBonus = (int) Math.round(deuteriumSynthesizerProduction * plasmaTechLevel * 0.0033 * efficiency);
+    }
+
     // Mines production with efficiency.
     metalMineProduction = (int) (metalMineProduction * efficiency);
     crystalMineProduction = (int) (crystalMineProduction * efficiency);
     deuteriumSynthesizerProduction = (int) (deuteriumSynthesizerProduction * efficiency);
 
     // Final production.
-    int metalProduction = metalBaseProduction + metalMineProduction;
-    int crystalProduction = crystalBaseProduction + crystalMineProduction;
-    int deuteriumProduction = deuteriumBaseProduction + deuteriumSynthesizerProduction - fusionReactorDeuteriumUsage;
+    int metalProduction = metalBaseProduction + metalMineProduction + plasmaMetalBonus;
+    int crystalProduction = crystalBaseProduction + crystalMineProduction + plasmaCrystalBonus;
+    int deuteriumProduction = deuteriumBaseProduction + deuteriumSynthesizerProduction + plasmaDeuteriumBonus - fusionReactorDeuteriumUsage;
 
     return new ProductionDto(efficiency, metalBaseProduction, crystalBaseProduction, deuteriumBaseProduction,
         metalMineProduction, metalMineCurrentEnergyUsage, metalMineMaxEnergyUsage, crystalMineProduction,
@@ -922,7 +766,7 @@ class BodyServiceImpl implements BodyServiceInternal {
         deuteriumSynthesizerCurrentEnergyUsage, deuteriumSynthesizerMaxEnergyUsage, solarPlantEnergyProduction,
         fusionReactorDeuteriumUsage, fusionReactorEnergyProduction, singleSatelliteEnergy,
         solarSatellitesEnergyProduction, metalProduction, crystalProduction, deuteriumProduction, totalEnergy,
-        usedEnergy, availableEnergy);
+        usedEnergy, availableEnergy, plasmaMetalBonus, plasmaCrystalBonus, plasmaDeuteriumBonus);
   }
 
   @Override
