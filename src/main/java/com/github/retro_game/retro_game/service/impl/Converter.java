@@ -470,9 +470,10 @@ public class Converter {
   }
 
   static TransportReportDto convert(TransportReport entity) {
-    return new TransportReportDto(entity.getId(), entity.getAt(), Converter.convert(entity.getKind()),
-        entity.getPartnerId(), entity.getPartnerName(), Converter.convert(entity.getStartCoordinates()),
-        Converter.convert(entity.getTargetCoordinates()), Converter.convert(entity.getResources()));
+    return new TransportReportDto(entity.getId(), entity.getUser().getId(), entity.getAt(),
+        Converter.convert(entity.getKind()), entity.getPartnerId(), entity.getPartnerName(),
+        Converter.convert(entity.getStartCoordinates()), Converter.convert(entity.getTargetCoordinates()),
+        Converter.convert(entity.getResources()));
   }
 
   static TransportReportSortOrder convert(TransportReportSortOrderDto dto) {
