@@ -22,7 +22,7 @@ public class UserPasswordResetToken {
   @Column(name = "encrypted_token", nullable = false)
   private String encryptedToken;
 
-  @Column(name = "expire_at", nullable = false, updatable = false)
+  @Column(name = "expire_at", nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   private Date expireAt;
 }
