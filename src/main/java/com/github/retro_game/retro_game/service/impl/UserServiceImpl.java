@@ -101,7 +101,8 @@ class UserServiceImpl implements UserServiceInternal {
       roles |= UserRole.ADMIN;
     }
 
-    int flags = UserFlag.NUMBER_INPUT_SCROLLING;
+    int flags = UserFlag.NUMBER_INPUT_SCROLLING | UserFlag.SHOW_NEW_MESSAGES_IN_OVERVIEW |
+        UserFlag.SHOW_NEW_REPORTS_IN_OVERVIEW;
 
     Date now = Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond()));
     User user = new User();
