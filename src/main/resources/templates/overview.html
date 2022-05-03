@@ -45,7 +45,7 @@
         <span th:text="${body.name}"></span>
         <a href="#" th:href="@{/overview(body=${body.id})}">
           <img
-              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${body.type},image=${body.image})}"
+              th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
               width="50" height="50">
         </a>
         <a th:if="${body.ongoingBuildingKind != null}" th:href="@{/buildings(body=${body.id})}"
@@ -55,7 +55,7 @@
       <td th:unless="${bodies.associatedBody != null}"></td>
       <td class="overview-body" colspan="2" th:with="body=${bodies.selectedBody}">
         <img
-            th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${body.type},image=${body.image})}"
+            th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
             width="200" height="200">
         <th:block th:if="${body.ongoingBuildingKind != null}">
           <a th:href="@{/buildings(body=${body.id})}"
@@ -70,7 +70,7 @@
             <span th:text="${body.name}"></span>
             <a href="#" th:href="@{/overview(body=${body.id})}">
               <img
-                  th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${body.type},image=${body.image})}"
+                  th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
                   width="88" height="88">
             </a>
             <a th:if="${body.ongoingBuildingKind != null}" th:href="@{/buildings(body=${body.id})}"

@@ -36,12 +36,12 @@
           <th:block th:if="${slot}">
             <td>
               <img
-                  th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
+                  th:src="@{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
                   width="30" height="30">
             </td>
             <td th:text="${slot.planetName}"></td>
             <td th:if="${slot.moonName}">
-              <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})}"
+              <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.webp(skin=${skin},image=${slot.moonImage})}"
                    width="25" height="25">
             </td>
             <td th:unless="${slot.moonName}"></td>

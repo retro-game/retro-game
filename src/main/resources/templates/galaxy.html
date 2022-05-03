@@ -23,14 +23,14 @@
         <td th:text="${i}"></td>
         <td th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET ? 'highlight' : ''}">
           <img
-              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
+              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${slot.planetType},image=${slot.planetImage})}"
               data-tooltip data-tooltip-html th:data-tooltip-title="
                 '<table>' +
                   '<tr>' +
                     '<th colspan=2>' + ${slot.planetName} + '</th>' +
                   '</tr>' +
                   '<tr>' +
-                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${slot.planetType},image=${slot.planetImage})} + '\' width=55 height=55></td>' +
+                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${slot.planetType},image=${slot.planetImage})} + '\' width=55 height=55></td>' +
                     '<td>' +
                       (${slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='DEPLOYMENT')} + '\'>' + #{mission.DEPLOYMENT} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='PLANET',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +
@@ -51,14 +51,14 @@
         </td>
         <td th:if="${slot.moonName}"
             th:class="${position == i && kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON ? 'highlight' : ''}">
-          <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})}"
+          <img th:src="@{/static/skins/{skin}/bodies/MOON_{image}.webp(skin=${skin},image=${slot.moonImage})}"
                data-tooltip data-tooltip-html th:data-tooltip-title="
                 '<table>' +
                   '<tr>' +
                     '<th colspan=2>' + ${slot.moonName} + '</th>' +
                   '</tr>' +
                   '<tr>' +
-                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/MOON_{image}.jpg(skin=${skin},image=${slot.moonImage})} + '\' width=55 height=55></td>' +
+                    '<td><img src=\'' + @{/static/skins/{skin}/bodies/MOON_{image}.webp(skin=${skin},image=${slot.moonImage})} + '\' width=55 height=55></td>' +
                     '<td>' +
                       (${slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='DEPLOYMENT')} + '\'>' + #{mission.DEPLOYMENT} + '</a></p>' : '') +
                       (${!slot.own} ? '<p><a href=\'' + @{/flights/send(body=${bodyId},galaxy=${galaxy},system=${system},position=${i},kind='MOON',mission='ATTACK')} + '\'>' + #{mission.ATTACK} + '</a></p>' : '') +

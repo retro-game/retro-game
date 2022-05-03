@@ -10,7 +10,7 @@
       <div th:fragment="top-bar" id="top-bar">
         <div id="top-bar-bodies">
           <img
-              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${ctx.curBody.type},image=${ctx.curBody.image})}">
+              th:src="@{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${ctx.curBody.type},image=${ctx.curBody.image})}">
           <div>
             <form id="top-bar-body-list">
               <select name="body">
@@ -52,7 +52,7 @@
                th:data-tooltip-title="
                  '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.metalProduction, 1, 'DEFAULT')} + '</strong></p>' +
                  '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.metal, 1, 'DEFAULT')} + '</strong></p>'">
-            <img th:src="@{/static/skins/{skin}/resources/METAL.gif(skin=${skin})}">
+            <img th:src="@{/static/skins/{skin}/resources/METAL.webp(skin=${skin})}">
             <p th:text="#{metal}">Metal</p>
             <p th:class="${r.metal >= c.metal ? 'no-capacity' : ''}"
                th:text="${#numbers.formatInteger(r.metal, 1, 'DEFAULT')}"></p>
@@ -61,7 +61,7 @@
                th:data-tooltip-title="
                  '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.crystalProduction, 1, 'DEFAULT')} + '</strong></p>' +
                  '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.crystal, 1, 'DEFAULT')} + '</strong></p>'">
-            <img th:src="@{/static/skins/{skin}/resources/CRYSTAL.gif(skin=${skin})}">
+            <img th:src="@{/static/skins/{skin}/resources/CRYSTAL.webp(skin=${skin})}">
             <p th:text="#{crystal}">Crystal</p>
             <p th:class="${r.crystal >= c.crystal ? 'no-capacity' : ''}"
                th:text="${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')}"></p>
@@ -70,14 +70,14 @@
                th:data-tooltip-title="
                  '<p>' + #{production} + ': <strong>' + ${#numbers.formatInteger(p.deuteriumProduction, 1, 'DEFAULT')} + '</strong></p>' +
                  '<p>' + #{capacity} + ': <strong>' + ${#numbers.formatInteger(c.deuterium, 1, 'DEFAULT')} + '</strong></p>'">
-            <img th:src="@{/static/skins/{skin}/resources/DEUTERIUM.gif(skin=${skin})}">
+            <img th:src="@{/static/skins/{skin}/resources/DEUTERIUM.webp(skin=${skin})}">
             <p th:text="#{deuterium}">Deuterium</p>
             <p th:class="${r.deuterium >= c.deuterium ? 'no-capacity' : ''}"
                th:text="${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')}"></p>
           </div>
           <div data-tooltip data-tooltip-html
                th:data-tooltip-title="'<p>' + #{requiredEnergy} + ': <strong>' + ${#numbers.formatInteger(p.usedEnergy, 1, 'DEFAULT')} + '</strong></p>'">
-            <img th:src="@{/static/skins/{skin}/resources/ENERGY.gif(skin=${skin})}">
+            <img th:src="@{/static/skins/{skin}/resources/ENERGY.webp(skin=${skin})}">
             <p th:text="#{energy}">Energy</p>
             <p th:class="${p.availableEnergy < 0 ? 'no-energy' : ''}">
               <span th:text="${#numbers.formatInteger(p.availableEnergy, 1, 'DEFAULT')}"></span>

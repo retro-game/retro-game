@@ -72,7 +72,7 @@
     <tr th:each="technology : ${pair.technologies}" class="item">
       <td class="item-image">
         <a th:href="@{/details/technology(body=${bodyId},kind=${technology.kind})}">
-          <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${technology.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${technology.kind})}">
         </a>
       </td>
       <td class="item-info">

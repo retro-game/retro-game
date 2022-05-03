@@ -44,7 +44,7 @@
     <tr th:each="unit : ${pair.units}" class="item">
       <td class="item-image">
         <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}">
-          <img th:src="@{/static/skins/{skin}/items/{kind}.gif(skin=${skin},kind=${unit.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${unit.kind})}">
         </a>
       </td>
       <td class="item-info">

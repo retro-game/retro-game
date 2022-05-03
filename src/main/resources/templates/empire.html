@@ -52,7 +52,7 @@
           <a th:href="@{/empire(body=${body.id},galaxy=${galaxy},system=${system},position=${position},kind=${kind})}"
              th:title="#{goToThisPlanet}">
             <img
-                th:src="@{/static/skins/{skin}/bodies/{type}_{image}.jpg(skin=${skin},type=${body.type},image=${body.image})}"
+                th:src="@{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
                 width="50" height="50">
           </a>
         </td>
