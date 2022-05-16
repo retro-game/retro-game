@@ -921,9 +921,10 @@ public class BuildingsServiceImpl implements BuildingsServiceInternal {
     return true;
   }
 
-  private boolean meetsSpecialRequirements (Body body, BuildingItem item, BuildingKind kind) {
+  private boolean meetsSpecialRequirements(Body body, BuildingItem item, BuildingKind kind) {
     boolean meetsRequirements = item.meetsSpecialRequirements(body);
-    if (kind == BuildingKind.NANITE_FACTORY && !allowNanitesOnMoon) {
+    if (kind == BuildingKind.NANITE_FACTORY && body.getCoordinates().getKind() == CoordinatesKind.MOON &&
+        !allowNanitesOnMoon) {
       meetsRequirements = false;
     }
 
