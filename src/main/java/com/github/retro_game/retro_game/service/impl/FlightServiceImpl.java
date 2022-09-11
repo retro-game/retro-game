@@ -1128,7 +1128,10 @@ class FlightServiceImpl implements FlightServiceInternal {
   }
 
   private void handleHold(Flight flight, Date at) {
-    if (at.toInstant().getEpochSecond() == flight.getArrivalAt().toInstant().getEpochSecond()) {
+    var eventAt = at.toInstant().getEpochSecond();
+    var arrivalAt = flight.getArrivalAt().toInstant().getEpochSecond();
+    var holdUntil = flight.getHoldUntil().toInstant().getEpochSecond();
+    if (eventAt == arrivalAt && arrivalAt != holdUntil) {
       logger.info("Hold started: flightId={} startUserId={} startBodyId={} targetUserId={} targetBodyId={}" +
               " arrivalAt='{}' holdUntil='{}'",
           flight.getId(), flight.getStartUser().getId(), flight.getStartBody().getId(), flight.getTargetUser().getId(),
