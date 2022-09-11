@@ -8,6 +8,8 @@ import com.github.retro_game.retro_game.repository.UserRepository;
 import com.github.retro_game.retro_game.service.EmailService;
 import com.github.retro_game.retro_game.service.ResetPasswordService;
 import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,16 @@ import static java.util.UUID.randomUUID;
 
 @Service
 public class ResetPasswordServiceImpl implements ResetPasswordService {
+  private static final Logger logger = LoggerFactory.getLogger(ResetPasswordServiceImpl.class);
   private final PasswordEncoder passwordEncoder;
   private final UserRepository userRepository;
   private final EmailService emailService;
   private final UserPasswordResetTokenRepository userPasswordResetTokenRepository;
+  private final boolean enablePasswordRecovery;
   private final int passwordResetLinkExpiresAfterDays;
 
   public ResetPasswordServiceImpl(
+      @Value("${retro-game.enable-password-recovery}") boolean enablePasswordRecovery,
       @Value("${retro-game.password-reset-link-expires-after-days}") int passwordResetLinkExpiresAfterDays,
       PasswordEncoder passwordEncoder,
       UserRepository userRepository,
@@ -36,12 +41,18 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
     this.userRepository = userRepository;
     this.emailService = emailService;
     this.userPasswordResetTokenRepository = userPasswordResetTokenRepository;
+    this.enablePasswordRecovery = enablePasswordRecovery;
     this.passwordResetLinkExpiresAfterDays = passwordResetLinkExpiresAfterDays;
   }
 
   @Override
   @Transactional
   public void generateTokenAndSendEmail(String email) {
+    if (!enablePasswordRecovery) {
+      logger.warn("Attempt to recover password while password recovery is disabled");
+      return;
+    }
+
     Optional<User> user = userRepository.findByEmailIgnoreCase(email);
 
     user.ifPresent(u -> {
@@ -65,6 +76,11 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
   @Override
   @Transactional
   public void resetUserPassword(String plainToken, String newPassword) {
+    if (!enablePasswordRecovery) {
+      logger.warn("Attempt to recover password while password recovery is disabled");
+      return;
+    }
+
     Optional<UserPasswordResetToken> token = userPasswordResetTokenRepository.findAll().stream()
         .filter(t -> passwordEncoder.matches(plainToken, t.getEncryptedToken()))
         .findFirst();

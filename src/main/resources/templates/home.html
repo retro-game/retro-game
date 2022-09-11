@@ -75,7 +75,7 @@
         <span th:text="#{orJoin}">or join</span>
         <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>.
       </p>
-      <p>
+      <p th:if="${enablePasswordRecovery}">
         <span th:text="#{forgotPassword}">Forgot password?</span>
         <a th:href="@{/reset-password}"><strong th:text="#{forgotPasswordLink}">Reset here</strong></a>.
       </p>
