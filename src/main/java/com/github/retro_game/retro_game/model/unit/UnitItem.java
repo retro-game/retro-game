@@ -27,6 +27,7 @@ public abstract class UnitItem extends Item {
         put(UnitKind.SOLAR_SATELLITE, new SolarSatellite());
         put(UnitKind.DESTROYER, new Destroyer());
         put(UnitKind.DEATH_STAR, new DeathStar());
+        put(UnitKind.BATTLE_CRUISER, new Battlecruiser());
       }});
 
   private static final Map<UnitKind, UnitItem> defense =
