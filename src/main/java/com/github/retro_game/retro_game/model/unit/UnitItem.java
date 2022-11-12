@@ -84,7 +84,7 @@ public abstract class UnitItem extends Item {
 
   public abstract double getBaseShield();
 
-  public abstract double getBaseArmor();
+  public final double getBaseArmor() { return getCost().getMetal() + getCost().getCrystal(); }
 
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return Collections.emptyMap();

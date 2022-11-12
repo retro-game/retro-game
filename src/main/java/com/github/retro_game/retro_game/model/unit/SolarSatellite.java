@@ -29,9 +29,4 @@ public class SolarSatellite extends UnitItem {
   public double getBaseShield() {
     return 1.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 2000.0;
-  }
 }

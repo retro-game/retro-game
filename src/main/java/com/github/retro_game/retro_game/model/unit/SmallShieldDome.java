@@ -38,9 +38,4 @@ public class SmallShieldDome extends UnitItem {
   public double getBaseShield() {
     return 2000.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 20000.0;
-  }
 }
