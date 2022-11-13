@@ -178,7 +178,7 @@ create table flights (
   metal double precision not null check (metal >= 0),
   crystal double precision not null check (crystal >= 0),
   deuterium double precision not null check (deuterium >= 0),
-  units int[] not null check (array_length(units, 1) = 23),
+  units int[] not null check (array_length(units, 1) = 24),
   main_target int
 );
 
