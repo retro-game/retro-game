@@ -2,6 +2,9 @@ begin;
 
 alter table bodies rename to bodies_old;
 
+alter table bodies add column units int[] check (array_length(units, 1) = 24);
+alter table flights add column units int[] check (array_length(units, 1) = 24);
+
 create table bodies (
   id bigserial primary key,
   user_id bigint references users,
