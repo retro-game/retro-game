@@ -63,9 +63,4 @@ public class EspionageProbe extends UnitItem {
   public double getBaseShield() {
     return 0.01;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 1000.0;
-  }
 }

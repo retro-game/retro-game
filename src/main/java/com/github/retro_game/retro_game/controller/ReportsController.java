@@ -47,6 +47,7 @@ public class ReportsController {
         put(UnitKindDto.SOLAR_SATELLITE, 10);
         put(UnitKindDto.DESTROYER, 11);
         put(UnitKindDto.DEATH_STAR, 12);
+        put(UnitKindDto.BATTLE_CRUISER, 20);
         put(UnitKindDto.ROCKET_LAUNCHER, 14);
         put(UnitKindDto.LIGHT_LASER, 15);
         put(UnitKindDto.HEAVY_LASER, 16);

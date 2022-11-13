@@ -42,9 +42,4 @@ public class InterplanetaryMissile extends UnitItem {
   public double getBaseShield() {
     return 1.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 15000.0;
-  }
 }

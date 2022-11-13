@@ -29,9 +29,4 @@ public class RocketLauncher extends UnitItem {
   public double getBaseShield() {
     return 20.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 2000.0;
-  }
 }

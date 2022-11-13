@@ -74,11 +74,6 @@ public class Bomber extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 75000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

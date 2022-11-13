@@ -70,11 +70,6 @@ public class Cruiser extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 27000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }
