@@ -155,7 +155,7 @@ class UpdateStatisticsTask {
         "       from total t";
   }
 
-  @Scheduled(cron = "0 0 0,8,16 * * *")
+  @Scheduled(cron = "0 0 * * * *")
   private void update() {
     long now = Instant.now().getEpochSecond();
 
