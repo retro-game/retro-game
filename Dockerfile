@@ -28,4 +28,5 @@ RUN \
   rm -rf /var/lib/apt/lists/* && \
   # Change the permissions of the artifacts.
   chmod 400 *
+EXPOSE 8080
 CMD ["java", "-Djava.library.path=.", "-jar", "retro-game.jar"]
