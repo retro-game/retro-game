@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.PhalanxService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +31,7 @@ public class PhalanxController {
                         @RequestParam int galaxy,
                         @RequestParam int system,
                         @RequestParam int position,
-                        Model model) {
+                        Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
@@ -38,6 +40,6 @@ public class PhalanxController {
     model.addAttribute("position", position);
     model.addAttribute("time", Date.from(Instant.ofEpochSecond(Instant.now().getEpochSecond())));
     model.addAttribute("events", phalanxService.scan(bodyId, galaxy, system, position));
-    return "phalanx";
+    return Utils.getAppropriateView(device, "phalanx");
   }
 }

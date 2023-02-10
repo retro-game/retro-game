@@ -3,7 +3,9 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.form.CreateHomeworldForm;
 import com.github.retro_game.retro_game.service.BodyCreationService;
 import com.github.retro_game.retro_game.service.GalaxyService;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -27,11 +29,11 @@ public class CreateHomeworldController {
   @GetMapping("/create-homeworld")
   public String createHomeworld(@RequestParam @Range(min = 1, max = 5) int galaxy,
                                 @RequestParam @Range(min = 1, max = 500) int system,
-                                Model model) {
+                                Device device, Model model) {
     model.addAttribute("galaxy", galaxy);
     model.addAttribute("system", system);
     model.addAttribute("slots", galaxyService.getSlots(galaxy, system));
-    return "create-homeworld";
+    return Utils.getAppropriateView(device, "create-homeworld");
   }
 
   @PostMapping("/create-homeworld")

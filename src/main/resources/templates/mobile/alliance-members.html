@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{members}">Members</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th>#</th>
+      <th th:text="#{name}">Name</th>
+      <th th:text="#{joinedAt}">Joined at</th>
+      <th th:text="#{allianceRank}">Rank</th>
+    </tr>
+    <tr th:each="entry,iter : ${members}">
+      <td th:text="${iter.index + 1}"></td>
+      <td>
+        <span th:replace="mobile/user-tooltip :: user-tooltip(${bodyId}, ${entry.userId}, ${entry.userName})"></span>
+      </td>
+      <td th:text="${#dates.format(entry.joinedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${entry.rank}"></td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

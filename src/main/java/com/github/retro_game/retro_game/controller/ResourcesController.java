@@ -6,7 +6,9 @@ import com.github.retro_game.retro_game.dto.ProductionFactorsDto;
 import com.github.retro_game.retro_game.dto.ProductionItemsDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,7 +42,7 @@ public class ResourcesController {
   @GetMapping("/resources")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String resources(@RequestParam(name = "body") long bodyId, Model model) {
+  public String resources(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
 
     var ctx = userService.getCurrentUserContext(bodyId);
@@ -108,7 +110,7 @@ public class ResourcesController {
       model.addAttribute("deuteriumFullAt", Date.from(Instant.ofEpochSecond(now + (long) deuteriumFullSeconds)));
     }
 
-    return "resources";
+    return Utils.getAppropriateView(device, "resources");
   }
 
   @PostMapping("/resources/set-factors")

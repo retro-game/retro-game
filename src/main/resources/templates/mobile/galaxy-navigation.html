@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Galaxy navigation - Retro Game</title>
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <div th:fragment="galaxy-navigation" id="galaxy-navigation">
+        <table>
+          <tr>
+            <th colspan="3" th:text="#{galaxy}">Galaxy</th>
+          </tr>
+          <tr>
+            <td>
+              <form id="galaxy-prev">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" type="hidden" th:value="(${galaxy} + 5 - 2) % 5 + 1">
+                <input name="system" type="hidden" th:value="${system}">
+                <button th:title="#{keyboardShortcutDownArrow}">←</button>
+              </form>
+            </td>
+            <td>
+              <form id="galaxy-input">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" th:value="${galaxy}">
+                <input name="system" type="hidden" th:value="${system}">
+              </form>
+            </td>
+            <td>
+              <form id="galaxy-next">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" type="hidden" th:value="${galaxy} % 5 + 1">
+                <input name="system" type="hidden" th:value="${system}">
+                <button th:title="#{keyboardShortcutUpArrow}">→</button>
+              </form>
+            </td>
+          </tr>
+        </table>
+        <table>
+          <tr>
+            <th colspan="3" th:text="#{system}">System</th>
+          </tr>
+          <tr>
+            <td>
+              <form id="system-prev">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" type="hidden" th:value="${galaxy}">
+                <input name="system" type="hidden" th:value="(${system} + 500 - 2) % 500 + 1">
+                <button th:title="#{keyboardShortcutLeftArrow}">←</button>
+              </form>
+            </td>
+            <td>
+              <form id="system-input">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" type="hidden" th:value="${galaxy}">
+                <input name="system" th:value="${system}">
+              </form>
+            </td>
+            <td>
+              <form id="system-next">
+                <input th:if="${bodyId != null}" name="body" type="hidden" th:value="${bodyId}">
+                <input name="galaxy" type="hidden" th:value="${galaxy}">
+                <input name="system" type="hidden" th:value="${system} % 500 + 1">
+                <button th:title="#{keyboardShortcutRightArrow}">→</button>
+              </form>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

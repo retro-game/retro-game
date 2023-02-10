@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{changelog}">Changelog</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table>
+    <tr>
+      <th th:text="#{changelog}">Changelog</th>
+    </tr>
+    <tr>
+      <td>
+        <pre th:replace="changelog :: changelog"></pre>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

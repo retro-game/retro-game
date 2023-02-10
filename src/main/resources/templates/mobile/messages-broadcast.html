@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{messages}">Messages</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:replace="mobile/messages-tabs :: messages-tabs"></table>
+  <table>
+    <tr>
+      <th class="space-between">
+        <span th:text="#{broadcastMessages}">Broadcast messages</span>
+        <a th:if="${@broadcastMessageService.isCurrentUserAllowedToBroadcastMessage()}"
+           th:href="@{/messages/broadcast/send(body=${bodyId})}" th:text="#{sendBroadcastMessage}"></a>
+      </th>
+    </tr>
+    <tr th:if="${#lists.isEmpty(messages)}">
+      <td th:text="#{noMessages}">No messages</td>
+    </tr>
+    <th:block th:each="message : ${messages}">
+      <tr>
+        <th th:text="#{messageFromAtFormat(${message.senderName != null ? message.senderName : '[deleted]'},${#dates.format(message.at, 'yyyy-MM-dd HH:mm:ss')})}">
+          Message from Gaius at 2006-06-06 03:00:00
+        </th>
+      </tr>
+      <tr>
+        <td>
+          <p th:each="paragraph : ${#strings.arraySplit(message.message, T(org.apache.commons.lang3.StringUtils).LF)}"
+             th:text="${paragraph}"></p>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <div th:replace="mobile/messages-pagination :: messages-pagination('broadcast')"></div>
+</div>
+</body>
+</html>

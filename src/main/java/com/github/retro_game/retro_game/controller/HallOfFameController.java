@@ -4,7 +4,9 @@ import com.github.retro_game.retro_game.cache.UserInfoCache;
 import com.github.retro_game.retro_game.dto.CombatReportSortOrderDto;
 import com.github.retro_game.retro_game.service.HallOfFameService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +35,7 @@ public class HallOfFameController {
 
   @GetMapping("/hall-of-fame")
   public String hallOfFame(@RequestParam(name = "body") long bodyId,
-                           @RequestParam(required = false) CombatReportSortOrderDto order, Model model) {
+                           @RequestParam(required = false) CombatReportSortOrderDto order, Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
 
     model.addAttribute("bodyId", bodyId);
@@ -41,7 +43,7 @@ public class HallOfFameController {
     model.addAttribute("enabled", hallOfFameEnabled);
 
     if (!hallOfFameEnabled) {
-      return "hall-of-fame";
+      return Utils.getAppropriateView(device, "hall-of-fame");
     }
 
     if (order == null) {
@@ -72,6 +74,6 @@ public class HallOfFameController {
     model.addAttribute("attackerNames", attackerNames);
     model.addAttribute("defenderNames", defenderNames);
 
-    return "hall-of-fame";
+    return Utils.getAppropriateView(device, "hall-of-fame");
   }
 }

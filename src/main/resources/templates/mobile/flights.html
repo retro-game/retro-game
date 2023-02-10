@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{flights}">Flights</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${error}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td class="error" th:text="${#messages.msg('flightError.' + error)}"></td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th>
+        <span th:text="#{sendFleet}">Send Fleet</span>
+        (<span th:text="${occupiedSlots}"></span> / <span th:text="${maxSlots}"></span>)
+      </th>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/flights/send(body=${bodyId})}" th:text="#{sendFleet}">Send Fleet</a>
+      </td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th>#</th>
+      <th th:text="#{mission}">Mission</th>
+      <th th:text="#{start}">Start</th>
+      <th th:text="#{target}">Target</th>
+      <th th:text="#{units}">Units</th>
+      <th th:text="#{resources}">Resources</th>
+      <th th:text="#{departureAt}">Departure at</th>
+      <th th:text="#{arrivalAt}">Arrival at</th>
+      <th th:text="#{returnAt}">Return at</th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <tr th:if="${#lists.isEmpty(flights)}">
+      <td colspan="10" th:text="#{noFlights}">No flights</td>
+    </tr>
+    <tr th:each="flight,iter : ${flights}">
+      <td th:text="${iter.index + 1}"></td>
+      <td th:text="#{${'mission.' + flight.mission}}"></td>
+      <td>
+        <span th:text="${flight.startBodyName}"></span>
+        <a th:with="c=${flight.startCoordinates}"
+           th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+           th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
+      </td>
+      <td>
+        <span th:text="${flight.targetBodyName}"></span>
+        <a th:with="c=${flight.targetCoordinates}"
+           th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+           th:title="#{goToGalaxy}" th:text="'[' + ${c} + ']'"></a>
+      </td>
+      <td th:text="${@formatterService.formatUnits(flight.units)}"></td>
+      <td th:with="r=${flight.resources}">
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="
+                  '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(r.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+                th:text="${@formatterService.prefixedNumber(r.metal + r.crystal + r.deuterium)}"></span>
+      </td>
+      <td th:text="${#dates.format(flight.departureAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${#dates.format(flight.arrivalAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td th:text="${#dates.format(flight.returnAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td>
+        <form th:if="${flight.recallable}" th:action="@{/flights/recall}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="flight" type="hidden" th:value="${flight.id}">
+          <button th:text="#{recall}"></button>
+        </form>
+        <form th:if="${flight.partyCreatable}" th:action="@{/party/create}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input name="flight" type="hidden" th:value="${flight.id}">
+          <button th:text="#{party}"></button>
+        </form>
+        <a th:if="${flight.partyId != null}" class="btn" th:href="@{/party(body=${bodyId},party=${flight.partyId})}"
+           th:text="#{party}">Party</a>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

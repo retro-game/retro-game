@@ -9,7 +9,9 @@ import com.github.retro_game.retro_game.model.ItemUtils;
 import com.github.retro_game.retro_game.service.GalaxyService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.impl.Converter;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,7 +41,7 @@ public class GalaxyController {
                        @RequestParam @Range(min = 1, max = 500) int system,
                        @RequestParam(required = false) @Range(min = 1, max = 15) Integer position,
                        @RequestParam(required = false) CoordinatesKindDto kind,
-                       Model model) {
+                       Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var startCoords = Converter.convert(ctx.curBody().coordinates());
     var numMissiles = ctx.curBody().units().get(UnitKindDto.INTERPLANETARY_MISSILE);
@@ -65,6 +67,6 @@ public class GalaxyController {
     model.addAttribute("isWithinMissilesRange", isWithinMissilesRange);
     model.addAttribute("isWithinPhalanxRange", isWithinPhalanxRange);
 
-    return "galaxy";
+    return Utils.getAppropriateView(device, "galaxy");
   }
 }

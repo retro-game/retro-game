@@ -8,7 +8,14 @@ target/
 *.iml
 .idea/
 
+# vscode
+.vscode/
+
 # Skins
 src/main/resources/public/static/skins/*
 !src/main/resources/public/static/skins/Empty
 !src/main/resources/public/static/skins/GoW
+
+# Local management
+dockerupload.ps1
+testconfig/

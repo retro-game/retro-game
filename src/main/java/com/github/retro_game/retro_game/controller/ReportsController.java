@@ -9,8 +9,10 @@ import com.github.retro_game.retro_game.service.ReportService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
 import com.github.retro_game.retro_game.service.exception.UnauthorizedReportAccessException;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -64,11 +66,11 @@ public class ReportsController {
   }
 
   @GetMapping("/espionage-report")
-  public String espionageReport(@RequestParam long id, @RequestParam @NotBlank String token, Model model) {
+  public String espionageReport(@RequestParam long id, @RequestParam @NotBlank String token, Device device, Model model) {
     EspionageReportDto report = reportService.getEspionageReport(id, token);
     model.addAttribute("report", report);
     model.addAttribute("websimLink", generateWebsimLink(report));
-    return "espionage-report";
+    return Utils.getAppropriateView(device, "espionage-report");
   }
 
   private String generateWebsimLink(EspionageReportDto report) {
@@ -107,11 +109,11 @@ public class ReportsController {
   @GetMapping("/reports")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String reports(@RequestParam(name = "body") long bodyId, Model model) {
+  public String reports(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("summary", reportService.getSummary(bodyId));
-    return "reports";
+    return Utils.getAppropriateView(device, "reports");
   }
 
   @GetMapping("/reports/combat")
@@ -122,7 +124,7 @@ public class ReportsController {
                               @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
                               @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                               @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
-                              Model model) {
+                              Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedCombatReportDto> reports = reportService.getSimplifiedCombatReports(bodyId, order, direction,
@@ -135,7 +137,7 @@ public class ReportsController {
     model.addAttribute("page", page);
     model.addAttribute("size", size);
     model.addAttribute("reports", reports);
-    return "reports-combat";
+    return Utils.getAppropriateView(device, "reports-combat");
   }
 
   @PostMapping("/reports/combat/delete")
@@ -169,7 +171,7 @@ public class ReportsController {
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
                                  @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                  @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
-                                 Model model) {
+                                 Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<SimplifiedEspionageReportDto> reports = reportService.getSimplifiedEspionageReports(bodyId, order, direction,
@@ -183,7 +185,7 @@ public class ReportsController {
     model.addAttribute("size", size);
     model.addAttribute("reports", reports);
     model.addAttribute("numProbes", userService.getCurrentUserSettings().getNumProbes());
-    return "reports-espionage";
+    return Utils.getAppropriateView(device, "reports-espionage");
   }
 
   @PostMapping("/reports/espionage/delete")
@@ -217,7 +219,7 @@ public class ReportsController {
                                @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
                                @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
-                               Model model) {
+                               Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<HarvestReportDto> reports = reportService.getHarvestReports(bodyId, order, direction, pageRequest);
@@ -229,7 +231,7 @@ public class ReportsController {
     model.addAttribute("page", page);
     model.addAttribute("size", size);
     model.addAttribute("reports", reports);
-    return "reports-harvest";
+    return Utils.getAppropriateView(device, "reports-harvest");
   }
 
   @PostMapping("/reports/harvest/delete")
@@ -263,7 +265,7 @@ public class ReportsController {
                                  @RequestParam(required = false, defaultValue = "DESC") Sort.Direction direction,
                                  @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                                  @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
-                                 Model model) {
+                                 Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<TransportReportDto> reports = reportService.getTransportReports(bodyId, order, direction, pageRequest);
@@ -275,7 +277,7 @@ public class ReportsController {
     model.addAttribute("page", page);
     model.addAttribute("size", size);
     model.addAttribute("reports", reports);
-    return "reports-transport";
+    return Utils.getAppropriateView(device, "reports-transport");
   }
 
   @PostMapping("/reports/transport/delete")
@@ -307,7 +309,7 @@ public class ReportsController {
   public String reportsOther(@RequestParam(name = "body") long bodyId,
                              @RequestParam(required = false, defaultValue = "1") @Min(1) int page,
                              @RequestParam(required = false, defaultValue = "50") @Min(1) int size,
-                             Model model) {
+                             Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     List<OtherReportDto> reports = reportService.getOtherReports(bodyId, pageRequest);
@@ -317,7 +319,7 @@ public class ReportsController {
     model.addAttribute("page", page);
     model.addAttribute("size", size);
     model.addAttribute("reports", reports);
-    return "reports-other";
+    return Utils.getAppropriateView(device, "reports-other");
   }
 
   @PostMapping("/reports/other/delete")

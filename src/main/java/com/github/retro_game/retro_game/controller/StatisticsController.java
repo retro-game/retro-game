@@ -7,7 +7,9 @@ import com.github.retro_game.retro_game.dto.StatisticsKindDto;
 import com.github.retro_game.retro_game.dto.StatisticsPeriodDto;
 import com.github.retro_game.retro_game.service.StatisticsService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
 import io.vavr.Tuple2;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,12 +37,12 @@ public class StatisticsController {
   @Activity(bodies = "#bodyId")
   public String summary(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "user") long userId,
-                        Model model) {
+                        Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("userId", userId);
     model.addAttribute("summary", statisticsService.getSummary(bodyId, userId));
-    return "statistics-summary";
+    return Utils.getAppropriateView(device, "statistics-summary");
   }
 
   @GetMapping("/statistics/distinct-changes")
@@ -50,7 +52,7 @@ public class StatisticsController {
                                 @RequestParam(name = "user") long userId,
                                 @RequestParam @NotNull StatisticsKindDto kind,
                                 @RequestParam @NonNull StatisticsPeriodDto period,
-                                Model model) {
+                                Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
 
     var changes = statisticsService.getDistinctChanges(bodyId, userId, kind, period);
@@ -75,7 +77,7 @@ public class StatisticsController {
     model.addAttribute("period", period);
     model.addAttribute("changes", builder.toString());
 
-    return "statistics-distinct-changes";
+    return Utils.getAppropriateView(device, "statistics-distinct-changes");
   }
 
   @GetMapping("/statistics/distribution-changes")
@@ -84,7 +86,7 @@ public class StatisticsController {
   public String distributionChanges(@RequestParam(name = "body") long bodyId,
                                     @RequestParam(name = "user") long userId,
                                     @RequestParam @NonNull StatisticsPeriodDto period,
-                                    Model model) {
+                                    Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
 
     var changes = statisticsService.getDistributionChanges(bodyId, userId, period);
@@ -115,6 +117,6 @@ public class StatisticsController {
     model.addAttribute("period", period);
     model.addAttribute("changes", builder.toString());
 
-    return "statistics-distribution-changes";
+    return Utils.getAppropriateView(device, "statistics-distribution-changes");
   }
 }

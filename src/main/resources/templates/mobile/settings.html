@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{settings}">Settings</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/settings}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <table th:with="settings=${ctx.settings}">
+      <tr>
+        <th colspan="2" th:text="#{settings}">Settings</th>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{bodiesSorting}">Bodies sorting</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="bodiesSortOrder" th:text="#{sortOrder}">Sort order</label>
+        </td>
+        <td>
+          <select id="bodiesSortOrder" name="bodiesSortOrder">
+            <option value="EMERGENCE" th:text="#{emergence}"
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).EMERGENCE}">
+              Emergence
+            </option>
+            <option value="COORDINATES" th:text="#{coordinates}"
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).COORDINATES}">
+              Coordinates
+            </option>
+            <option value="NAME" th:text="#{name}"
+                    th:selected="${settings.bodiesSortOrder == T(com.github.retro_game.retro_game.dto.BodiesSortOrderDto).NAME}">
+              Name
+            </option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="bodiesSortDirection" th:text="#{sortDirection}">Sort direction</label>
+        </td>
+        <td>
+          <select id="bodiesSortDirection" name="bodiesSortDirection">
+            <option value="ASC" th:text="#{sortDirection.ASC}"
+                    th:selected="${settings.bodiesSortDirection == T(org.springframework.data.domain.Sort.Direction).ASC}">
+              Ascending
+            </option>
+            <option value="DESC" th:text="#{sortDirection.DESC}"
+                    th:selected="${settings.bodiesSortDirection == T(org.springframework.data.domain.Sort.Direction).DESC}">
+              Descending
+            </option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="stickyMoonsEnabled" th:text="#{stickyMoons}">Sticky moons</label>
+        </td>
+        <td>
+          <input id="stickyMoonsEnabled" name="stickyMoonsEnabled" type="checkbox"
+                 th:checked="${settings.stickyMoonsEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{other}">Other</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="language" th:text="#{language}">Language</label>
+        </td>
+        <td>
+          <select id="language" name="language">
+            <option th:each="l : ${languages}" th:value="${l}" th:selected="${l.equals(settings.language)}"
+                    th:text="#{${'language.' + l}}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="skin" th:text="#{skin}">Skin</label>
+        </td>
+        <td>
+          <select id="skin" name="skin">
+            <option th:each="s : ${skins}" th:value="${s}" th:selected="${s.equals(settings.skin)}"
+                    th:text="${s}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="numProbes" th:text="#{numProbes}">Num probes</label>
+        </td>
+        <td>
+          <input id="numProbes" name="numProbes" type="number" th:value="${settings.numProbes}" min="1" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="numberInputScrollingEnabled" th:text="#{numberInputScrolling}">Number input scrolling</label>
+        </td>
+        <td>
+          <input id="numberInputScrollingEnabled" name="numberInputScrollingEnabled" type="checkbox"
+                 th:checked="${settings.numberInputScrollingEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="showNewMessagesInOverviewEnabled" th:text="#{showNewMessagesInOverview}">Show new messages in
+            overview</label>
+        </td>
+        <td>
+          <input id="showNewMessagesInOverviewEnabled" name="showNewMessagesInOverviewEnabled" type="checkbox"
+                 th:checked="${settings.showNewMessagesInOverviewEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="showNewReportsInOverviewEnabled" th:text="#{showNewReportsInOverview}">Show new reports in
+            overview</label>
+        </td>
+        <td>
+          <input id="showNewReportsInOverviewEnabled" name="showNewReportsInOverviewEnabled" type="checkbox"
+                 th:checked="${settings.showNewReportsInOverviewEnabled}">
+        </td>
+      </tr>
+      <tr>
+        <th colspan="2" th:text="#{save}">Save</th>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{save}">Save</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <table>
+    <tr>
+      <th th:text="#{other}">Other</th>
+    </tr>
+    <tr>
+      <td>
+        <a th:href="@{/settings/vacation-mode(body=${bodyId})}" th:text="#{vacationMode}">Vacation mode</a>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

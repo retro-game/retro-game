@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title th:text="#{signIn} + ' - Retro Game'">Sign in - Retro Game</title>
+  <link
+      th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+      rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table th:if="${param.error}">
+        <tr>
+          <th th:text="#{error}">Error</th>
+        </tr>
+        <tr>
+          <td th:text="#{wrongEmailOrPassword}">Wrong email or password!</td>
+        </tr>
+      </table>
+      <table th:if="${param.joined}">
+        <tr>
+          <th th:text="#{joined}">Joined</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulRegistration}">Your registration was successful, you can sign in now!</td>
+        </tr>
+      </table>
+      <table th:if="${param.passwordResetSent}">
+        <tr>
+          <th th:text="#{passwordResetSent}">Password reset email sent</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordResetSent}">Your password reset request was sent, check your email!</td>
+        </tr>
+      </table>
+      <table th:if="${param.passwordWasChanged}">
+        <tr>
+          <th th:text="#{passwordWasChanged}">Your password was changed</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordWasChanged}">Your password was changed, login using new password!</td>
+        </tr>
+      </table>
+      <form th:action="@{/}" method="post" autocomplete="on">
+        <table>
+          <tr>
+            <th colspan="2" th:text="#{signIn}">Sign in</th>
+          </tr>
+          <tr>
+            <td>
+              <label for="email" th:text="#{email}">Email</label>
+            </td>
+            <td>
+              <input id="email" name="email" type="email" autofocus required>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="password" th:text="#{password}">Password</label>
+            </td>
+            <td>
+              <input id="password" name="password" type="password" required>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <button th:text="#{signIn}">Sign in</button>
+            </td>
+          </tr>
+        </table>
+      </form>
+      <p>
+        <span th:text="#{orJoin}">or join</span>
+        <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>.
+      </p>
+      <p th:if="${enablePasswordRecovery}">
+        <span th:text="#{forgotPassword}">Forgot password?</span>
+        <a th:href="@{/reset-password}"><strong th:text="#{forgotPasswordLink}">Reset here</strong></a>.
+      </p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,6 +1,8 @@
 package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +22,8 @@ public class AdminBanManagementController {
   }
 
   @GetMapping("/admin/ban-management")
-  public String banManagement() {
-    return "admin-ban-management";
+  public String banManagement(Device device) {
+    return Utils.getAppropriateView(device, "admin-ban-management");
   }
 
   @PostMapping("/admin/ban-management/ban")
