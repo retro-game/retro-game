@@ -128,7 +128,7 @@ create table bodies (
   last_jump_at timestamptz,
   shipyard_start_at timestamptz,
   buildings int[] not null check (array_length(buildings, 1) = 18),
-  units int[] not null check (array_length(units, 1) = 23),
+  units int[] not null check (array_length(units, 1) = 24),
   building_queue int[] not null,
   shipyard_queue int[] not null,
   unique (galaxy, system, position, kind)
@@ -178,7 +178,7 @@ create table flights (
   metal double precision not null check (metal >= 0),
   crystal double precision not null check (crystal >= 0),
   deuterium double precision not null check (deuterium >= 0),
-  units int[] not null check (array_length(units, 1) = 23),
+  units int[] not null check (array_length(units, 1) = 24),
   main_target int
 );
 

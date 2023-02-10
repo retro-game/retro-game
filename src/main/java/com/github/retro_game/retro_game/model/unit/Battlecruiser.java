@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class DeathStar extends UnitItem {
+public class Battlecruiser extends UnitItem {
   private static final Map<BuildingKind, Integer> buildingsRequirements =
       Collections.singletonMap(BuildingKind.SHIPYARD, 8);
 
