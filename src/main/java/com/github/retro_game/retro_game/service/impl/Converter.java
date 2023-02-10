@@ -523,6 +523,8 @@ public class Converter {
         return UnitKindDto.DESTROYER;
       case DEATH_STAR:
         return UnitKindDto.DEATH_STAR;
+      case BATTLECRUISER:
+        return UnitKindDto.BATTLECRUISER;
       case ROCKET_LAUNCHER:
         return UnitKindDto.ROCKET_LAUNCHER;
       case LIGHT_LASER:
@@ -576,6 +578,8 @@ public class Converter {
         return UnitKind.DESTROYER;
       case DEATH_STAR:
         return UnitKind.DEATH_STAR;
+      case BATTLECRUISER:
+        return UnitKind.BATTLECRUISER;
       case ROCKET_LAUNCHER:
         return UnitKind.ROCKET_LAUNCHER;
       case LIGHT_LASER:
