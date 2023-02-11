@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <title th:text="#{join} + ' - Retro Game'">Join - Retro Game</title>
   <link
-      th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
-      rel="stylesheet">
+          th:href="@{/static/skins/{skin}/mobile-style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+          rel="stylesheet">
   <th:block th:if="${enableJoinCaptcha}">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   </th:block>

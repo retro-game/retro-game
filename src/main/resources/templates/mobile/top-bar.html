@@ -11,9 +11,9 @@
         <div id="top-bar-bodies">
           <img
               th:src="@{/static/skins/{skin}/bodies/{type}_{image}.webp(skin=${skin},type=${ctx.curBody.type},image=${ctx.curBody.image})}">
-          <div>
+          <div id="top-bar-body-list-div">
             <form id="top-bar-body-list">
-              <select name="body">
+              <select class="fullwidth" name="body">
                 <option th:each="info : ${ctx.bodies}" th:with="c=${info.coordinates}" th:data-galaxy="${c.galaxy}"
                         th:data-system="${c.system}" th:data-position="${c.position}" th:data-kind="${c.kind}"
                         th:value="${info.id}" th:text="|${info.name} [${c}]|"
