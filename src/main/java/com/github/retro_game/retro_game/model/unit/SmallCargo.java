@@ -68,11 +68,6 @@ public class SmallCargo extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 4000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

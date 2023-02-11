@@ -38,9 +38,4 @@ public class PlasmaTurret extends UnitItem {
   public double getBaseShield() {
     return 300.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 100000.0;
-  }
 }

@@ -69,11 +69,6 @@ public class HeavyFighter extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 10000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

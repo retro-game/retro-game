@@ -70,11 +70,6 @@ public class Destroyer extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 110000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

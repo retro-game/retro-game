@@ -38,9 +38,4 @@ public class IonCannon extends UnitItem {
   public double getBaseShield() {
     return 500.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 8000.0;
-  }
 }
