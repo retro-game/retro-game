@@ -74,11 +74,6 @@ public class Battlecruiser extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 70000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }
