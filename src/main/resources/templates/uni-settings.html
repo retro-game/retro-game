@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title th:text="#{uni_settings} + ' - Universe: ' + ${@environment.getProperty('retro-game.universe_name')}">Universe Settings - Retro Game</title>
+  <link
+      th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+      rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div th:fragment="uni-settings">
+      <h1 th:text="#{uni_settings} + ' - Universe: ' + ${@environment.getProperty('retro-game.universe_name')}">Universe Settings - Retro Game</h1>
+      <br>
+      <h2>Homeworld</h2>
+      <table>
+        <tr>
+          <td th:text="#{allow_user_to_pick_homeworld}">allow_user_to_pick_homeworld</td>
+          <td th:text="${@environment.getProperty('retro-game.allow-user-to-pick-homeworld')}">false</td>
+        </tr>
+        <tr>
+          <td th:text="#{homeworld_diameter}">homeworld_diameter</td>
+          <td th:text="${@environment.getProperty('retro-game.homeworld-diameter')}">13420</td>
+        </tr>
+      </table>
+      <h2>Colonization</h2>
+      <p> Max planets is ignored if Astrophysics based colonization is true </p>
+      <table>
+        <tr>
+          <td th:text="#{astrophysics_based_colonization}">astrophysics_based_colonization</td>
+          <td th:text="${@environment.getProperty('retro-game.astrophysics-based-colonization')}">true</td>
+        </tr>
+        <tr>
+          <td th:text="#{max_planets}">max_planets</td>
+          <td th:text="${@environment.getProperty('retro-game.max-planets')}">9</td>
+        </tr>
+      </table>
+      <h2>Noob protection</h2>
+      <table>
+        <tr>
+          <td th:text="#{noob_protection_enabled}">noob_protection_enabled</td>
+          <td th:text="${@environment.getProperty('retro-game.noob-protection-enabled')}">true</td>
+        </tr>
+        <tr>
+          <td th:text="#{noob_protection_max_points}">noob_protection_max_points</td>
+          <td th:text="${@environment.getProperty('retro-game.noob-protection-max-points')}">5000</td>
+        </tr>
+        <tr>
+          <td th:text="#{noob_protection_multiplier}">noob_protection_multiplier</td>
+          <td th:text="${@environment.getProperty('retro-game.noob-protection-multiplier')}">5</td>
+        </tr>
+      </table>
+      <h2>Inactivity</h2>
+      <table>
+        <tr>
+          <td th:text="#{short_inactive_number_of_days}">short_inactive_number_of_days</td>
+          <td th:text="${@environment.getProperty('retro-game.short-inactive-number-of-days')}">7</td>
+        </tr>
+        <tr>
+          <td th:text="#{long_inactive_number_of_days}">long_inactive_number_of_days</td>
+          <td th:text="${@environment.getProperty('retro-game.long-inactive-number-of-days')}">24</td>
+        </tr>
+      </table>
+      <h2>Hall of Fame</h2>
+      <table>
+        <tr>
+          <td th:text="#{hall_of_fame_enabled}">hall_of_fame_enabled</td>
+          <td th:text="${@environment.getProperty('retro-game.hall-of-fame-enabled')}">true</td>
+        </tr>
+        <tr>
+          <td th:text="#{hall_of_fame_delay}">hall_of_fame_delay</td>
+          <td th:text="${@environment.getProperty('retro-game.hall-of-fame-delay')}">12</td>
+        </tr>
+        <tr>
+          <td th:text="#{hall_of_fame_num_entries}">hall_of_fame_num_entries</td>
+          <td th:text="${@environment.getProperty('retro-game.hall-of-fame-num-entries')}">100</td>
+        </tr>
+      </table>
+      <h2>Speeds</h2>
+      <p>Intergalactic Research Network boost factor. This feature decreases research time by (1 + factor) ^ IrnLevel. 0 can be used to disable this feature, then research time is not influenced by it.</p>
+      <table>
+        <tr>
+          <td th:text="#{production_speed}">production_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.production-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{building_construction_speed}">building_construction_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.building-construction-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{building_destruction_speed}">building_destruction_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.building-destruction-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{technology_research_speed}">technology_research_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.technology-research-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{unit_construction_speed}">unit_construction_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.unit-construction-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{fleet_speed}">fleet_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.fleet-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{jump_gate_cool_down_speed}">jump_gate_cool_down_speed</td>
+          <td th:text="${@environment.getProperty('retro-game.jump-gate-cool-down-speed')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{irn_boost_factor}">irn_boost_factor</td>
+          <td th:text="${@environment.getProperty('retro-game.irn-boost-factor')}">0.2</td>
+        </tr>
+        <tr>
+          <td th:text="#{min_shipyard_time}">min_shipyard_time</td>
+          <td th:text="${@environment.getProperty('retro-game.min-shipyard-time')}">1</td>
+        </tr>
+      </table>
+      <h2>Production</h2>
+      <table>
+        <tr>
+          <td th:text="#{metal_base_production}">metal_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.metal-base-production')}">20</td>
+        </tr>
+        <tr>
+          <td th:text="#{crystal_base_production}">crystal_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.crystal-base-production')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{deuterium_base_production}">deuterium_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.deuterium-base-production')}">0</td>
+        </tr>
+        <tr>
+          <td th:text="#{metal_mine_base_production}">metal_mine_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.metal-mine-base-production')}">30</td>
+        </tr>
+        <tr>
+          <td th:text="#{crystal_mine_base_production}">crystal_mine_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.crystal-mine-base-production')}">20</td>
+        </tr>
+        <tr>
+          <td th:text="#{deuterium_synthesizer_base_production}">deuterium_synthesizer_base_production</td>
+          <td th:text="${@environment.getProperty('retro-game.deuterium-synthesizer-base-production')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{metal_mine_base_energy_usage}">metal_mine_base_energy_usage</td>
+          <td th:text="${@environment.getProperty('retro-game.metal-mine-base-energy-usage')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{crystal_mine_base_energy_usage}">crystal_mine_base_energy_usage</td>
+          <td th:text="${@environment.getProperty('retro-game.crystal-mine-base-energy-usage')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{deuterium_synthesizer_base_energy_usage}">deuterium_synthesizer_base_energy_usage</td>
+          <td th:text="${@environment.getProperty('retro-game.deuterium-synthesizer-base-energy-usage')}">20</td>
+        </tr>
+        <tr>
+          <td th:text="#{solar_plant_base_energy_production}">solar_plant_base_energy_production</td>
+          <td th:text="${@environment.getProperty('retro-game.solar-plant-base-energy-production')}">20</td>
+        </tr>
+        <tr>
+          <td th:text="#{fusion_reactor_base_energy_production}">fusion_reactor_base_energy_production</td>
+          <td th:text="${@environment.getProperty('retro-game.fusion-reactor-base-energy-production')}">30</td>
+        </tr>
+        <tr>
+          <td th:text="#{fusion_reactor_base_deuterium_usage}">fusion_reactor_base_deuterium_usage</td>
+          <td th:text="${@environment.getProperty('retro-game.fusion-reactor-base-deuterium-usage')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{plasma_technology_affects_production}">plasma_technology_affects_production</td>
+          <td th:text="${@environment.getProperty('retro-game.plasma-technology-affects-production')}">false</td>
+        </tr>
+      </table>
+      <h2>Queue capacities</h2>
+      <table>
+        <tr>
+          <td th:text="#{building_queue_capacity}">building_queue_capacity</td>
+          <td th:text="${@environment.getProperty('retro-game.building-queue-capacity')}">10</td>
+        </tr>
+        <tr>
+          <td th:text="#{technology_queue_capacity}">technology_queue_capacity</td>
+          <td th:text="${@environment.getProperty('retro-game.technology-queue-capacity')}">10</td>
+        </tr>
+      </table>
+      <h2>Field-increasing buildings</h2>
+      <table>
+        <tr>
+          <td th:text="#{fields_per_terraformer_level}">fields_per_terraformer_level</td>
+          <td th:text="${@environment.getProperty('retro-game.fields-per-terraformer-level')}">6</td>
+        </tr>
+        <tr>
+          <td th:text="#{fields_per_lunar_base_level}">fields_per_lunar_base_level</td>
+          <td th:text="${@environment.getProperty('retro-game.fields-per-lunar-base-level')}">3</td>
+        </tr>
+      </table>
+      <h2>Attack</h2>
+      <table>
+        <tr>
+          <td th:text="#{fleet_rebuild_factor}">fleet_rebuild_factor</td>
+          <td th:text="${@environment.getProperty('retro-game.fleet-rebuild-factor')}">0.0</td>
+        </tr>
+        <tr>
+          <td th:text="#{defense_rebuild_factor}">defense_rebuild_factor</td>
+          <td th:text="${@environment.getProperty('retro-game.defense-rebuild-factor')}">0.7</td>
+        </tr>
+        <tr>
+          <td th:text="#{fleet_debris_factor}">fleet_debris_factor</td>
+          <td th:text="${@environment.getProperty('retro-game.fleet-debris-factor')}">0.3</td>
+        </tr>
+        <tr>
+          <td th:text="#{defense_debris_factor}">defense_debris_factor</td>
+          <td th:text="${@environment.getProperty('retro-game.defense-debris-factor')}">0.0</td>
+        </tr>
+        <tr>
+          <td th:text="#{max_moon_chance}">max_moon_chance</td>
+          <td th:text="${@environment.getProperty('retro-game.max-moon-chance')}">0.2</td>
+        </tr>
+      </table>
+      <h2>Others</h2>
+      <table>
+        <tr>
+          <td th:text="#{storage_capacity_multiplier}">storage_capacity_multiplier</td>
+          <td th:text="${@environment.getProperty('retro-game.storage-capacity-multiplier')}">1</td>
+        </tr>
+        <tr>
+          <td th:text="#{phalanx_scan_cost}">phalanx_scan_cost</td>
+          <td th:text="${@environment.getProperty('retro-game.phalanx-scan-cost')}">5000</td>
+        </tr>
+        <tr>
+          <td th:text="#{allow_nanites_on_moons}">allow_nanites_on_moons</td>
+          <td th:text="${@environment.getProperty('retro-game.allow-nanites-on-moons')}">false</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

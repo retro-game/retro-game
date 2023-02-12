@@ -25,6 +25,7 @@ spring.mail.password=<xxx>
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 # Game
+retro-game.universe_name=Test
 retro-game.domain=http://localhost:8080/
 # Password recovery
 retro-game.enable-password-recovery=false

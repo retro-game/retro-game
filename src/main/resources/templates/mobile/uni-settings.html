@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title th:text="#{uni_settings} + ' - Universe: ' + ${@environment.getProperty('retro-game.universe_name')}">Universe Settings - Retro Game</title>
+  <link
+      th:href="@{/static/skins/{skin}/mobile-style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+      rel="stylesheet">
+</head>
+<body>
+<div layout:fragment="content">
+  <div>
+    <div th:replace="uni-settings :: uni-settings"></div>
+  </div>
+</div>
+</body>
+</html>
