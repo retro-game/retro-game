@@ -85,11 +85,6 @@ public class DeathStar extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 9000000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

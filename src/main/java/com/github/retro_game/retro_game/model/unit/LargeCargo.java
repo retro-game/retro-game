@@ -65,11 +65,6 @@ public class LargeCargo extends UnitItem {
   }
 
   @Override
-  public double getBaseArmor() {
-    return 12000.0;
-  }
-
-  @Override
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return rapidFireAgainst;
   }

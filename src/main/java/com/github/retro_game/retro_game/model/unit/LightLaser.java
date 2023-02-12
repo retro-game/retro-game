@@ -42,9 +42,4 @@ public class LightLaser extends UnitItem {
   public double getBaseShield() {
     return 25.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 2000.0;
-  }
 }

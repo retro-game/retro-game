@@ -42,9 +42,4 @@ public class HeavyLaser extends UnitItem {
   public double getBaseShield() {
     return 100.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 8000.0;
-  }
 }
