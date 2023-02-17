@@ -8,4 +8,5 @@ public interface RecordsService {
   Map<String, RecordDto> getRecords();
 
   void share(long bodyId, boolean buildings, boolean technologies, boolean units, boolean production, boolean other);
+  void share(long bodyId, boolean buildings, boolean technologies, boolean units, boolean production, boolean other, long userId);
 }
