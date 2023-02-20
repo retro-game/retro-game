@@ -53,6 +53,9 @@
               <span th:errors="*{password}"></span>
             </td>
           </tr>
+          <tr>
+            <td th:colspan="${#fields.hasErrors('*') ? 3 : 2}" th:text="#{joinForm.password}"></td>
+          </tr>
           <tr th:if="${enableJoinCaptcha}">
             <td>Captcha</td>
             <td>

@@ -12,7 +12,7 @@
 
   <groupId>com.github.retro_game</groupId>
   <artifactId>retro-game</artifactId>
-  <version>0.39.6</version>
+  <version>0.39.7</version>
   <packaging>jar</packaging>
 
   <name>retro-game</name>
