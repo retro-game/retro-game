@@ -161,7 +161,7 @@ public class BodyCreationServiceImpl implements BodyCreationService {
     double x = Math.abs(8 - position);
     double mean = 200.0 - 10.0 * x;
     double sd = 60.0 - 5.0 * x;
-    double numFields = mean + sd * random.nextGaussian();
+    double numFields = mean + sd * (-0.25 + Math.random() * (1 - -0.25));
     numFields = Math.max(numFields, 42.0);
     return (int) (Math.sqrt(numFields) * 100.0) * 10;
   }
