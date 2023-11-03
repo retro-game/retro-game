@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  retro-game:
+    build:
+      context: .
+      dockerfile: Dockerfile.alpine
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/application.properties:/retro-game/config/application.properties
+
+  postgres:
+    image: postgres:12.3-alpine
+    restart: always
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: retro-game
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres-data:/var/lib/postgres
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  redis:
+    image: redis:6.0-alpine
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  postgres-data:
+    driver: local
+
+  redis-data:
+    driver: local
