@@ -20,6 +20,7 @@ public class Destroyer extends UnitItem {
       Collections.unmodifiableMap(new EnumMap<UnitKind, Integer>(UnitKind.class) {{
         put(UnitKind.ESPIONAGE_PROBE, 5);
         put(UnitKind.SOLAR_SATELLITE, 5);
+        put(UnitKind.BATTLECRUISER, 2);
         put(UnitKind.LIGHT_LASER, 10);
       }});
 
@@ -66,11 +67,6 @@ public class Destroyer extends UnitItem {
   @Override
   public double getBaseShield() {
     return 500.0;
-  }
-
-  @Override
-  public double getBaseArmor() {
-    return 110000.0;
   }
 
   @Override

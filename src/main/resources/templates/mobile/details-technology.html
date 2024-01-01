@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{technologyDetails}">Technology details</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table id="details">
+    <tr>
+      <th colspan="2">
+        <span th:text="#{${'items.' + kind + '.name'}}"></span>
+        <th:block th:if="${details.currentLevel > 0 || details.futureLevel > 0}">
+          (<span
+            th:text="${details.currentLevel + (details.currentLevel != details.futureLevel ? ' → ' + details.futureLevel : '')}">1</span>)
+        </th:block>
+      </th>
+    </tr>
+    <tr class="item">
+      <td class="item-image">
+        <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${kind})}">
+      </td>
+      <td class="item-info">
+        <p th:text="#{${'items.' + kind + '.description'}}"></p>
+      </td>
+    </tr>
+  </table>
+  <input id="details-table" type="hidden"
+         th:data-kind="${kind}"
+         th:data-level="${details.currentLevel}"
+         th:data-msg-level-from="#{levelFrom}"
+         th:data-msg-level-to="#{levelTo}"
+         th:data-msg-level="#{level}"
+         th:data-msg-max-planets="#{maxPlanets}"
+         th:data-msg-table="#{table}">
+  <script th:src="@{/static/js/details.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

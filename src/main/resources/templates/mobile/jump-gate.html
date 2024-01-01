@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{items.JUMP_GATE.name}">Jump Gate</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${info.canJumpAt == null}">
+    <tr>
+      <th th:text="#{items.JUMP_GATE.name}">Jump Gate</th>
+    </tr>
+    <tr>
+      <td th:text="#{jumpGateNotAvailable}">Jump Gate not available</td>
+    </tr>
+  </table>
+  <th:block th:if="${info.canJumpAt != null}">
+    <form th:action="@{/jump-gate/jump}" method="post">
+      <input name="body" type="hidden" th:value="${bodyId}">
+      <table>
+        <tr>
+          <th colspan="2" th:text="#{items.JUMP_GATE.name}">Jump Gate</th>
+        </tr>
+        <tr>
+          <td th:text="#{jumpPossibleAt}">Jump possible at</td>
+          <td th:text="${#dates.format(info.canJumpAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        </tr>
+        <tr>
+          <th th:text="#{target}">Target</th>
+          <th th:text="#{jumpPossibleAt}">Jump possible at</th>
+        </tr>
+        <tr th:each="target : ${info.targets}" th:with="now=${#dates.createNow()}">
+          <td>
+            <label>
+              <input name="target" type="radio" th:value="${target.id}" th:disabled="${!target.canJumpAt.before(now)}"
+                     required>
+              <span th:text="${target.name}"></span>
+              [<span th:text="${target.coordinates}"></span>]
+            </label>
+          </td>
+          <td th:text="${#dates.format(target.canJumpAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        </tr>
+        <tr>
+          <th colspan="2" th:text="#{units}">Units</th>
+        </tr>
+        <tr th:each="entry : ${info.units}">
+          <td>
+            <label th:for="'unit_' + ${entry.key}">
+              <span th:text="#{${'items.' + entry.key + '.name'}}"></span>
+              (<span th:text="${#numbers.formatInteger(entry.value, 1, 'DEFAULT')}"></span>)
+            </label>
+          </td>
+          <td>
+            <input th:id="'unit_' + ${entry.key}" th:name="'units[' + ${entry.key} + ']'" type="number" min="0">
+            <button data-set th:data-set-for="'unit_' + ${entry.key}" th:data-set-value="${entry.value}"
+                    th:text="#{max}">
+              Max
+            </button>
+            <button data-set th:data-set-for="'unit_' + ${entry.key}" data-set-value="" th:text="#{reset}">
+              Reset
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <button id="all-units" th:text="#{allUnits}">All units</button>
+            <button id="no-units" th:text="#{noUnits}">No units</button>
+          </td>
+        </tr>
+        <tr>
+          <th colspan="2" th:text="#{jump}">Jump</th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <button th:disabled="${ctx.onVacation}" th:text="#{jump}">Jump</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </th:block>
+  <script th:src="@{/static/js/jump-gate.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

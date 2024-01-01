@@ -4,6 +4,8 @@ import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.controller.form.JumpForm;
 import com.github.retro_game.retro_game.service.JumpGateService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,11 +28,11 @@ public class JumpGateController {
   @GetMapping("/jump-gate")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String jumpGate(@RequestParam(name = "body") long bodyId, Model model) {
+  public String jumpGate(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("info", jumpGateService.getInfo(bodyId));
-    return "jump-gate";
+    return Utils.getAppropriateView(device, "jump-gate");
   }
 
   @PostMapping("/jump-gate/jump")

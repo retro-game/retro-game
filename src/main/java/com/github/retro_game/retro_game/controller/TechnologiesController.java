@@ -7,7 +7,9 @@ import com.github.retro_game.retro_game.dto.TechnologyQueueErrorDto;
 import com.github.retro_game.retro_game.service.TechnologyService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,7 +39,7 @@ public class TechnologiesController {
   @Activity(bodies = "#bodyId")
   public String technologies(@RequestParam(name = "body") long bodyId,
                              @RequestParam(name = "error", required = false) TechnologyQueueErrorDto error,
-                             Model model) {
+                             Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var pair = technologyService.getTechnologiesAndQueuePair(bodyId);
     var bodiesInfo = ctx.bodies().stream().collect(Collectors.toMap(BodyInfoDto::getId, Function.identity()));
@@ -46,7 +48,7 @@ public class TechnologiesController {
     model.addAttribute("error", error);
     model.addAttribute("pair", pair);
     model.addAttribute("bodiesInfo", bodiesInfo);
-    return "technologies";
+    return Utils.getAppropriateView(device, "technologies");
   }
 
   private String perform(long bodyId, Supplier<Integer> action) {

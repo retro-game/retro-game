@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.RecordsService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,23 +25,23 @@ public class RecordsController {
   @GetMapping("/records")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String records(@RequestParam(name = "body") long bodyId, Model model) {
+  public String records(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var records = recordsService.getRecords();
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
     model.addAttribute("records", records);
-    return "records";
+    return Utils.getAppropriateView(device, "records");
   }
 
   @GetMapping("/records/share")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String share(@RequestParam(name = "body") long bodyId, Model model) {
+  public String share(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", ctx);
-    return "records-share";
+    return Utils.getAppropriateView(device, "records-share");
   }
 
   @PostMapping("/records/share")

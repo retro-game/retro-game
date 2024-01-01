@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Reports - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table th:fragment="reports-tabs">
+        <tr>
+          <th colspan="6" th:text="#{reports}">Reports</th>
+        </tr>
+        <tr>
+          <td width="20%">
+            <a th:href="@{/reports/combat(body=${bodyId})}"
+               th:text="#{combat} + ${summary.numCombatReports > 0 ? ' (' + summary.numCombatReports + ')': ''}"></a>
+          </td>
+          <td width="20%">
+            <a th:href="@{/reports/espionage(body=${bodyId})}"
+               th:text="#{espionage} + ${summary.numEspionageReports > 0 ? ' (' + summary.numEspionageReports + ')' : ''}"></a>
+          </td>
+          <td width="20%">
+            <a th:href="@{/reports/harvest(body=${bodyId})}"
+               th:text="#{harvest} + ${summary.numHarvestReports > 0 ? ' (' + summary.numHarvestReports + ')' : ''}"></a>
+          </td>
+          <td width="20%">
+            <a th:href="@{/reports/transport(body=${bodyId})}"
+               th:text="#{transport} + ${summary.numTransportReports > 0 ? ' (' + summary.numTransportReports + ')' : ''}"></a>
+          </td>
+          <td width="20%">
+            <a th:href="@{/reports/other(body=${bodyId})}"
+               th:text="#{other} + ${summary.numOtherReports > 0 ? ' (' + summary.numOtherReports + ')' : ''}"></a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

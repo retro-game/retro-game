@@ -7,7 +7,9 @@ import com.github.retro_game.retro_game.dto.UnitTypeDto;
 import com.github.retro_game.retro_game.service.ShipyardService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,7 +35,7 @@ public class ShipyardController {
   public String shipyard(@RequestParam(name = "body") long bodyId,
                          @RequestParam(required = false) UnitTypeDto type,
                          @RequestParam(name = "error", required = false) ShipyardQueueErrorDto error,
-                         Model model) {
+                         Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
 
     var p = ctx.curBody().production();
@@ -47,7 +49,7 @@ public class ShipyardController {
     model.addAttribute("error", error);
     model.addAttribute("neededSatellites", neededSatellites);
     model.addAttribute("pair", shipyardService.getUnitsAndQueuePair(bodyId, type));
-    return "shipyard";
+    return Utils.getAppropriateView(device, "shipyard");
   }
 
   @PostMapping("/shipyard/build")

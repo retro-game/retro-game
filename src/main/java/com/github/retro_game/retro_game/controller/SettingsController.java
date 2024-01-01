@@ -5,7 +5,9 @@ import com.github.retro_game.retro_game.controller.form.SettingsForm;
 import com.github.retro_game.retro_game.controller.validator.SettingsFormValidator;
 import com.github.retro_game.retro_game.dto.UserSettingsDto;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,12 +45,12 @@ public class SettingsController {
   @GetMapping("/settings")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String settings(@RequestParam(name = "body") long bodyId, Model model) {
+  public String settings(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("languages", languages);
     model.addAttribute("skins", skins);
-    return "settings";
+    return Utils.getAppropriateView(device, "settings");
   }
 
   @PostMapping("/settings")

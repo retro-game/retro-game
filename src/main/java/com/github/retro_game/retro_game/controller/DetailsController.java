@@ -7,6 +7,8 @@ import com.github.retro_game.retro_game.dto.UnitKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.DetailsService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +31,7 @@ public class DetailsController {
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
   public String buildingDetails(@RequestParam(name = "body") long bodyId, @RequestParam BuildingKindDto kind,
-                                Model model) {
+                                Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var energyTechnologyLevel = ctx.technologies().getOrDefault(TechnologyKindDto.ENERGY_TECHNOLOGY, 0);
     model.addAttribute("bodyId", bodyId);
@@ -38,29 +40,29 @@ public class DetailsController {
     model.addAttribute("energyTechnologyLevel", energyTechnologyLevel);
     model.addAttribute("details", detailsService.getBuildingDetails(bodyId, kind));
     model.addAttribute("temperature", bodyService.getTemperature(bodyId));
-    return "details-building";
+    return Utils.getAppropriateView(device, "details-building");
   }
 
   @GetMapping("/details/technology")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
   public String technologyDetails(@RequestParam(name = "body") long bodyId, @RequestParam TechnologyKindDto kind,
-                                  Model model) {
+                                  Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("details", detailsService.getTechnologyDetails(bodyId, kind));
-    return "details-technology";
+    return Utils.getAppropriateView(device, "details-technology");
   }
 
   @GetMapping("/details/unit")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String unitDetails(@RequestParam(name = "body") long bodyId, @RequestParam UnitKindDto kind, Model model) {
+  public String unitDetails(@RequestParam(name = "body") long bodyId, @RequestParam UnitKindDto kind, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("kind", kind);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("details", detailsService.getUnitDetails(bodyId, kind));
-    return "details-unit";
+    return Utils.getAppropriateView(device, "details-unit");
   }
 }

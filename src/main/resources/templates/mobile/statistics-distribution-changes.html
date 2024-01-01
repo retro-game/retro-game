@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{statistics}">Statistics</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:replace="mobile/statistics-tabs :: statistics-tabs">
+  </table>
+  <table th:replace="mobile/statistics-period :: statistics-period('distribution-changes')">
+  </table>
+  <table th:data-changes="${changes}">
+    <tr>
+      <th th:text="#{distribution}">Distribution</th>
+    </tr>
+    <tr>
+      <td>
+        <canvas id="distribution-changes"></canvas>
+      </td>
+    </tr>
+  </table>
+  <script th:src="@{/static/js/Chart.bundle-2.9.4.min.js}"></script>
+  <script th:src="@{/static/js/statistics-distribution-changes.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

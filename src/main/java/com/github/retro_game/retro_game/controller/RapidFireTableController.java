@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.RapidFireTableService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,10 +24,10 @@ public class RapidFireTableController {
   @GetMapping("/rapid-fire-table")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String rapidFireTable(@RequestParam(name = "body") long bodyId, Model model) {
+  public String rapidFireTable(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("table", rapidFireTableService.getRapidFireTable(bodyId));
-    return "rapid-fire-table";
+    return Utils.getAppropriateView(device, "rapid-fire-table");
   }
 }

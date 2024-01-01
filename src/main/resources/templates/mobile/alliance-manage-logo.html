@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{logo}">Logo</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/alliance/manage/logo/save}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <input name="alliance" type="hidden" th:value="${allianceId}">
+    <table>
+      <tr>
+        <th th:text="#{logo}"></th>
+      </tr>
+      <tr>
+        <td>
+          <input name="url" maxlength="128" required th:value="${url}">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button th:text="#{save}">Save</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

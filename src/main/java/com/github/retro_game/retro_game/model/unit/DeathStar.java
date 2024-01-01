@@ -31,6 +31,7 @@ public class DeathStar extends UnitItem {
         put(UnitKind.BOMBER, 25);
         put(UnitKind.SOLAR_SATELLITE, 1250);
         put(UnitKind.DESTROYER, 5);
+        put(UnitKind.BATTLECRUISER, 15);
         put(UnitKind.ROCKET_LAUNCHER, 200);
         put(UnitKind.LIGHT_LASER, 200);
         put(UnitKind.HEAVY_LASER, 100);
@@ -81,11 +82,6 @@ public class DeathStar extends UnitItem {
   @Override
   public double getBaseShield() {
     return 50000.0;
-  }
-
-  @Override
-  public double getBaseArmor() {
-    return 9000000.0;
   }
 
   @Override

@@ -78,6 +78,15 @@ public class RecordsServiceImpl implements RecordsService {
     if (!buildings && !technologies && !units && !other) return;
 
     var userId = CustomUser.getCurrentUserId();
+    this.share(bodyId, buildings, technologies, units, production, other, userId);
+
+  }
+
+  @Transactional(isolation = Isolation.REPEATABLE_READ)
+  public void share(long bodyId, boolean buildings, boolean technologies, boolean units, boolean production,
+                    boolean other, long userId) {
+    if (!buildings && !technologies && !units && !other) return;
+
     var user = userRepository.getById(userId);
     var bodies = user.getBodies();
 

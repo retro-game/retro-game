@@ -4,6 +4,8 @@ import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +30,7 @@ public class EmpireController {
                        @RequestParam(name = "system", required = false) Integer system,
                        @RequestParam(name = "position", required = false) Integer position,
                        @RequestParam(name = "kind", required = false) CoordinatesKindDto kind,
-                       Model model) {
+                       Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("galaxy", galaxy);
@@ -37,6 +39,6 @@ public class EmpireController {
     model.addAttribute("kind", kind);
     model.addAttribute("ctx", ctx);
     model.addAttribute("empire", bodyService.getEmpire(bodyId, galaxy, system, position, kind));
-    return "empire";
+    return Utils.getAppropriateView(device, "empire");
   }
 }

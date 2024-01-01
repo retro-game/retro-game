@@ -31,7 +31,7 @@ public class Battleship extends UnitItem {
 
   @Override
   public Resources getCost() {
-    return new Resources(40000.0, 20000.0, 0.0);
+    return new Resources(45000.0, 15000.0, 0.0);
   }
 
   @Override
@@ -62,11 +62,6 @@ public class Battleship extends UnitItem {
   @Override
   public double getBaseShield() {
     return 200.0;
-  }
-
-  @Override
-  public double getBaseArmor() {
-    return 60000.0;
   }
 
   @Override

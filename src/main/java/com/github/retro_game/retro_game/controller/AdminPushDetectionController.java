@@ -2,6 +2,8 @@ package com.github.retro_game.retro_game.controller;
 
 import com.github.retro_game.retro_game.cache.UserInfoCache;
 import com.github.retro_game.retro_game.service.PushDetectionService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +21,7 @@ public class AdminPushDetectionController {
   }
 
   @GetMapping("/admin/push-detection")
-  public String pushDetection(Model model) {
+  public String pushDetection(Device device, Model model) {
     var pushes = pushDetectionService.findPushes();
 
     var userIds = new HashSet<Long>();
@@ -32,6 +34,6 @@ public class AdminPushDetectionController {
 
     model.addAttribute("pushes", pushes);
     model.addAttribute("userInfos", userInfos);
-    return "admin-push-detection";
+    return Utils.getAppropriateView(device, "admin-push-detection");
   }
 }

@@ -5,6 +5,8 @@ import com.github.retro_game.retro_game.dto.CombatReportCombatantDto;
 import com.github.retro_game.retro_game.dto.CombatReportDto;
 import com.github.retro_game.retro_game.service.CombatReportService;
 import com.github.retro_game.retro_game.service.exception.ReportDoesNotExistException;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +27,7 @@ public class CombatReportController {
   }
 
   @GetMapping("/combat-report")
-  public String combatReport(@RequestParam UUID id, Model model) {
+  public String combatReport(@RequestParam UUID id, Device device, Model model) {
     CombatReportDto report = null;
     try {
       report = combatReportService.get(id);
@@ -41,6 +43,6 @@ public class CombatReportController {
       model.addAttribute("userInfos", userInfos);
     }
 
-    return "combat-report";
+    return Utils.getAppropriateView(device, "combat-report");
   }
 }

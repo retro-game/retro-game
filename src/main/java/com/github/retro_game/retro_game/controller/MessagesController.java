@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.MessagesSummaryService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,10 +24,10 @@ public class MessagesController {
   @GetMapping("/messages")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String messages(@RequestParam(name = "body") long bodyId, Model model) {
+  public String messages(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("summary", messagesSummaryService.get(bodyId));
-    return "messages";
+    return Utils.getAppropriateView(device, "messages");
   }
 }

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Espionage Report - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <th:block th:fragment="items(name, items)">
+        <th:block th:if="${items != null}">
+          <tr>
+            <th colspan="2" th:text="${name}"></th>
+          </tr>
+          <tr th:if="${#maps.isEmpty(items)}">
+            <td colspan="2" th:text="#{none}">None</td>
+          </tr>
+          <tr th:unless="${#maps.isEmpty(items)}" th:each="item : ${items}">
+            <td th:text="#{${'items.' + item.key + '.name'}}"></td>
+            <td th:text="${#numbers.formatInteger(item.value, 1, 'DEFAULT')}"></td>
+          </tr>
+        </th:block>
+      </th:block>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -3,6 +3,8 @@ package com.github.retro_game.retro_game.controller;
 import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.service.BodyService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,10 +31,10 @@ public class BodySettingsRenameController {
   @GetMapping("/body-settings/rename")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String rename(@RequestParam(name = "body") long bodyId, Model model) {
+  public String rename(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
-    return "body-settings-rename";
+    return Utils.getAppropriateView(device, "body-settings-rename");
   }
 
   @PostMapping("/body-settings/rename")

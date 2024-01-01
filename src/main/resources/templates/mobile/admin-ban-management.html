@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/admin-layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Home</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${param.banned}">
+    <tr>
+      <th th:text="#{banned}">Banned</th>
+    </tr>
+    <tr>
+      <td th:text="#{userBanned}">The user was banned!</td>
+    </tr>
+  </table>
+  <table th:if="${param.unbanned}">
+    <tr>
+      <th th:text="#{unbanned}">Unbanned</th>
+    </tr>
+    <tr>
+      <td th:text="#{userUnbanned}">The user was unbanned!</td>
+    </tr>
+  </table>
+  <form th:action="@{/admin/ban-management/ban}" method="post">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{ban}">Ban</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="ban-name" th:text="#{userName}">User name</label>
+        </td>
+        <td>
+          <input id="ban-name" name="name" minlength="3" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="duration" th:text="#{durationDays}">Duration (days)</label>
+        </td>
+        <td>
+          <input id="duration" name="duration" type="number" min="0" required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="reason" th:text="#{reason}">Reason</label>
+        </td>
+        <td>
+          <textarea id="reason" name="reason" rows="10" maxlength="4095" required></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{ban}">Ban</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <form th:action="@{/admin/ban-management/unban}" method="post">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{unban}">Unban</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="unban-name" th:text="#{userName}">User name</label>
+        </td>
+        <td>
+          <input id="unban-name" name="name" minlength="3" required>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{unban}">Unban</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

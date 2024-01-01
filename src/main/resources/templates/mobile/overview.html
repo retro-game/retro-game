@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{overview}">Overview</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:with="body=${bodies.selectedBody}">
+    <tr>
+      <th colspan="4">
+        <a th:href="@{/body-settings(body=${bodyId})}" th:title="#{bodySettings}" th:text="${body.name}">Homeworld</a>
+        (<span th:text="${ctx.name}">Gaius</span>)
+      </th>
+    </tr>
+    <tr th:if="${numNewMessages > 0}">
+      <td th:text="#{messages}">Messages</td>
+      <td colspan="3">
+        <a th:href="@{/messages(body=${bodyId})}" th:text="#{youHaveNewMessagesFormat(${numNewMessages})}">
+          You have 42 new messages!
+        </a>
+      </td>
+    </tr>
+    <tr th:if="${numNewReports > 0}">
+      <td th:text="#{reports}">Reports</td>
+      <td colspan="3">
+        <a th:href="@{/reports(body=${bodyId})}" th:text="#{youHaveNewReportsFormat(${numNewReports})}">
+          You have 42 new reports!
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{time}">Time</td>
+      <td colspan="3" th:text="${#dates.format(serverTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr>
+    <tr>
+      <th colspan="4" th:text="#{flightEvents}">Flight Events</th>
+    </tr>
+    <tr th:each="event : ${flightEvents}">
+      <td th:data-timer="${event.at.time / 1000}" th:text="${#dates.format(event.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+      <td colspan="3" th:insert="mobile/flight-event :: flight-event(${bodyId}, ${event}, true)"></td>
+    </tr>
+    <tr>
+      <td th:if="${bodies.associatedBody != null}" class="overview-body" th:with="body=${bodies.associatedBody}">
+        <span th:text="${body.name}"></span>
+        <a href="#" th:href="@{/overview(body=${body.id})}">
+          <img
+              th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
+              width="50" height="50">
+        </a>
+        <a th:if="${body.ongoingBuildingKind != null}" th:href="@{/buildings(body=${body.id})}"
+           th:text="#{${'items.' + body.ongoingBuildingKind + '.name'}} + ' (' + ${body.ongoingBuildingLevel} + ')'"></a>
+        <span th:unless="${body.ongoingBuildingKind != null}">free</span>
+      </td>
+      <td th:unless="${bodies.associatedBody != null}"></td>
+      <td class="overview-body" colspan="2" th:with="body=${bodies.selectedBody}">
+        <img
+            th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
+            width="200" height="200">
+        <th:block th:if="${body.ongoingBuildingKind != null}">
+          <a th:href="@{/buildings(body=${body.id})}"
+             th:text="#{${'items.' + body.ongoingBuildingKind + '.name'}} + ' (' + ${body.ongoingBuildingLevel} + ')'"></a>
+          <span th:text="${#dates.format(body.ongoingBuildingFinishAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+        </th:block>
+        <span th:unless="${body.ongoingBuildingKind != null}">free</span>
+      </td>
+      <td>
+        <div id="overview-other-planets">
+          <div th:each="body : ${bodies.otherPlanets}" class="overview-body">
+            <span th:text="${body.name}"></span>
+            <a href="#" th:href="@{/overview(body=${body.id})}">
+              <img
+                  th:src="@{/static/skins/{skin}/overview-bodies/{type}_{image}.webp(skin=${skin},type=${body.type},image=${body.image})}"
+                  width="88" height="88">
+            </a>
+            <a th:if="${body.ongoingBuildingKind != null}" th:href="@{/buildings(body=${body.id})}"
+               th:text="#{${'items.' + body.ongoingBuildingKind + '.name'}} + ' (' + ${body.ongoingBuildingLevel} + ')'"></a>
+            <span th:unless="${body.ongoingBuildingKind != null}">free</span>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{diameter}">Diameter</td>
+      <td colspan="3"
+          th:text="#{diameterFormat(${#numbers.formatInteger(body.diameter, 1, 'DEFAULT')},${body.usedFields},${body.maxFields})}">
+        13,420 km (42 / 180 fields)
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{temperature}">Temperature</td>
+      <td colspan="3" th:text="#{temperatureFormat(${body.temperature})}">avg. 42°C</td>
+    </tr>
+    <tr>
+      <td th:text="#{coordinates}">Coordinates</td>
+      <td colspan="3" th:with="c=${body.coordinates}">
+        <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+           th:text="${c}">1-2-3-P</a>
+      </td>
+    </tr>
+    <tr>
+      <td th:text="#{points}">Points</td>
+      <td th:if="${summary == null}" colspan="3">-</td>
+      <td th:unless="${summary == null}" colspan="3">
+        <span th:with="s=${summary}" data-tooltip data-tooltip-html th:data-tooltip-title="
+                '<p>' + #{buildings} + ': <strong>' + ${#numbers.formatInteger(s.buildings.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.buildings.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+                '<p>' + #{technologies} + ': <strong>' + ${#numbers.formatInteger(s.technologies.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.technologies.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+                '<p>' + #{fleet} + ': <strong>' + ${#numbers.formatInteger(s.fleet.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.fleet.rank, 1, 'DEFAULT')} + ')</strong></p>' +
+                '<p>' + #{defense} + ': <strong>' + ${#numbers.formatInteger(s.defense.points, 1, 'DEFAULT')} + ' (' + ${#numbers.formatInteger(s.defense.rank, 1, 'DEFAULT')} + ')</strong></p>'"
+              th:text="${#numbers.formatInteger(s.overall.points, 1, 'DEFAULT') + ' (' + #numbers.formatInteger(s.overall.rank, 1, 'DEFAULT') + ')'}">
+        123,456 (42)
+        </span>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

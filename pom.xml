@@ -12,7 +12,7 @@
 
   <groupId>com.github.retro_game</groupId>
   <artifactId>retro-game</artifactId>
-  <version>0.38.2</version>
+  <version>0.39.6</version>
   <packaging>jar</packaging>
 
   <name>retro-game</name>
@@ -113,6 +113,11 @@
       <groupId>org.thymeleaf.extras</groupId>
       <artifactId>thymeleaf-extras-springsecurity5</artifactId>
       <version>3.0.4.RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.mobile</groupId>
+      <artifactId>spring-mobile-device</artifactId>
+      <version>1.1.5.RELEASE</version>
     </dependency>
   </dependencies>
 

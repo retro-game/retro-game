@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Reports - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <form th:fragment="reports-delete-all-form(kind)" th:action="@{/reports/{kind}/delete-all(kind=${kind})}"
+            method="post">
+        <input name="body" type="hidden" th:value="${bodyId}">
+        <a id="delete-all" href="#" th:data-msg="#{deleteAllReportsConfirm}" th:text="#{deleteAll}">Delete all</a>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

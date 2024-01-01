@@ -43,9 +43,4 @@ public class GaiusCannon extends UnitItem {
   public double getBaseShield() {
     return 200.0;
   }
-
-  @Override
-  public double getBaseArmor() {
-    return 35000.0;
-  }
 }

@@ -10,7 +10,9 @@ import com.github.retro_game.retro_game.service.FlightService;
 import com.github.retro_game.retro_game.service.PartyService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.github.retro_game.retro_game.service.exception.*;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -105,7 +107,7 @@ public class FlightsController {
   @Activity(bodies = "#bodyId")
   public String flights(@RequestParam(name = "body") long bodyId,
                         @RequestParam(required = false) FlightErrorDto error,
-                        Model model) {
+                        Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var flights = flightService.getFlights(bodyId);
     model.addAttribute("bodyId", bodyId);
@@ -114,7 +116,7 @@ public class FlightsController {
     model.addAttribute("flights", flights);
     model.addAttribute("occupiedSlots", flights.size());
     model.addAttribute("maxSlots", flightService.getMaxFlightSlots(bodyId));
-    return "flights";
+    return Utils.getAppropriateView(device, "flights");
   }
 
   @GetMapping("/flights/send")
@@ -131,7 +133,7 @@ public class FlightsController {
                      @RequestParam(required = false) Long deuterium,
                      @RequestParam(required = false) Map<String, String> params,
                      @RequestParam(required = false) FlightErrorDto error,
-                     Model model) {
+                     Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     List<BodyInfoDto> bodies = bodyService.getBodiesBasicInfo(bodyId);
 
@@ -162,7 +164,7 @@ public class FlightsController {
     model.addAttribute("units", flightService.getFlyableUnits(bodyId));
     model.addAttribute("bodies", bodies);
     model.addAttribute("parties", partyService.getPartiesTargets(bodyId));
-    return "flights-send";
+    return Utils.getAppropriateView(device, "flights-send");
   }
 
   @PostMapping("/flights/send")
@@ -192,7 +194,7 @@ public class FlightsController {
                              @RequestParam(required = false) CoordinatesKindDto kind,
                              @RequestParam(required = false) FlightErrorDto error,
                              @RequestParam(required = false) Integer num,
-                             Model model) {
+                             Device device, Model model) {
     var ctx = userService.getCurrentUserContext(bodyId);
     var maxMissiles = ctx.curBody().units().get(UnitKindDto.INTERPLANETARY_MISSILE);
     var mainTargetKinds = UnitItem.getDefense().keySet().stream()
@@ -208,7 +210,7 @@ public class FlightsController {
     model.addAttribute("maxMissiles", maxMissiles);
     model.addAttribute("mainTargetKinds", mainTargetKinds);
     model.addAttribute("error", error);
-    return "flights-send-missiles";
+    return Utils.getAppropriateView(device, "flights-send-missiles");
   }
 
   @PostMapping("/flights/send-missiles")

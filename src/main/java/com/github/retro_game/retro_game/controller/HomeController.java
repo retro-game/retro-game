@@ -1,6 +1,8 @@
 package com.github.retro_game.retro_game.controller;
 
+import com.github.retro_game.retro_game.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mobile.device.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +16,8 @@ public class HomeController {
   }
 
   @GetMapping("/")
-  public String home(Model model) {
+  public String home(Device device, Model model) {
     model.addAttribute("enablePasswordRecovery", enablePasswordRecovery);
-    return "home";
+    return Utils.getAppropriateView(device, "home");
   }
 }

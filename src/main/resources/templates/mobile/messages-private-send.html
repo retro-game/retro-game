@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{mobile/layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{sendMessage}">Send message</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/messages/private/send}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <input name="recipient" type="hidden" th:value="${recipientId}">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{sendMessage}">Send message</th>
+      </tr>
+      <tr>
+        <td th:text="#{recipient}">Recipient</td>
+        <td th:with="userInfo=${@userInfoCache.get(recipientId)}">
+          <span th:text="${userInfo.name}"></span>
+          <th:block th:if="${userInfo.homeworldId.isPresent()}"
+                    th:with="c=${@bodyInfoCache.get(userInfo.homeworldId.getAsLong()).coordinates}">
+            [<a
+              th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+              th:title="#{goToGalaxy}" th:text="${c}">1-2-3-P</a>]
+          </th:block>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="message" th:text="#{message}"></label>
+        </td>
+        <td>
+          <textarea id="message" name="message" rows="10" maxlength="4095" required></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{send}"></button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

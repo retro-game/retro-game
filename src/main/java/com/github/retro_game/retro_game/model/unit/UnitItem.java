@@ -27,6 +27,7 @@ public abstract class UnitItem extends Item {
         put(UnitKind.SOLAR_SATELLITE, new SolarSatellite());
         put(UnitKind.DESTROYER, new Destroyer());
         put(UnitKind.DEATH_STAR, new DeathStar());
+        put(UnitKind.BATTLECRUISER, new Battlecruiser());
       }});
 
   private static final Map<UnitKind, UnitItem> defense =
@@ -84,7 +85,7 @@ public abstract class UnitItem extends Item {
 
   public abstract double getBaseShield();
 
-  public abstract double getBaseArmor();
+  public final double getBaseArmor() { return getCost().getMetal() + getCost().getCrystal(); }
 
   public Map<UnitKind, Integer> getRapidFireAgainst() {
     return Collections.emptyMap();

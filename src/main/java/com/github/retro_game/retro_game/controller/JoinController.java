@@ -4,6 +4,8 @@ import com.github.retro_game.retro_game.controller.form.JoinForm;
 import com.github.retro_game.retro_game.controller.validator.JoinFormValidator;
 import com.github.retro_game.retro_game.service.CaptchaService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
+import org.springframework.mobile.device.Device;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,18 +45,18 @@ public class JoinController {
   }
 
   @GetMapping("/join")
-  public String join(JoinForm joinForm, Model model) {
+  public String join(JoinForm joinForm, Device device, Model model) {
     model.addAttribute("enableJoinCaptcha", enableJoinCaptcha);
     model.addAttribute("googleRecaptchaKeySite", googleRecaptchaKeySite);
     model.addAttribute("hasErrors", false);
     model.addAttribute("captchaOk", true);
-    return "join";
+    return Utils.getAppropriateView(device, "join");
   }
 
   @PostMapping("/join")
   public String doJoin(@Valid JoinForm joinForm,
                        BindingResult bindingResult,
-                       Model model,
+                       Device device, Model model,
                        HttpServletRequest request) {
     var captchaOk = true;
     if (enableJoinCaptcha) {
@@ -69,7 +71,7 @@ public class JoinController {
       model.addAttribute("googleRecaptchaKeySite", googleRecaptchaKeySite);
       model.addAttribute("hasErrors", true);
       model.addAttribute("captchaOk", captchaOk);
-      return "join";
+      return Utils.getAppropriateView(device, "join");
     }
     userService.create(joinForm.getEmail(), joinForm.getName(), joinForm.getPassword());
     return "redirect:/?joined";

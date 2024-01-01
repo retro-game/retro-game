@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title>Combat Report - Retro Game</title>
+  <link th:href="@{/static/css/style.css?{v}(v=${version})}" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div>
+    <div>
+      <div th:fragment="round-combatants(combatants, namePrefix, userInfos)" class="combat-report-combatants">
+        <table th:each="combatant : ${combatants}">
+          <tr th:with="
+              userInfo=${userInfos.get(combatant.userId)},
+              name=${userInfo != null ? userInfo.name : '[deleted]'}">
+            <th th:text="${namePrefix + ' ' + name}"></th>
+          </tr>
+          <tr>
+            <td>
+              <table th:with="kinds=${combatant.unitGroups.keySet()},groups=${combatant.unitGroups.values()}">
+                <tr>
+                  <td th:text="#{kind}">Kind</td>
+                  <td th:each="kind : ${kinds}" th:text="#{${'items.' + kind + '.name'}}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{remainingUnits}">Remaining units</td>
+                  <td th:each="group : ${groups}"
+                      th:text="${#numbers.formatInteger(group.numRemainingUnits, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{timesFired}">Times fired</td>
+                  <td th:each="group : ${groups}"
+                      th:text="${#numbers.formatInteger(group.timesFired, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{timesWasShot}">Times was shot</td>
+                  <td th:each="group : ${groups}"
+                      th:text="${#numbers.formatInteger(group.timesWasShot, 1, 'DEFAULT')}"></td>
+                </tr>
+                <tr>
+                  <td th:text="#{damageDealt}">Damage dealt</td>
+                  <td th:each="group : ${groups}" data-tooltip data-tooltip-html
+                      th:data-tooltip-title="
+                        '<p>' + #{shield} + ': <strong>' + ${#numbers.formatInteger(group.shieldDamageDealt, 1, 'DEFAULT')} + '</strong></p>' +
+                        '<p>' + #{hull} + ': <strong>' + ${#numbers.formatInteger(group.hullDamageDealt, 1, 'DEFAULT')} + '</strong></p>'"
+                      th:text="${#numbers.formatInteger(group.shieldDamageDealt + group.hullDamageDealt, 1, 'DEFAULT')}">
+                  </td>
+                </tr>
+                <tr>
+                  <td th:text="#{damageTaken}">Damage taken</td>
+                  <td th:each="group : ${groups}" data-tooltip data-tooltip-html
+                      th:data-tooltip-title="
+                        '<p>' + #{shield} + ': <strong>' + ${#numbers.formatInteger(group.shieldDamageTaken, 1, 'DEFAULT')} + '</strong></p>' +
+                        '<p>' + #{hull} + ': <strong>' + ${#numbers.formatInteger(group.hullDamageTaken, 1, 'DEFAULT')} + '</strong></p>'"
+                      th:text="${#numbers.formatInteger(group.shieldDamageTaken + group.hullDamageTaken, 1, 'DEFAULT')}">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

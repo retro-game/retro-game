@@ -4,7 +4,9 @@ import com.github.retro_game.retro_game.controller.activity.Activity;
 import com.github.retro_game.retro_game.dto.*;
 import com.github.retro_game.retro_game.service.AllianceService;
 import com.github.retro_game.retro_game.service.UserService;
+import com.github.retro_game.retro_game.utils.Utils;
 import org.hibernate.validator.constraints.URL;
+import org.springframework.mobile.device.Device;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +34,7 @@ public class AllianceController {
   @GetMapping("/alliance")
   @PreAuthorize("hasPermission(#bodyId, 'ACCESS')")
   @Activity(bodies = "#bodyId")
-  public String alliance(@RequestParam(name = "body") long bodyId, Model model) {
+  public String alliance(@RequestParam(name = "body") long bodyId, Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
 
@@ -40,18 +42,18 @@ public class AllianceController {
     AllianceDto alliance = allianceService.getCurrentUserAlliance(bodyId);
     if (alliance != null) {
       model.addAttribute("alliance", alliance);
-      return "alliance-view";
+      return Utils.getAppropriateView(device, "alliance-view");
     }
 
     // Check whether the user is applying to an alliance.
     AllianceApplicationDto application = allianceService.getCurrentUserApplication(bodyId);
     if (application != null) {
       model.addAttribute("app", application);
-      return "alliance-application";
+      return Utils.getAppropriateView(device, "alliance-application");
     }
 
     // No alliance, ask user to create one.
-    return "alliance-create";
+    return Utils.getAppropriateView(device, "alliance-create");
   }
 
   @PostMapping("/alliance/create")
@@ -69,12 +71,12 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String view(@RequestParam(name = "body") long bodyId,
                      @RequestParam(name = "alliance") long allianceId,
-                     Model model) {
+                     Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     AllianceDto alliance = allianceService.getById(bodyId, allianceId);
     model.addAttribute("alliance", alliance);
-    return "alliance-view";
+    return Utils.getAppropriateView(device, "alliance-view");
   }
 
   @GetMapping("/alliance/members")
@@ -82,12 +84,12 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String members(@RequestParam(name = "body") long bodyId,
                         @RequestParam(name = "alliance") long allianceId,
-                        Model model) {
+                        Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     List<AllianceMemberDto> members = allianceService.getMembers(bodyId, allianceId);
     model.addAttribute("members", members);
-    return "alliance-members";
+    return Utils.getAppropriateView(device, "alliance-members");
   }
 
   @GetMapping("/alliance/leave")
@@ -95,11 +97,11 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String leave(@RequestParam(name = "body") long bodyId,
                       @RequestParam(name = "alliance") long allianceId,
-                      Model model) {
+                      Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
-    return "alliance-leave";
+    return Utils.getAppropriateView(device, "alliance-leave");
   }
 
   @PostMapping("/alliance/leave")
@@ -118,13 +120,13 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String apply(@RequestParam(name = "body") long bodyId,
                       @RequestParam(name = "alliance") long allianceId,
-                      Model model) {
+                      Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     String applicationText = allianceService.getText(bodyId, allianceId, AllianceTextKindDto.APPLICATION);
     model.addAttribute("applicationText", applicationText);
-    return "alliance-apply";
+    return Utils.getAppropriateView(device, "alliance-apply");
   }
 
   @PostMapping("/alliance/apply")
@@ -150,12 +152,12 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String applications(@RequestParam(name = "body") long bodyId,
                              @RequestParam(name = "alliance") long allianceId,
-                             Model model) {
+                             Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     AllianceApplicationListDto list = allianceService.getApplications(bodyId, allianceId);
     model.addAttribute("list", list);
-    return "alliance-applications";
+    return Utils.getAppropriateView(device, "alliance-applications");
   }
 
   @PostMapping("/alliance/applications/accept")
@@ -183,11 +185,11 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String manage(@RequestParam(name = "body") long bodyId,
                        @RequestParam(name = "alliance") long allianceId,
-                       Model model) {
+                       Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
-    return "alliance-manage";
+    return Utils.getAppropriateView(device, "alliance-manage");
   }
 
   @GetMapping("/alliance/manage/members")
@@ -195,14 +197,14 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String manageMembers(@RequestParam(name = "body") long bodyId,
                               @RequestParam(name = "alliance") long allianceId,
-                              Model model) {
+                              Device device, Model model) {
     // FIXME: Kick action should be visible only for users with corresponding privileges.
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     List<AllianceMemberDto> members = allianceService.getMembers(bodyId, allianceId);
     model.addAttribute("members", members);
-    return "alliance-manage-members";
+    return Utils.getAppropriateView(device, "alliance-manage-members");
   }
 
   @PostMapping("/alliance/manage/members/kick")
@@ -220,13 +222,13 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String manageLogo(@RequestParam(name = "body") long bodyId,
                            @RequestParam(name = "alliance") long allianceId,
-                           Model model) {
+                           Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     AllianceDto alliance = allianceService.getById(bodyId, allianceId);
     model.addAttribute("url", alliance.getLogo());
-    return "alliance-manage-logo";
+    return Utils.getAppropriateView(device, "alliance-manage-logo");
   }
 
   @PostMapping("/alliance/manage/logo/save")
@@ -245,14 +247,14 @@ public class AllianceController {
   public String manageText(@RequestParam(name = "body") long bodyId,
                            @RequestParam(name = "alliance") long allianceId,
                            @RequestParam @NotNull AllianceTextKindDto kind,
-                           Model model) {
+                           Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
     model.addAttribute("kind", kind);
     String text = allianceService.getText(bodyId, allianceId, kind);
     model.addAttribute("text", text);
-    return "alliance-manage-text";
+    return Utils.getAppropriateView(device, "alliance-manage-text");
   }
 
   @PostMapping("/alliance/manage/text/save")
@@ -271,11 +273,11 @@ public class AllianceController {
   @Activity(bodies = "#bodyId")
   public String manageDisband(@RequestParam(name = "body") long bodyId,
                               @RequestParam(name = "alliance") long allianceId,
-                              Model model) {
+                              Device device, Model model) {
     model.addAttribute("bodyId", bodyId);
     model.addAttribute("ctx", userService.getCurrentUserContext(bodyId));
     model.addAttribute("allianceId", allianceId);
-    return "alliance-manage-disband";
+    return Utils.getAppropriateView(device, "alliance-manage-disband");
   }
 
   @PostMapping("/alliance/manage/disband")
