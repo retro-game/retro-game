@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{applyToAlliance}">Apply to alliance</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/alliance/apply}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <input name="alliance" type="hidden" th:value="${allianceId}">
+    <table>
+      <tr>
+        <th th:text="#{'allianceText.APPLICATION'}">Application text</th>
+      </tr>
+      <tr>
+        <td>
+          <textarea name="application-text" rows="10" maxlength="10000" required
+                    th:text="${applicationText}"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button th:text="#{send}"></button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

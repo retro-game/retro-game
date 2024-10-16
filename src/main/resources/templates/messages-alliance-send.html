@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{sendCircularMessage}">Send circular message</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <form th:action="@{/messages/alliance/send}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <input name="alliance" type="hidden" th:value="${allianceId}">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{sendCircularMessage}">Send circular message</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="message" th:text="#{message}"></label>
+        </td>
+        <td>
+          <textarea id="message" name="message" rows="10" maxlength="4095" required></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{send}"></button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

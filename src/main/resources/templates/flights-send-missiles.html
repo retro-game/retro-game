@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{sendMissiles}">Send missiles</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${error}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td class="error" th:text="${#messages.msg('flightError.' + error)}"></td>
+    </tr>
+  </table>
+  <form th:action="@{/flights/send-missiles}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{sendMissiles}">Send missiles</th>
+      </tr>
+      <tr>
+        <td th:text="#{coordinates}">Coordinates</td>
+        <td>
+          <input name="galaxy" type="number" th:value="${galaxy != null ? galaxy : ''}" min="1" max="5" required>
+          <input name="system" type="number" th:value="${system != null ? system : ''}" min="1" max="500" required>
+          <input name="position" type="number" th:value="${position != null ? position : ''}" min="1" max="15" required>
+          <select name="kind">
+            <option value="PLANET"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).PLANET}"
+                    th:text="#{planet}">
+              Planet
+            </option>
+            <option value="MOON"
+                    th:selected="${kind == T(com.github.retro_game.retro_game.dto.CoordinatesKindDto).MOON}"
+                    th:text="#{moon}">
+              Moon
+            </option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="numMissiles">
+            <span th:text="#{numMissiles}">Num missiles</span>
+            (<span th:text="${#numbers.formatInteger(maxMissiles, 1, 'DEFAULT')}"></span>)
+          </label>
+        </td>
+        <td>
+          <input id="numMissiles" name="numMissiles" type="number" th:value="${numMissiles != null ? numMissiles : 0}"
+                 min="1" required>
+          <button data-set th:data-set-for="numMissiles" th:data-set-value="${maxMissiles}" th:text="#{max}">
+            Max
+          </button>
+          <button data-set th:data-set-for="numMissiles" data-set-value="" th:text="#{reset}">
+            Reset
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="mainTarget" th:text="#{mainTarget}"></label>
+        </td>
+        <td>
+          <select id="mainTarget" name="mainTarget">
+            <option th:each="kind : ${mainTargetKinds}" th:value="${kind}"
+                    th:text="#{${'items.' + kind + '.name'}}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:disabled="${ctx.onVacation}" th:text="#{send}">Send</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

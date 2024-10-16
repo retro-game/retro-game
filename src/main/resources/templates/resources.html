@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{resources}">Resources</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <form th:action="@{/resources/set-factors}" method="post">
+    <input type="hidden" name="body" th:value="${bodyId}">
+    <table>
+      <tr>
+        <th colspan="6"
+            th:text="#{productionFormat(${#numbers.formatDecimal(100.0 * production.efficiency, 1, 'DEFAULT', 2, 'DEFAULT')})}"></th>
+      </tr>
+      <tr>
+        <th></th>
+        <th th:text="#{metal}">Metal</th>
+        <th th:text="#{crystal}">Crystal</th>
+        <th th:text="#{deuterium}">Deuterium</th>
+        <th th:text="#{energy}">Energy</th>
+        <th th:text="#{factor}">Factor</th>
+      </tr>
+      <tr>
+        <td th:text="#{baseProduction}">Base production</td>
+        <td th:text="${#numbers.formatInteger(production.metalBaseProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.crystalBaseProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.deuteriumBaseProduction, 1, 'DEFAULT')}"></td>
+        <td>0</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td th:text="#{items.METAL_MINE.name} + ' (' + ${items.metalMineLevel} + ')'"></td>
+        <td th:text="${#numbers.formatInteger(production.metalMineProduction, 1, 'DEFAULT')}"></td>
+        <td>0</td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(-production.metalMineCurrentEnergyUsage, 1, 'DEFAULT')} + ' / ' + ${#numbers.formatInteger(-production.metalMineMaxEnergyUsage, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="metalMineFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}" th:selected="${factors.metalMineFactor == i}"
+                    th:value="${i}" th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{items.CRYSTAL_MINE.name} + ' (' + ${items.crystalMineLevel} + ')'"></td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(production.crystalMineProduction, 1, 'DEFAULT')}"></td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(-production.crystalMineCurrentEnergyUsage, 1, 'DEFAULT')} + ' / ' + ${#numbers.formatInteger(-production.crystalMineMaxEnergyUsage, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="crystalMineFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}" th:selected="${factors.crystalMineFactor == i}"
+                    th:value="${i}" th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{items.DEUTERIUM_SYNTHESIZER.name} + ' (' + ${items.deuteriumSynthesizerLevel} + ')'"></td>
+        <td>0</td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(production.deuteriumSynthesizerProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(-production.deuteriumSynthesizerCurrentEnergyUsage, 1, 'DEFAULT')} + ' / ' + ${#numbers.formatInteger(-production.deuteriumSynthesizerMaxEnergyUsage, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="deuteriumSynthesizerFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}"
+                    th:selected="${factors.deuteriumSynthesizerFactor == i}" th:value="${i}"
+                    th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{items.SOLAR_PLANT.name} + ' (' + ${items.solarPlantLevel} + ')'"></td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(production.solarPlantEnergyProduction, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="solarPlantFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}" th:selected="${factors.solarPlantFactor == i}"
+                    th:value="${i}" th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{items.FUSION_REACTOR.name} + ' (' + ${items.fusionReactorLevel} + ')'"></td>
+        <td>0</td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(-production.fusionReactorDeuteriumUsage, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.fusionReactorEnergyProduction, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="fusionReactorFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}" th:selected="${factors.fusionReactorFactor == i}"
+                    th:value="${i}" th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td th:text="#{items.SOLAR_SATELLITE.name} + ' (' + ${#numbers.formatInteger(items.numSolarSatellites, 1, 'DEFAULT')} + ')'"></td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td th:text="${#numbers.formatInteger(production.solarSatellitesEnergyProduction, 1, 'DEFAULT')}"></td>
+        <td>
+          <select name="solarSatellitesFactor">
+            <option th:each="i : ${#numbers.sequence(10, 0, -1)}" th:selected="${factors.solarSatellitesFactor == i}"
+                    th:value="${i}" th:text="${10 * i + '%'}"></option>
+          </select>
+        </td>
+      </tr>
+      <tr th:if="${plasmaTechnologyAffectsProduction}">
+        <td th:text="#{items.PLASMA_TECHNOLOGY.name} + ' (' + ${plasmaTechnologyLevel} + ')'"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaMetalBonus, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaCrystalBonus, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.plasmaDeuteriumBonus, 1, 'DEFAULT')}"></td>
+        <td>0</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Σ</td>
+        <td th:text="${#numbers.formatInteger(production.metalProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.crystalProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.deuteriumProduction, 1, 'DEFAULT')}"></td>
+        <td th:text="${#numbers.formatInteger(production.availableEnergy, 1, 'DEFAULT')}"></td>
+        <td>
+          <button th:text="#{recalculate}"></button>
+        </td>
+      </tr>
+    </table>
+  </form>
+  <table>
+    <tr>
+      <th colspan="5" th:text="#{economy}">Economy</th>
+    </tr>
+    <tr>
+      <th th:text="#{period}">Period</th>
+      <th th:text="#{metal}">Metal</th>
+      <th th:text="#{crystal}">Crystal</th>
+      <th th:text="#{deuterium}">Deuterium</th>
+      <th>Σ</th>
+    </tr>
+    <tr>
+      <td th:text="#{hourly}">Hourly</td>
+      <td th:text="${#numbers.formatInteger(metalHourly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(crystalHourly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(deuteriumHourly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(sumHourly, 1, 'DEFAULT')}"></td>
+    </tr>
+    <tr>
+      <td th:text="#{daily}">Daily</td>
+      <td th:text="${#numbers.formatInteger(metalDaily, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(crystalDaily, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(deuteriumDaily, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(sumDaily, 1, 'DEFAULT')}"></td>
+    </tr>
+    <tr>
+      <td th:text="#{weekly}">Weekly</td>
+      <td th:text="${#numbers.formatInteger(metalWeekly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(crystalWeekly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(deuteriumWeekly, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(sumWeekly, 1, 'DEFAULT')}"></td>
+    </tr>
+    <tr>
+      <td th:text="#{_30days}">30 days</td>
+      <td th:text="${#numbers.formatInteger(metal30Days, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(crystal30Days, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(deuterium30Days, 1, 'DEFAULT')}"></td>
+      <td th:text="${#numbers.formatInteger(sum30Days, 1, 'DEFAULT')}"></td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th colspan="3" th:text="#{capacity}">Capacity</th>
+    </tr>
+    <tr>
+      <th th:text="#{resource}">Resource</th>
+      <th th:text="#{capacity}">Capacity</th>
+      <th th:text="#{fullAt}">Full at</th>
+    </tr>
+    <tr>
+      <td th:text="#{metal}">Metal</td>
+      <td th:text="${#numbers.formatInteger(capacity.metal, 1, 'DEFAULT')}"></td>
+      <td th:text="${#dates.format(metalFullAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr>
+    <tr>
+      <td th:text="#{crystal}">Crystal</td>
+      <td th:text="${#numbers.formatInteger(capacity.crystal, 1, 'DEFAULT')}"></td>
+      <td th:text="${#dates.format(crystalFullAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr>
+    <tr>
+      <td th:text="#{deuterium}">Deuterium</td>
+      <td th:text="${#numbers.formatInteger(capacity.deuterium, 1, 'DEFAULT')}"></td>
+      <td th:text="${#dates.format(deuteriumFullAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

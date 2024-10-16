@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="flight-event(bodyId, event, showResources)"
+     th:class="${'event ' + (event.own ? 'own-' : 'foreign-') + #strings.toLowerCase(event.mission)}"
+     th:with="
+       startUserId=${event.startUserId},
+       startBodyId=${event.startBodyId},
+       startCoords=${event.startCoordinates},
+       targetBodyId=${event.targetBodyId},
+       targetCoords=${event.targetCoordinates},
+       res=${event.resources},
+       own=${event.own},
+       kind=${event.kind},
+       mission=#{${'mission.' + event.mission}},
+       startUserInfo=${@userInfoCache.get(startUserId)},
+       startUserName=${startUserInfo.name},
+       startBodyInfo=${@bodyInfoCache.get(startBodyId)},
+       startBodyName=${startBodyInfo.name},
+       targetBodyInfo=${targetBodyId != null ? @bodyInfoCache.get(targetBodyId) : null},
+       targetBodyName=${targetBodyInfo?.name},
+       withResources=${showResources && (res.metal > 0 || res.crystal > 0 || res.deuterium > 0)},
+       homeworldCoords=${startUserInfo.homeworldId.isPresent() ? @bodyInfoCache.get(startUserInfo.homeworldId.getAsLong()).coordinates : null},
+       startLink=@{/galaxy(body=${bodyId},galaxy=${startCoords.galaxy},system=${startCoords.system},position=${startCoords.position},kind=${startCoords.kind})},
+       targetLink=@{/galaxy(body=${bodyId},galaxy=${targetCoords.galaxy},system=${targetCoords.system},position=${targetCoords.position},kind=${targetCoords.kind})},
+       homeworldLink=@{/galaxy(body=${bodyId},galaxy=${homeworldCoords?.galaxy},system=${homeworldCoords?.system},position=${homeworldCoords?.position},kind=${homeworldCoords?.kind})},
+       sendMessageLink=@{/messages/private/send(body=${bodyId},recipient=${startUserId})},
+       statisticsLink=@{/statistics/summary(body=${bodyId},user=${startUserId})},
+       partyLink=@{/party(body=${bodyId},party=${event.partyId})},
+       userHtml=${
+         '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(
+           '<table>' +
+             '<tr>' +
+               '<th><mark>' + startUserName + (homeworldCoords != null ? ' [<a href=''' + homeworldLink + '''>' + homeworldCoords + '</a>]' : '') + '</mark></th>' +
+             '</tr>' +
+             '<tr>' +
+               '<td>' +
+                 '<p><a href=''' + sendMessageLink + '''>' + #messages.msg('sendMessage') + '</a></p>' +
+                 '<p><a href=''' + statisticsLink + '''>' + #messages.msg('statistics') + '</a></p>' +
+               '</td>' +
+             '</tr>' +
+           '</table>'
+         ) + '''>' + startUserName + '</mark>'},
+       unitsHtml='<mark>' + ${@formatterService.formatUnits(event.units)} + '</mark>',
+       startHtml=${startBodyName} + ' <a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${startCoords} + ']</a>',
+       targetHtml=${targetBodyName != null ? targetBodyName + ' ' : ''} + '<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${targetCoords} + ']</a>',
+       resourcesHtml=${
+         '<mark data-tooltip data-tooltip-html data-tooltip-title=''' + #strings.escapeXml(
+           '<p>' + #messages.msg('metal') + ': <strong>' + #numbers.formatInteger(res.metal, 1, 'DEFAULT') + '</strong></p>' +
+           '<p>' + #messages.msg('crystal') + ': <strong>' + #numbers.formatInteger(res.crystal, 1, 'DEFAULT') + '</strong></p>' +
+           '<p>' + #messages.msg('deuterium') + ': <strong>' + #numbers.formatInteger(res.deuterium, 1, 'DEFAULT') + '</strong></p>'
+         ) + '''>' + @formatterService.prefixedNumber(res.metal + res.crystal + res.deuterium) + '</mark>'},
+       partyHtml='<a href=\'' + ${#strings.escapeXml(partyLink)} + '\'>#' + ${event.partyId} + '</a>'">
+  <div th:if="${own}"
+       th:utext="${#messages.msg('eventOwnFormat.' + kind, startHtml, targetHtml, unitsHtml)}"
+       th:remove="tag"></div>
+  <div th:unless="${own}"
+       th:utext="${#messages.msgWithParams('eventForeignFormat.' + kind, { startHtml, targetHtml, unitsHtml, userHtml })}"
+       th:remove="tag"></div>
+  <div th:if="${withResources}"
+       th:utext="${#messages.msg('eventMissionWithResourcesFormat.' + kind, mission, resourcesHtml)}" th:remove="tag">
+  </div>
+  <div th:unless="${withResources}" th:utext="${#messages.msg('eventMissionFormat.' + kind, mission)}" th:remove="tag">
+  </div>
+  <div th:if="${event.partyId}" th:utext="${#messages.msg('eventPartyFormat', partyHtml)}" th:remove="tag"></div>
+</div>
+</body>
+</html>

@@ -36,7 +36,7 @@ public class ColonyShip extends UnitItem {
 
   @Override
   public int getCapacity() {
-    return 250000;
+    return 7500;
   }
 
   @Override

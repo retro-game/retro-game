@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{shipyard}">Shipyard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div layout:fragment="content">
+  <table th:if="${error}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td class="error" th:text="${#messages.msg('shipyardQueueError.' + error)}"></td>
+    </tr>
+  </table>
+  <table th:unless="${#lists.isEmpty(pair.queue)}">
+    <tr>
+      <th>#</th>
+      <th th:text="#{unit}">Unit</th>
+      <th th:text="#{count}">Count</th>
+      <th th:text="#{finishAt}">Finish at</th>
+    </tr>
+    <tr th:each="entry,iter : ${pair.queue}">
+      <td th:text="${iter.index} + 1"></td>
+      <td>
+        <a th:href="@{/details/unit(body=${bodyId},kind=${entry.kind})}"
+           th:text="#{${'items.' + entry.kind + '.name'}}"></a>
+      </td>
+      <td data-tooltip data-tooltip-html
+          th:data-tooltip-title="
+            '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.metal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.cost.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+            '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(entry.cost.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+          th:text="${#numbers.formatInteger(entry.count, 1, 'DEFAULT')}"></td>
+      <td th:data-timer="${entry.finishAt.time / 1000}"
+          th:text="${#dates.format(entry.finishAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+    </tr>
+  </table>
+  <table th:with="r=${ctx.curBody.resources}">
+    <tr>
+      <th colspan="6" th:text="#{shipyard}" style="text-align: center">Shipyard</th>
+    </tr>
+    <tr th:each="unit : ${pair.units}" class="item">
+      <td class="item-image">
+        <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${unit.kind})}">
+        </a>
+        <th:block th:if="${unit.futureCount > 0}">
+            (<span
+              th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
+        </th:block>
+      </td>
+      <td class="item-info">
+        <h2>
+          <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}"
+             th:text="#{${'items.' + unit.kind + '.name'}}"></a>
+          <th:block th:if="${unit.futureCount > 0}">
+            (<span
+              th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
+          </th:block>
+        </h2>
+        <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).SOLAR_SATELLITE}">
+          <span th:text="#{energy}">Energy</span>:
+          <strong
+              th:text="${#numbers.formatInteger(ctx.curBody.production.singleSolarSatelliteEnergyProduction, 1, 'DEFAULT')}">50</strong>
+          <th:block th:if="${neededSatellites > 0}">
+            <span th:text="#{neededSatellites}">Needed satellites</span>:
+            <a href="#" data-set th:data-set-for="'count_' + ${unit.kind}" th:data-set-value="${neededSatellites}">
+              <strong th:text="${#numbers.formatInteger(neededSatellites, 1, 'DEFAULT')}">100</strong>
+            </a>
+          </th:block>
+        </p>
+        <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).INTERPLANETARY_MISSILE && unit.currentCount > 0}">
+          <a th:href="@{/flights/send-missiles(body=${bodyId})}">
+            <strong th:text="#{sendMissiles}">Send missiles</strong>
+          </a>
+        </p>
+        <th:block
+            th:replace="item-cost :: item-cost(${ctx.curBody}, ${unit.cost}, 0, ${r}, ${unit.missingResources}, ${unit.neededSmallCargoes}, ${unit.neededLargeCargoes})"></th:block>
+        <p>
+          <span th:text="#{buildingTime}">Building time</span>:
+          <strong th:text="${@formatterService.formatTimeMs(unit.buildingTime)}">01:02:03</strong>
+          <th:block th:if="${unit.accumulationTime != null}">
+            <span th:text="#{accumulationTime}">Accumulation time</span>:
+            <strong th:text="${#dates.format(unit.accumulationTime, 'yyyy-MM-dd HH:mm:ss')}"></strong>
+          </th:block>
+        </p>
+      </td>
+      <td class="item-actions">
+        <form th:if="${unit.maxBuildable >= 1}" th:action="@{/shipyard/build}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input th:if="${type != null}" name="type" type="hidden" th:value="${type}">
+          <input name="kind" type="hidden" th:value="${unit.kind}">
+          <input th:id="'count_' + ${unit.kind}" name="count" type="number" value="0" min="1"
+                 th:max="${unit.maxBuildable}" required>
+          <button th:disabled="${ctx.onVacation}" th:text="#{build}" >Build</button>
+        </form>
+        <button th:if="${unit.maxBuildable >= 1}" data-set th:data-set-for="'count_' + ${unit.kind}"
+                th:data-set-value="${unit.maxBuildable}"
+                th:text="#{maxFormat(${#numbers.formatInteger(unit.maxBuildable, 1, 'DEFAULT')})}" >
+          Max (666)
+        </button>
+      </td>
+      <td class="item-image">
+        <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}">
+          <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${unit.kind})}">
+        </a>
+        <th:block th:if="${unit.futureCount > 0}">
+            (<span
+              th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
+        </th:block>
+      </td>
+      <td class="item-info">
+        <h2>
+          <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}"
+             th:text="#{${'items.' + unit.kind + '.name'}}"></a>
+          <th:block th:if="${unit.futureCount > 0}">
+            (<span
+              th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
+          </th:block>
+        </h2>
+        <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).SOLAR_SATELLITE}">
+          <span th:text="#{energy}">Energy</span>:
+          <strong
+              th:text="${#numbers.formatInteger(ctx.curBody.production.singleSolarSatelliteEnergyProduction, 1, 'DEFAULT')}">50</strong>
+          <th:block th:if="${neededSatellites > 0}">
+            <span th:text="#{neededSatellites}">Needed satellites</span>:
+            <a href="#" data-set th:data-set-for="'count_' + ${unit.kind}" th:data-set-value="${neededSatellites}">
+              <strong th:text="${#numbers.formatInteger(neededSatellites, 1, 'DEFAULT')}">100</strong>
+            </a>
+          </th:block>
+        </p>
+        <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).INTERPLANETARY_MISSILE && unit.currentCount > 0}">
+          <a th:href="@{/flights/send-missiles(body=${bodyId})}">
+            <strong th:text="#{sendMissiles}">Send missiles</strong>
+          </a>
+        </p>
+        <th:block
+            th:replace="item-cost :: item-cost(${ctx.curBody}, ${unit.cost}, 0, ${r}, ${unit.missingResources}, ${unit.neededSmallCargoes}, ${unit.neededLargeCargoes})"></th:block>
+        <p>
+          <span th:text="#{buildingTime}">Building time</span>:
+          <strong th:text="${@formatterService.formatTimeMs(unit.buildingTime)}">01:02:03</strong>
+          <th:block th:if="${unit.accumulationTime != null}">
+            <span th:text="#{accumulationTime}">Accumulation time</span>:
+            <strong th:text="${#dates.format(unit.accumulationTime, 'yyyy-MM-dd HH:mm:ss')}"></strong>
+          </th:block>
+        </p>
+      </td>
+      <td class="item-actions">
+        <form th:if="${unit.maxBuildable >= 1}" th:action="@{/shipyard/build}" method="post">
+          <input name="body" type="hidden" th:value="${bodyId}">
+          <input th:if="${type != null}" name="type" type="hidden" th:value="${type}">
+          <input name="kind" type="hidden" th:value="${unit.kind}">
+          <input th:id="'count_' + ${unit.kind}" name="count" type="number" value="0" min="1"
+                 th:max="${unit.maxBuildable}" required>
+          <button th:disabled="${ctx.onVacation}" th:text="#{build}">Build</button>
+        </form>
+        <button th:if="${unit.maxBuildable >= 1}" data-set th:data-set-for="'count_' + ${unit.kind}"
+                th:data-set-value="${unit.maxBuildable}"
+                th:text="#{maxFormat(${#numbers.formatInteger(unit.maxBuildable, 1, 'DEFAULT')})}">
+          Max (666)
+        </button>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(pair.units)}">
+      <td th:text="#{youHaveToConstructShipyardFirst}">You have to construct a Shipyard first!</td>
+    </tr>
+  </table>
+</div>
+<hr style="height: 50px; background-color: black;">
+
+<!-- -->
+  <table>
+  <thead>
+    <tr>
+      <th colspan="6"th:text="#{shipyard}" style="text-align: center">Shipyard</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SC</td>
+      <td>LC</td>
+      <td>REC</td>
+      <td>PROBE</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Data 7</td>
+      <td>Data 8</td>
+      <td>Data 9</td>
+      <td>Data 10</td>
+      <td>Data 11</td>
+      <td>Data 12</td>
+    </tr>
+    <!-- add more rows as needed -->
+  </tbody>
+</table>
+
+<a th:disabled="${ctx.onVacation}" class="animated-button1" th:disabled="${ctx.onVacation}" th:text="#{build}"><span></span><span></span><span></span><span></span>Build</a>
+ <!-- -->
+</body>
+</html>

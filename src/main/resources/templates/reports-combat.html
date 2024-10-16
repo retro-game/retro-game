@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{combatReports}">Combat Reports</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <table th:replace="reports-tabs :: reports-tabs">
+  </table>
+  <table th:if="${#lists.isEmpty(reports)}">
+    <tr>
+      <td th:text="#{noReports}">No reports</td>
+    </tr>
+  </table>
+  <table th:unless="${#lists.isEmpty(reports)}">
+    <tr>
+      <th colspan="9" th:text="#{combatReports}">Combat reports</th>
+      <th>
+        <form th:replace="reports-delete-all-form :: reports-delete-all-form('combat')"></form>
+      </th>
+    </tr>
+    <tr>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='AT',direction=${order == 'AT' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{at}">At</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='ENEMY_NAME',direction=${order == 'ENEMY_NAME' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{enemy}">Enemy</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='COORDINATES',direction=${order == 'COORDINATES' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{coords}">Coords</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='RESULT',direction=${order == 'RESULT' && direction == 'ASC' ? 'DESC' : 'ASC'},size=${size})}"
+           th:text="#{result}">Result</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='ATTACKERS_LOSS',direction=${order == 'ATTACKERS_LOSS' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{attackersLoss}">Attackers loss</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='DEFENDERS_LOSS',direction=${order == 'DEFENDERS_LOSS' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{defendersLoss}">Defenders loss</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='PLUNDER',direction=${order == 'PLUNDER' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{plunder}">Plunder</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='DEBRIS',direction=${order == 'DEBRIS' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{debris}">Debris</a>
+      </th>
+      <th>
+        <a th:href="@{/reports/combat(body=${bodyId},order='MOON_CHANCE',direction=${order == 'MOON_CHANCE' && direction == 'DESC' ? 'ASC' : 'DESC'},size=${size})}"
+           th:text="#{moonChance}">Moon chance</a>
+      </th>
+      <th th:text="#{actions}">Actions</th>
+    </tr>
+    <th:block th:each="report : ${reports}">
+      <tr th:with="c=${report.coordinates}">
+        <td th:text="${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+        <td>
+          <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${report.enemyId}, ${report.enemyName})"></span>
+        </td>
+        <td>
+          <a th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system},position=${c.position},kind=${c.kind})}"
+             th:title="#{goToGalaxy}" th:text="${c}"></a>
+        </td>
+        <td th:text="#{${'combatResult.' + report.result}}"></td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="'<strong>' + ${#numbers.formatInteger(report.attackersLoss, 1, 'DEFAULT')} + '</strong>'"
+                th:text="${@formatterService.prefixedNumber(report.attackersLoss)}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="'<strong>' + ${#numbers.formatInteger(report.defendersLoss, 1, 'DEFAULT')} + '</strong>'"
+                th:text="${@formatterService.prefixedNumber(report.defendersLoss)}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="
+                  '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(report.plunder.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(report.plunder.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(report.plunder.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+                th:text="${@formatterService.prefixedNumber(report.plunder.metal + report.plunder.crystal + report.plunder.deuterium)}"></span>
+        </td>
+        <td>
+          <span data-tooltip data-tooltip-html
+                th:data-tooltip-title="
+                  '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(report.debrisMetal, 1, 'DEFAULT')} + '</strong></p>' +
+                  '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(report.debrisCrystal, 1, 'DEFAULT')} + '</strong></p>'"
+                th:text="${@formatterService.prefixedNumber(report.debrisMetal + report.debrisCrystal)}"></span>
+        </td>
+        <td th:text="${#numbers.formatDecimal(100.0 * report.moonChance, 1, 'DEFAULT', 2, 'DEFAULT') + '%' + (report.moonGiven == true ? ' ✓' : '')}"></td>
+        <td class="report-actions">
+          <a th:if="${report.combatReportId != null}" class="btn" th:href="@{/combat-report(id=${report.combatReportId})}">F</a>
+          <a th:unless="${report.combatReportId != null}" class="btn disabled" data-tooltip
+             th:with="tooltip=#{${report.combatReportId != null ? 'openFullReport' : (report.result == T(com.github.retro_game.retro_game.dto.CombatResultDto).WIN ? 'noBattle' : 'lostContact')}}"
+             th:data-tooltip-title="${tooltip}"
+             href="#">F</a>
+          <button data-delete-report th:data-body="${bodyId}" data-kind="combat" th:data-id="${report.id}"
+                  th:title="#{delete}">
+            D
+          </button>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <div th:replace="reports-pagination :: reports-pagination('combat')"></div>
+  <script th:src="@{/static/js/reports.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

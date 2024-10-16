@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{hallOfFame}">Hall of Fame</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <table th:unless="${enabled}">
+    <tr>
+      <th th:text="#{error}">Error</th>
+    </tr>
+    <tr>
+      <td th:text="#{hallOfFameIsDisabled}">Hall of Fame is disabled.</td>
+    </tr>
+  </table>
+  <table th:if="${enabled}">
+    <tr>
+      <th th:text="#{rank}">Rank</th>
+      <th th:text="#{name}">Name</th>
+      <th>
+        <a th:href="@{/hall-of-fame(body=${bodyId},order='LOSS')}" th:text="#{loss}">Loss</a>
+      </th>
+      <th>
+        <a th:href="@{/hall-of-fame(body=${bodyId},order='DEBRIS')}" th:text="#{debris}">Debris</a>
+      </th>
+      <th>
+        <a th:href="@{/hall-of-fame(body=${bodyId},order='PLUNDER')}" th:text="#{plunder}">Plunder</a>
+      </th>
+    </tr>
+    <tr th:if="${#lists.isEmpty(entries)}">
+      <td colspan="5" th:text="#{noReports}"></td>
+    </tr>
+    <tr th:each="entry,iter : ${entries}">
+      <td th:text="${entry.rank}">1</td>
+      <td>
+        <a target="_blank" th:href="@{/combat-report(id=${entry.id})}" th:with="r=${entry.result}">
+          <span th:class="${r.attackersWin ? 'win' : (r.defendersWin ? 'loss' : 'draw')}"
+                th:text="${attackerNames.get(iter.index)}"></span>
+          vs
+          <span th:class="${r.attackersWin ? 'loss' : (r.defendersWin ? 'win' : 'draw')}"
+                th:text="${defenderNames.get(iter.index)}"></span>
+        </a>
+      </td>
+      <td>
+        <span data-tooltip data-tooltip-html
+              th:data-tooltip-title="
+                '<p>' + #{attackersLoss} + ': <strong>' + ${#numbers.formatInteger(entry.attackersLoss, 1, 'DEFAULT')} + '</strong></p>' +
+                '<p>' + #{defendersLoss} + ': <strong>' + ${#numbers.formatInteger(entry.defendersLoss, 1, 'DEFAULT')} + '</strong></p>'"
+              th:text="${@formatterService.prefixedNumber(entry.totalLoss)}"></span>
+      </td>
+      <td>
+        <span data-tooltip data-tooltip-html
+              th:data-tooltip-title="
+                '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(entry.debris.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.debris.crystal, 1, 'DEFAULT')} + '</strong></p>'"
+              th:text="${@formatterService.prefixedNumber(entry.debris.total)}"></span>
+      </td>
+      <td>
+        <span data-tooltip data-tooltip-html
+              th:data-tooltip-title="
+                '<p>' + #{metal} + ': <strong>' + ${#numbers.formatInteger(entry.plunder.metal, 1, 'DEFAULT')} + '</strong></p>' +
+                '<p>' + #{crystal} + ': <strong>' + ${#numbers.formatInteger(entry.plunder.crystal, 1, 'DEFAULT')} + '</strong></p>' +
+                '<p>' + #{deuterium} + ': <strong>' + ${#numbers.formatInteger(entry.plunder.deuterium, 1, 'DEFAULT')} + '</strong></p>'"
+              th:text="${@formatterService.prefixedNumber(entry.plunder.total)}"></span>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

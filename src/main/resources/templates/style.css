@@ -1,0 +1,574 @@
+
+nav {
+	border-bottom: 1px #93ecf7 solid;
+	color: #bbecf7;
+	height: 25px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 50px;
+}
+nav::before,
+nav::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  height: calc(100% + 1px);
+  width: 45px;
+  background-color: #93ecf7;
+  transform-origin: 50% 0;
+  transform: skew(-45deg);
+}
+
+nav::before {
+  left: 0;
+}
+
+nav::after {
+  right: 0;
+  transform: skew(45deg);
+}
+nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+}
+nav li {
+	margin-right: 20px;
+}
+.page-title {
+  color: #eee;
+	text-align: center;
+	font-size: 48px;
+	margin-top: 100px;
+  font-family: sans-serif;
+}
+
+/* OLD CONTENT */
+.container {
+  padding-top: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+.container nav {
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .container {
+    flex-direction: row;
+    height: 100vh;
+  }
+
+  .container > div {
+    flex: 1 1 100%;
+    order: 2;
+    overflow: auto;
+  }
+
+  .login-menu {
+    margin-top: 15%;
+  }
+
+  .container > div > div {
+    margin-left: auto;
+    margin-right: auto;
+    width: 624px;
+  }
+}
+
+@media (min-width: 992px) {
+  .container > div > div {
+    width: 848px;
+  }
+}
+
+/**
+ * Based on Bootstrap, which is licensed MIT.
+ * https://getbootstrap.com/
+ */
+
+/**
+ * Document
+ *
+ * 1. Change from `box-sizing: content-box` so that `width` is not affected by `padding` or `border`.
+ * 2. Change the default font family in all browsers.
+ * 3. Correct the line height in all browsers.
+ * 4. Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.
+ * 5. Setting @viewport causes scrollbars to overlap content in IE11 and Edge, so
+ *    we force a non-overlapping, non-auto-hiding scrollbar to counteract.
+ * 6. Change the default tap highlight to be completely transparent in iOS.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* 1 */
+}
+
+html {
+  font-family: sans-serif; /* 2 */
+  line-height: 1.15; /* 3 */
+  font-size: 12px;
+  -webkit-text-size-adjust: 100%; /* 4 */
+  -ms-text-size-adjust: 100%; /* 4 */
+  -ms-overflow-style: scrollbar; /* 5 */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* 6 */
+}
+
+/**
+ * Body
+ *
+ * 1. Remove the margin in all browsers.
+ */
+
+body {
+  background-image: url(background.webp);
+  color: #c9dfde;
+  font-family: sans-serif;
+  margin: 0; /* 1 */
+}
+
+/**
+ * Forms
+ *
+ * 1. Remove the default `border-radius` that macOS Chrome adds.
+ */
+
+a.btn,
+button {
+  background-color: rgba(20, 20, 30, 0.6);
+  border: 1px solid #93ecf7;
+  border-radius: 5px; /* 1 */
+  color: #c9dfde;
+  display: inline-block;
+  padding: .25rem .5rem;
+  text-align: center;
+}
+
+a.btn.disabled,
+button:disabled {
+  color: #999;
+  cursor: auto;
+  text-decoration: none;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+a.btn:not(.disabled):hover,
+button:not(:disabled):hover {
+  border: 1px solid #234;
+  text-decoration: none;
+}
+
+input,
+select,
+textarea {
+  background-color: rgba(20, 24, 31, 0.5);
+  border: 1px solid #93ecf7;
+  border-radius: 5px;
+  color: #c9dfde;
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  padding: .25rem .5rem;
+}
+
+textarea {
+  width: 100%;
+}
+
+/**
+ * Images
+ *
+ * 1. Remove the border on images inside links in IE 10.
+ */
+
+img {
+  border-style: none; /* 1 */
+  vertical-align: top;
+}
+
+/**
+ * Links
+ *
+ * 1. Remove the gray background on active links in IE 10.
+ * 2. Remove gaps in links underline in iOS 8+ and Safari 8+.
+ */
+
+a {
+  background-color: transparent; /* 1 */
+  color: #c9dfde;
+  text-decoration: none;
+  -webkit-text-decoration-skip: objects; /* 2 */
+}
+
+a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/**
+ * Lists
+ */
+
+ul {
+  list-style: none;
+}
+
+/**
+ * Tables
+ *
+ * 1. Prevent double borders.
+ */
+
+table {
+  background-color: rgba(20, 20, 30, 0.3);
+  border-collapse: collapse; /* 1 */
+  max-width: 100%;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px #93ecf7; solid;
+  padding: .25rem;
+  vertical-align: middle;
+}
+
+th {
+  background: linear-gradient(#202840, #283850);
+  text-align: left;
+}
+
+td {
+  font-weight: normal;
+  text-align: center;
+}
+
+td.highlight {
+  border: 2px #c00 solid;
+}
+
+.current {
+  background-color: #677899;
+}
+
+/**
+ * Texts
+ */
+
+h2 {
+  font-size: 1.05rem;
+}
+
+strong {
+  font-weight: bolder;
+}
+
+.space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.center-block {
+  margin: auto;
+  width: 50%;
+}
+
+#top-bar {
+  display: flex;
+  margin: 1rem 0 1rem 0;
+}
+
+#top-bar-bodies > div,
+#top-bar-bodies > img {
+  display: inline-block;
+}
+
+#top-bar-bodies img {
+  height: 55px;
+  width: 55px;
+}
+
+#top-bar-body-pointers form {
+  display: inline-block;
+  padding-top: .25rem;
+}
+
+#top-bar-resources {
+  display: flex;
+  flex-grow: 1;
+}
+
+#top-bar-resources > div {
+  flex-grow: 1;
+  text-align: center;
+}
+
+#top-bar-resources p {
+  margin: .25rem 0 0 0;
+}
+
+#sidebar {
+  padding: 1rem;
+}
+
+#sidebar h2 {
+  font-size: 10px;
+  margin: 0;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar li a {
+  background-color: rgba(20, 24, 31, 0.5);
+  border-left: 1px #93ecf7 solid;
+  border-right: 1px #93ecf7 solid;
+  border-top: 1px #93ecf7 solid;
+  border-radius: 5px;
+  display: block;
+  padding: .35rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+#sidebar li:last-child a {
+  border-bottom: 1px #415680 solid;
+}
+
+#sidebar li a:hover {
+  background-color: #3c4d6e;
+}
+
+.tooltip {
+  background-color: rrgba(20, 20, 30, 0.6);
+  border: 1px #93ecf7 solid;
+  color: #c9dfde;
+  padding: .25rem;
+}
+
+.tooltip p {
+  margin: 0;
+  padding-bottom: .25rem;
+}
+
+.event mark {
+  background: transparent;
+  color: #c9dfde;
+}
+
+.overview-body a,
+.overview-body span {
+  display: block;
+  padding-top: .1rem;
+}
+
+#overview-other-planets {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#overview-other-planets > div {
+  flex-basis: 33%;
+  padding-bottom: .5rem;
+}
+
+.item-image {
+  padding: 0;
+  vertical-align: top;
+}
+
+.item-image img {
+  height: 120px;
+  width: 120px;
+}
+
+.item-info {
+  padding: .25rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.item-info h2,
+.item-info p {
+  margin: 0 0 .5rem 0;
+}
+
+.item-actions {
+  padding: .25rem;
+}
+
+.item-actions button,
+.item-actions input {
+  margin: .125rem;
+}
+
+.queue-entry-actions form {
+  display: inline-block;
+}
+
+#galaxy-navigation {
+  display: flex;
+  justify-content: center;
+}
+
+#galaxy-navigation table {
+  margin: .5rem .25rem .5rem .25rem;
+  width: auto;
+}
+
+#galaxy-reload,
+#phalanx-reload {
+  text-align: center;
+}
+
+.message {
+  margin-top: .5rem;
+}
+
+#messages-pagination,
+#reports-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+#messages-pagination table,
+#reports-pagination table {
+  margin-top: .5rem;
+  width: auto;
+}
+
+.report-actions form,
+.report-actions button {
+  display: inline-block;
+}
+
+.combat-report-combatants {
+  margin-bottom: .5rem;
+}
+
+.error {
+  color: red;
+}
+
+.date {
+  color: #5f5;
+}
+
+.requirement-not-met {
+  color: red;
+}
+
+.requirement-met {
+  color: #8f0;
+}
+
+.no-capacity, .no-energy {
+  color: red;
+}
+
+.own-attack, .own-destroy {
+  color: rgb(255, 150, 0);
+}
+.own-attack-return, .own-destroy-return {
+  color: rgb(155, 125, 100);
+}
+.foreign-attack, .foreign-destroy {
+  color: rgb(255, 0, 0);
+}
+
+.own-colonization, .own-harvest {
+  color: rgb(0, 255, 0);
+}
+.own-colonization-return, .own-harvest-return {
+  color: rgb(100, 155, 100);
+}
+
+.own-deployment, .own-transport {
+  color: rgb(0, 255, 0);
+}
+.own-deployment-recall, .own-transport-return {
+  color: rgb(50, 155, 50);
+}
+
+.own-espionage {
+  color: rgb(200, 100, 0);
+}
+.own-espionage-return {
+  color: rgb(100, 50, 25);
+}
+
+.own-hold {
+  color: rgb(136, 140, 255);
+}
+
+
+
+.foreign-colonization, .foreign-harvest {
+  color: #f88;
+}
+.foreign-deployment, .foreign-transport {
+  color: #ff0;
+}
+
+.foreign-espionage {
+  color: #f80;
+}
+
+.foreign-hold {
+  color: #ff8;
+}
+
+.vacation {
+  color: #6cf;
+}
+
+.banned {
+  text-decoration: line-through;
+}
+
+.noob {
+  color: #0f0;
+}
+
+.strong {
+  color: #f00;
+}
+
+.short-inactive {
+  color: #7b7b7b;
+}
+
+.long-inactive {
+  color: #A0A0A0;
+}
+
+.record-new {
+  color: #0f0;
+}
+
+.win {
+  color: #0f0;
+}
+
+.loss {
+  color: #f00;
+}
+
+.draw {
+  color: #ff0;
+}

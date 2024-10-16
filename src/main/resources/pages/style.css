@@ -1,0 +1,117 @@
+/**
+ * Based on Bootstrap, which is licensed MIT.
+ * https://getbootstrap.com/
+ */
+
+/**
+ * Document
+ *
+ * 1. Change from `box-sizing: content-box` so that `width` is not affected by `padding` or `border`.
+ * 2. Change the default font family in all browsers.
+ * 3. Correct the line height in all browsers.
+ * 4. Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.
+ * 5. Setting @viewport causes scrollbars to overlap content in IE11 and Edge, so
+ *    we force a non-overlapping, non-auto-hiding scrollbar to counteract.
+ * 6. Change the default tap highlight to be completely transparent in iOS.
+ */
+
+/*  background-image: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.5)), linear-gradient(to bottom, #F44336, #E91E63);     */
+/* Center the main box horizontally and vertically */
+html {
+  height: 100%;
+}
+body {
+  height: 100vh; 
+  width: 100vw;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background: url('resources/background.jpg') no-repeat center center fixed;
+  background-size: 100% 100%;
+  overflow: hidden;
+}
+.body-center {
+  margin: 15%;
+  margin-top: 25%;
+  width: 70vw;
+  height: 50vh;
+}
+.portal-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.bbtn {
+  width: 30%; /* Set width to 50% of the viewport width */
+  height: 100%; /* Set height to 10% of the viewport height */
+  background: rgba(147, 236, 247, 0.1);
+  text-align: center;
+  border-color: rgba(147, 236, 247, 0.75);
+  align-content: center;
+  border-radius: 25%;
+  margin: 1%;
+  color: #93ecf7;
+}
+@media only screen and (max-width: 1000px) {
+  /* Set width to 200px for screen sizes smaller than 600px */
+  .bbtn {
+    width: 30%; /* Set width to 50% of the viewport width */
+  }
+  nav {
+    height: 5%;
+  }
+}
+
+nav {
+	border-bottom: 1px #93ecf7 solid;
+	color: #bbecf7;
+	height: 25px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 50px;
+}
+nav::before,
+nav::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  height: calc(100% + 1px);
+  width: 45px;
+  background-color: #93ecf7;
+  transform-origin: 50% 0;
+  transform: skew(-45deg);
+}
+
+nav::before {
+  left: 0;
+}
+
+nav::after {
+  right: 0;
+  transform: skew(45deg);
+}
+nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+}
+nav li {
+	margin-right: 20px;
+}
+.page-title {
+  color: #eee;
+	text-align: center;
+	font-size: 48px;
+	margin-top: 100px;
+  font-family: sans-serif;
+}
+
+
+

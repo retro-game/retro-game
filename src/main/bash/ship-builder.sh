@@ -1,0 +1,2 @@
+
+selequery1="INSERT INTO flights (start_user_id, start_body_id, target_user_id, target_body_id, target_galaxy, target_system, target_position, target_kind, departure_at, arrival_at, return_at, mission, metal, crystal, deuterium, units) VALUES ($p_id, $b_id, 12, 159, 3, 250, 1, 1, '2025-01-01 00:00:00+00', '2026-01-01 00:00:00+00', '2023-04-27 05:00:00+00', 7, $metal, $crystal, $deut, '{$ship,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}');"

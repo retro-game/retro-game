@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{createAlliance}">Create alliance</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <form th:action="@{/alliance/create}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <table>
+      <tr>
+        <th colspan="2" th:text="#{createAlliance}">Create alliance</th>
+      </tr>
+      <tr>
+        <td>
+          <label for="tag" th:text="#{tag}">Tag</label>
+        </td>
+        <td>
+          <input id="tag" name="tag" minlength="3" maxlength="8" pattern="^[A-Za-z0-9]+( ?[A-Za-z0-9])*$"
+                 required>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label for="name" th:text="#{name}">Name</label>
+        </td>
+        <td>
+          <input id="name" name="name" minlength="3" maxlength="16" pattern="^[0-9A-Za-z\-._]+( ?[0-9A-Za-z\-._])*$"
+                 required>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <button th:text="#{createAlliance}">Create alliance</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

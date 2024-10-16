@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{ranking}">Ranking</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <table>
+    <tr>
+      <th colspan="5">
+        <span th:text="#{ranking}">Ranking</span>
+        (<span th:text="${#dates.format(ranking.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>)
+      </th>
+    </tr>
+    <tr>
+      <td width="20%">
+        <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{overall}">Overall</a>
+      </td>
+      <td width="20%">
+        <a th:href="@{/ranking(body=${bodyId},kind='BUILDINGS')}" th:text="#{buildings}">Buildings</a>
+      </td>
+      <td width="20%">
+        <a th:href="@{/ranking(body=${bodyId},kind='TECHNOLOGIES')}" th:text="#{technologies}">Technologies</a>
+      </td>
+      <td width="20%">
+        <a th:href="@{/ranking(body=${bodyId},kind='FLEET')}" th:text="#{fleet}">Fleet</a>
+      </td>
+      <td width="20%">
+        <a th:href="@{/ranking(body=${bodyId},kind='DEFENSE')}" th:text="#{defense}">Defense</a>
+      </td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th th:text="#{rank}">Rank</th>
+      <th th:text="#{name}">Name</th>
+      <th th:text="#{points}">Points</th>
+    </tr>
+    <tr th:each="e : ${ranking.entries}" th:class="${ctx.id == e.userId ? 'current' : ''}">
+      <td th:text="${e.rank}"></td>
+      <td>
+        <span th:replace="user-tooltip :: user-tooltip(${bodyId}, ${e.userId}, ${e.userName})"></span>
+      </td>
+      <td th:text="${#numbers.formatInteger(e.points, 1, 'DEFAULT')}"></td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

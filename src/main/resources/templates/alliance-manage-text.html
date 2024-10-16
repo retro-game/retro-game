@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{${'allianceText.' + kind}}">External text</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <form th:action="@{/alliance/manage/text/save}" method="post">
+    <input name="body" type="hidden" th:value="${bodyId}">
+    <input name="alliance" type="hidden" th:value="${allianceId}">
+    <input name="kind" type="hidden" th:value="${kind}">
+    <table>
+      <tr>
+        <th th:text="#{${'allianceText.' + kind}}"></th>
+      </tr>
+      <tr>
+        <td>
+          <textarea name="text" rows="10" maxlength="10000" required th:text="${text}"></textarea>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button th:text="#{save}">Save</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

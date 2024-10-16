@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{buildingDetails}">Building details</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <table id="details">
+    <tr>
+      <th colspan="2">
+        <span th:text="#{${'items.' + kind + '.name'}}"></span>
+        <th:block th:if="${details.currentLevel > 0 || details.futureLevel > 0}">
+          (<span
+            th:text="${details.currentLevel + (details.currentLevel != details.futureLevel ? ' → ' + details.futureLevel : '')}">1</span>)
+        </th:block>
+      </th>
+    </tr>
+    <tr class="item">
+      <td class="item-image">
+        <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${kind})}">
+      </td>
+      <td class="item-info">
+        <p th:text="#{${'items.' + kind + '.description'}}"></p>
+        <p th:if="${kind == T(com.github.retro_game.retro_game.dto.BuildingKindDto).JUMP_GATE && details.currentLevel > 0}">
+          <a th:href="@{/jump-gate(body=${bodyId})}">
+            <strong th:text="#{goToJumpGate}">Go to Jump Gate</strong>
+          </a>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <th colspan="2" th:text="#{destroy}">Destroy</th>
+    </tr>
+    <th:block th:if="${details.destroyable}">
+      <tr>
+        <td colspan="2">
+          <p th:with="cost=${details.destructionCost}">
+            <span th:text="#{metal}">Metal</span>:
+            <strong th:text="${#numbers.formatInteger(cost.metal, 1, 'DEFAULT')}">200</strong>
+            <span th:text="#{crystal}">Crystal</span>:
+            <strong th:text="${#numbers.formatInteger(cost.crystal, 1, 'DEFAULT')}">50</strong>
+            <span th:text="#{deuterium}">Deuterium</span>:
+            <strong th:text="${#numbers.formatInteger(cost.deuterium, 1, 'DEFAULT')}">0</strong>
+          </p>
+          <p>
+            <span th:text="#{destructionTime}">Destruction time</span>:
+            <strong th:text="${@formatterService.formatTime(details.destructionTime)}">01:02:03</strong>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <form th:action="@{/buildings/destroy}" method="post">
+            <input name="body" type="hidden" th:value="${bodyId}">
+            <input name="kind" type="hidden" th:value="${kind}">
+            <button th:disabled="${!details.canDestroyNow || ctx.onVacation}" th:text="#{destroy}">
+              Destroy
+            </button>
+          </form>
+        </td>
+      </tr>
+    </th:block>
+    <tr th:unless="${details.destroyable}">
+      <td colspan="2" th:text="#{thisBuildingCannotBeDestroyed}">This building cannot be destroyed</td>
+    </tr>
+  </table>
+  <input id="details-table" type="hidden"
+         th:data-kind="${kind}"
+         th:data-level="${details.currentLevel}"
+         th:data-temperature="${temperature}"
+         th:data-energy-technology-level="${energyTechnologyLevel}"
+         th:data-msg-additional-fields-diff="#{additionalFieldsDiff}"
+         th:data-msg-additional-fields="#{additionalFields}"
+         th:data-msg-capacity-diff="#{capacityDiff}"
+         th:data-msg-capacity="#{capacity}"
+         th:data-msg-deuterium-diff="#{deuteriumDiff}"
+         th:data-msg-deuterium="#{deuterium}"
+         th:data-msg-energy-diff="#{energyDiff}"
+         th:data-msg-energy="#{energy}"
+         th:data-msg-level-from="#{levelFrom}"
+         th:data-msg-level-to="#{levelTo}"
+         th:data-msg-level="#{level}"
+         th:data-msg-production-diff="#{productionDiff}"
+         th:data-msg-production="#{production}"
+         th:data-msg-range-diff="#{rangeDiff}"
+         th:data-msg-range="#{range}"
+         th:data-msg-table="#{table}">
+  <script th:src="@{/static/js/details.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>

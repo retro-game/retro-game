@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="#{otherReports}">Other Reports</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
+  <table th:replace="reports-tabs :: reports-tabs">
+  </table>
+  <table th:if="${#lists.isEmpty(reports)}">
+    <tr>
+      <td th:text="#{noReports}">No reports</td>
+    </tr>
+  </table>
+  <table th:unless="${#lists.isEmpty(reports)}">
+    <tr>
+      <th class="space-between">
+        <span th:text="#{otherReports}">Other reports</span>
+        <form th:replace="reports-delete-all-form :: reports-delete-all-form('other')"></form>
+      </th>
+    </tr>
+    <th:block th:each="report : ${reports}">
+      <tr>
+        <th th:text="#{otherReportTitleFormat(#{${'otherReportKind.' + report.kind}}, ${#dates.format(report.at, 'yyyy-MM-dd HH:mm:ss')})}"></th>
+      </tr>
+      <tr>
+        <td th:switch="${report.kind}" th:with="
+            sc=${report.startCoordinates},
+            tc=${report.targetCoordinates},
+            startLink=@{/galaxy(body=${bodyId},galaxy=${sc.galaxy},system=${sc.system},position=${sc.position},kind=${sc.kind})},
+            targetLink=@{/galaxy(body=${bodyId},galaxy=${tc.galaxy},system=${tc.system},position=${tc.position},kind=${tc.kind})},
+            start='<a href=\'' + ${#strings.escapeXml(startLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${sc} + ']</a>',
+            target='<a href=\'' + ${#strings.escapeXml(targetLink)} + '\' title=\'' + #{goToGalaxy} + '\'>[' + ${tc} + ']</a>',
+            r=${report.resources},
+            withResources=${r != null && (r.metal > 0 || r.crystal > 0 || r.deuterium > 0)},
+            metal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.metal, 1, 'DEFAULT')} + '</strong>' : '',
+            crystal=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.crystal, 1, 'DEFAULT')} + '</strong>' : '',
+            deuterium=${withResources} ? '<strong>' + ${#numbers.formatInteger(r.deuterium, 1, 'DEFAULT')} + '</strong>' : ''">
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).COLONIZATION}">
+            <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div th:if="${report.param == null}" th:text="#{otherReportFailedColonization}" th:remove="tag"></div>
+            <th:block th:unless="${report.param == null}">
+              <div
+                  th:with="diameterHtml=${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'}"
+                  th:utext="#{otherReportSuccessfulColonizationFormat(${diameterHtml})}"
+                  th:remove="tag"></div>
+              <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
+                   th:remove="tag"></div>
+            </th:block>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).DEPLOYMENT}">
+            <div th:utext="#{otherReportArrivalFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
+                 th:remove="tag"></div>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).HOSTILE_ESPIONAGE}">
+            <div th:utext="#{otherReportEspionageFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div
+                th:with="chanceHtml=${'<strong>' + #numbers.formatInteger(100.0 * report.param, 1, 'DEFAULT') + '</strong>'}"
+                th:utext="#{otherReportEspionageCounterChanceFormat(${chanceHtml})}"
+                th:remove="tag"></div>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).RETURN}">
+            <div th:utext="#{otherReportReturnFormat(${start}, ${target})}" th:remove="tag"></div>
+            <div th:if="${withResources}" th:utext="#{otherReportDeliveryFormat(${metal}, ${crystal}, ${deuterium})}"
+                 th:remove="tag"></div>
+          </th:block>
+          <th:block th:case="${T(com.github.retro_game.retro_game.dto.OtherReportKindDto).MISSILE_ATTACK}">
+            <div
+                th:with="numUnitsHtml=${'<strong>' + #numbers.formatInteger(report.param, 1, 'DEFAULT') + '</strong>'}"
+                th:utext="#{otherReportMissileAttackFormat(${start}, ${target}, ${numUnitsHtml})}"
+                th:remove="tag"></div>
+          </th:block>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <button data-delete-report th:data-body="${bodyId}" data-kind="other" th:data-id="${report.id}"
+                  th:text="#{delete}">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </th:block>
+  </table>
+  <div th:replace="reports-pagination :: reports-pagination('other')"></div>
+  <script th:src="@{/static/js/reports.js?{v}(v=${version})}"></script>
+</div>
+</body>
+</html>
