@@ -1,0 +1,20 @@
+# Use the official Postgres 12.3-alpine image as the base
+FROM postgres:12.3-alpine
+
+# Install Python3 and pip in the container
+RUN apk add --no-cache \
+    python3 \
+    py3-pip
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir \
+    asyncpg \
+    APScheduler \
+    psycopg2-binary \
+    # Add more libraries as needed
+
+# Copy schema or any other initialization SQL scripts (optional if needed)
+COPY ./sql/schema.sql /docker-entrypoint-initdb.d/
+
+# By default, it will run Postgres
+CMD ["postgres"]

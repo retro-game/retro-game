@@ -3,9 +3,19 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
   <title th:text="#{shipyard}">Shipyard</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
   <table th:if="${error}">
     <tr>
       <th th:text="#{error}">Error</th>
@@ -46,6 +56,10 @@
         <a th:href="@{/details/unit(body=${bodyId},kind=${unit.kind})}">
           <img th:src="@{/static/skins/{skin}/items/{kind}.webp(skin=${skin},kind=${unit.kind})}">
         </a>
+        <th:block th:if="${unit.futureCount > 0}">
+            (<span
+              th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
+        </th:block>
       </td>
       <td class="item-info">
         <h2>
@@ -56,7 +70,6 @@
               th:text="${#numbers.formatInteger(unit.currentCount, 1, 'DEFAULT') + (unit.currentCount != unit.futureCount ? ' → ' + #numbers.formatInteger(unit.futureCount, 1, 'DEFAULT') : '')}">1</span>)
           </th:block>
         </h2>
-        <p th:text="#{${'items.' + unit.kind + '.description'}}"></p>
         <p th:if="${unit.kind == T(com.github.retro_game.retro_game.dto.UnitKindDto).SOLAR_SATELLITE}">
           <span th:text="#{energy}">Energy</span>:
           <strong

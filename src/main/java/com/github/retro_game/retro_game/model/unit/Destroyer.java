@@ -21,6 +21,8 @@ public class Destroyer extends UnitItem {
         put(UnitKind.ESPIONAGE_PROBE, 5);
         put(UnitKind.SOLAR_SATELLITE, 5);
         put(UnitKind.LIGHT_LASER, 10);
+	put(UnitKind.CRUISER, 3);
+	put(UnitKind.BATTLESHIP, 2);
       }});
 
   @Override
@@ -35,17 +37,17 @@ public class Destroyer extends UnitItem {
 
   @Override
   public Resources getCost() {
-    return new Resources(60000.0, 50000.0, 15000.0);
+    return new Resources(80000.0, 60000.0, 40000.0);
   }
 
   @Override
   public int getCapacity() {
-    return 2000;
+    return 3000;
   }
 
   @Override
   public int getConsumption(User user) {
-    return 1000;
+    return 750;
   }
 
   @Override
@@ -60,17 +62,17 @@ public class Destroyer extends UnitItem {
 
   @Override
   public double getBaseWeapons() {
-    return 2000.0;
+    return 2500.0;
   }
 
   @Override
   public double getBaseShield() {
-    return 500.0;
+    return 750.0;
   }
 
   @Override
   public double getBaseArmor() {
-    return 110000.0;
+    return 150000.0;
   }
 
   @Override

@@ -19,6 +19,9 @@ services:
     restart: always
     expose:
       - "5432"
+    #build:
+    #  context: .
+    #  dockerfile: dockerfile-pgdb
     environment:
       POSTGRES_DB: retro-game
       POSTGRES_HOST_AUTH_METHOD: trust
