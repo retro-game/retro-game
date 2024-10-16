@@ -2,49 +2,61 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Menu</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 <body>
 <div class="container">
   <nav th:fragment="menu" id="sidebar">
     <h2>
-      <a href="https://github.com/retro-game/retro-game">Retro Game</a>
-      <a th:href="@{/changelog(body=${bodyId})}" th:text="${'v' + version}"></a>
+      <a href="https://discord.gg/glassow">Join Our Discord!</a>
     </h2>
+    <h2> </h2>
+    <h2>
+      <a>M-Warfare Classic </a>  
+      <a th:href="@{/changelog(body=${bodyId})}" th:text="${'v' + version}"> - Rules</a>
+    </h2>
+    
     <ul>
+      (<span th:text="${ctx.name}">Gaius</span>)
       <li>
         <a th:href="@{/overview(body=${bodyId})}" th:text="#{overview}">Overview</a>
       </li>
+      <li></li><a></a></li>
+        <a href="#" style="text-align: center;">Information</a>
       <li>
         <a th:href="@{/flights(body=${bodyId})}" th:text="#{flights}">Flights</a>
-      </li>
-      <li>
-        <a th:href="@{/flights/send(body=${bodyId})}" th:text="#{sendFleet}">Send Fleet</a>
-      </li>
-      <li>
         <a th:href="@{/resources(body=${bodyId})}" th:text="#{resources}">Resources</a>
-      </li>
-      <li>
-        <a th:href="@{/buildings(body=${bodyId})}" th:text="#{buildings}">Buildings</a>
-      </li>
-      <li>
-        <a th:href="@{/technologies(body=${bodyId})}" th:text="#{technologies}">Technologies</a>
-      </li>
-      <li>
-        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).FLEET})}"
-           th:text="#{shipyard}">Shipyard</a>
-      </li>
-      <li>
-        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).DEFENSE})}"
-           th:text="#{defense}">Defense</a>
-      </li>
-      <li>
-        <a th:with="c=${ctx.curBody.coordinates}"
-           th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system})}" th:text="#{galaxy}">Galaxy</a>
       </li>
       <li>
         <a th:href="@{/empire(body=${bodyId})}" th:text="#{empire}">Empire</a>
       </li>
+      <a> Launching </a>
+      <li>
+        <a th:with="c=${ctx.curBody.coordinates}"
+           th:href="@{/galaxy(body=${bodyId},galaxy=${c.galaxy},system=${c.system})}" th:text="#{galaxy}">Galaxy</a>
+        <a th:href="@{/flights/send(body=${bodyId})}" th:text="#{sendFleet}">Send Fleet</a>
+      </li>
+
+      <a> Military </a>
+      <li>
+        <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).FLEET})}"
+           th:text="#{shipyard}">Shipyard</a>
+           <a th:href="@{/shipyard(body=${bodyId},type=${T(com.github.retro_game.retro_game.dto.UnitTypeDto).DEFENSE})}"
+           th:text="#{defense}">Defense</a>
+      </li>
+
+      <a> Building & Research </a>
+      <li>
+        <a th:href="@{/buildings(body=${bodyId})}" th:text="#{buildings}">Buildings</a>
+        <a th:href="@{/technologies(body=${bodyId})}" th:text="#{technologies}">Technologies</a>
+      </li>
+
+
+
+      <a> Social </a>
       <li>
         <a th:href="@{/alliance(body=${bodyId})}" th:with="summary=${@allianceService.getCurrentUserAlliance(bodyId)}"
            th:text="#{alliance} + ${summary?.numApplications > 0 ? ' (' + summary?.numApplications + ')' : ''}">Alliance</a>
@@ -57,19 +69,20 @@
         <a th:href="@{/messages(body=${bodyId})}" th:with="summary=${@messageSummaryService.get(bodyId)}"
            th:text="#{messages} + ${summary.totalMessages > 0 ? ' (' + summary.totalMessages + ')' : ''}"></a>
       </li>
+
+
+      <a> Server </a>
       <li>
         <a th:href="@{/ranking(body=${bodyId},kind='OVERALL')}" th:text="#{ranking}">Ranking</a>
-      </li>
-      <li>
         <a th:href="@{/statistics/summary(body=${bodyId},user=${ctx.id})}"
-           th:text="#{statistics}">Statistics</a>
+           th:text="#{statistics}">My Stats</a>
       </li>
       <li>
         <a th:href="@{/records(body=${bodyId})}" th:text="#{records}">Records</a>
-      </li>
-      <li th:if="${@environment.getProperty('retro-game.hall-of-fame-enabled') == 'true'}">
-        <a th:href="@{/hall-of-fame(body=${bodyId})}" th:text="#{hallOfFame}">Hall of Fame</a>
-      </li>
+        <li th:if="${@environment.getProperty('retro-game.hall-of-fame-enabled') == 'true'}">
+          <a th:href="@{/hall-of-fame(body=${bodyId})}" th:text="#{hallOfFame}">Hall of Fame</a>
+
+      <a> Help </a>
       <li>
         <a th:href="@{/technology-tree(body=${bodyId})}" th:text="#{techTree}">Tech Tree</a>
       </li>
@@ -82,6 +95,8 @@
       <li>
         <a th:href="@{/pranger(body=${bodyId})}" th:text="#{pranger}">Pranger</a>
       </li>
+      <a> Settings </a>
+      <a> </a>
       <li>
         <a th:href="@{/settings(body=${bodyId})}" th:text="#{settings}">Settings</a>
       </li>

@@ -6,6 +6,15 @@
 </head>
 <body>
 <th:block th:fragment="record(name, r)">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
   <tr>
     <td th:text="${name}"></td>
     <th:block th:unless="${r}">

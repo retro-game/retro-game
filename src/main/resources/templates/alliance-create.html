@@ -6,6 +6,15 @@
 </head>
 <body>
 <div layout:fragment="content">
+  <nav id="homeNav">
+		<ul>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://100.21.156.246:8080/join">Logout</a></li>
+		</ul>
+	</nav>
   <form th:action="@{/alliance/create}" method="post">
     <input name="body" type="hidden" th:value="${bodyId}">
     <table>

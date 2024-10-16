@@ -167,7 +167,7 @@ public class ShipyardServiceImpl implements ShipyardServiceInternal {
   }
 
   private static int calcMaxMissiles(Map<UnitKind, Integer> state, Body body, UnitKind kind) {
-    var capacity = body.getBuildingLevel(BuildingKind.MISSILE_SILO) * 10;
+    var capacity = body.getBuildingLevel(BuildingKind.MISSILE_SILO) * 100;
     var numABM =
         body.getUnitsCount(UnitKind.ANTI_BALLISTIC_MISSILE) + state.getOrDefault(UnitKind.ANTI_BALLISTIC_MISSILE, 0);
     var numIPM =

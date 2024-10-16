@@ -2,305 +2,63 @@
 <html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="#{changelog}">Changelog</title>
+  <title th:text="#{changelog}">Rules</title>
 </head>
 <body>
 <div layout:fragment="content">
   <table>
     <tr>
-      <th th:text="#{changelog}">Changelog</th>
+      <th th:text="#{changelog}">Rules</th>
     </tr>
     <tr>
       <td>
         <pre>
-* 0.38.2
-- fix bug in hold mission when hold time is 0
+        The following rules are established to ensure fair and engaging play for ally members of the universe. All reporting
+        for breaking the rules will be handled via the ticket system inside discord which can be reached via this addres: https://discord.gg/qwKYfgFw2C
+        Any breach of the rules may result in any response or duration in ban as seen fit by the staff to be determined on a case by case basis. Bans are public.
+
+        The owner and creator of the universe holds final decision power for all inqueries and responses to those breaking the below rules.
+        The rules below differ from those in similar games and the punishments for breaking the rules may also very on a case by case basis. If
+        you have any questions regarding the rules, please feel fee to ask in the discord channel.
+
+        1.  Accounts are expected to be played by a single individual. As such staff can and will use any means at their disposal to identify when an account
+            is being played by more than one person. Activity or evidence of multiple people playing a single account will result in bans. An account may be 
+            gifted or shared any number of times and for any reason. The game staff are NOT responsible for the security of your account. Please use strong,
+            secure passwords and do not share them. If there is an account issue it will be handled via ticket. Account sitting is not a feature of this game.
+            If it is detected it will be handled like a multi-user account and be banned. If you want your account safe while you are away, use Vacation mode. 
+            
+            **IMPORTANT** email will be used in certain cases to verify your account ownership. DO NOT use fake emails or any email address to which you do not
+            have access. If you are unable to access the email associated with your account, there is no guarantee that a staff member will be able to assist you
+            with any tickets or issues.
+            
+            NOTE: To avoid bans during account trades, please open a ticket to notify game staff prior to the trade. It is recomended that players use staff as 
+            a go-between for account trades to reduce risk of theft, but not required. For any situations where any form of exception or special case may exist,
+            open a ticket. This is strongly recomended if multiple people in the same household or small area play the game together. 
+        2.  Players may have more than one account ONLY after submitting a ticket via discord. Upon approval, players may create ONE additional Account
+            within the universe. ANY multi-accounts without an APPROVED ticket PRIOR to creation, will be banned ruthlessly. Any abuse or attempted abuse of
+            this allowance will be banned. 
+        3.  Exploitation or use of a bug for any reason is against the rules. Using any script or program to manipulate the game in any way will result in a ban. 
+        4.  All players are expected to treat eachother with a reasonable amount of respect. Any form of hate speech, abusive communication, threat, attempt or
+            intent to cause harm will not be tolerated. Insults are against the rules and will be dealt with at the discretion of the staff.
+        5.  Spam of any kind is not permitted. Any activity which does not have an inherently obvious and reasonable purpose may be considered spam at the discretion
+            of staff. Simply saving fuel is not inherently enough to not be considered spam. (I'm looking at you 10% deathstar attack missions)
+        6.  The official trading standard is 3:2:1, however the trading or transfer of resources may be done in any amount and for any reason regardless of points
+            or direction. Additionally, the profit from any attack may be distributed any way players deem fit. Staff will NOT interviene in cases of deciet or greed.
+        
+        NOTE: All issues, ban discussions, and support will take place via discord. Certain exceptions to these rules may be made at the discretion of staff. When possible
+        these exception cases will be shared with the community, although staff may deem that some or all details be kept confidential to preserve fair and equitable play.
+        
+        While staff are expected to opperate on a basis of proof, not all investigative details will be shared with players in the course of a ban. This is intended to preserve
+        the fair state of the game and minimize abuse of the above rules. 
+
+        Please be aware of some key differences in this game compared to others:
+        a.) Despite being similar to other games, mechanics, settings, and configurations in this game can and will be different. Please make no assumptions. 
+        b.) Staff will have access far and beyond that of similar games. We have access to every layer of the game and can detect and review MUCH more information than in other games,
+            additionally this game is supported by an entirely different staff toolset. You've been warned. We reserve the right to collect, store, process, and review any and all information
+            transmitted to or made available to us as part of your participation in this game. Aditionally, by creating an account and playing this game, you consent to the collectio and use
+            of this information for any and all purposes by game staff. 
 
-* 0.38.1
-- add polish translation of item descriptions
-- fix building nanites on planets
 
-* 0.38.0
-- add option to allow building nanites on moon
-- add plasma technology production bonus
-- add option to generate homeworld at random coordinates
-- add registration captcha
-- add support for resetting passwords
-- add tool for detecting push
-- add new GoW skin
-
-* 0.37.0
-- add french translation (by AssaiN and Evagelan)
-
-* 0.36.5
-- upgrade spring to a new version, which fixes an RCE vulnerability
-
-* 0.36.4
-- upgrade postgresql driver to a new version, which fixes a security bug
-
-* 0.36.3
-- fix displaying building time in shipyard
-
-* 0.36.2
-- fix displaying other reports
-
-* 0.36.1
-- upgrade postgresql driver to a new version, which fixes a security bug
-
-* 0.36.0
-- add hall of fame page
-- always generate a combat report, even if the defender has no units
-- randomize the number of rebuilt defense units
-- show moon destruction status in combat report
-- show missing resources and needed cargoes in buildings, technologies and shipyard 
-- show accumulation time in buildings, technologies and shipyard
-- show current level in tech-tree
-- use select instead of checkbox for mission in send fleet page
-- use transport as the default mission
-- fix party link in flight events in overview/phalanx
-
-* 0.35.1
-- fix statistics to handle more than 2G points
-
-* 0.35.0
-- add records page
-- show only these debris fields that have more than 300 resources
-- add a link in galaxy view to harvest mission with the correct number of recyclers
-- show the produced energy by a single satellite in the shipyard
-- show the number of needed satellites in the shipyard
-- add a link in galaxy view to missile attack
-- allow player to pick the main target for missile attack
-- allow multiple units to be constructed in a single second
-- fix bug in cache eviction
-
-* 0.34.5
-- fix race in shipyard/buildings
-
-* 0.34.4
-- optimize shipyard
-
-* 0.34.3
-- fix errors when sending probes from galaxy view
-- fix scheduler to handle failures on database connection
-
-* 0.34.2
-- fix updating statistics on servers with a non-US locale
-
-* 0.34.1
-- disable base resources production when a storage is full
-
-* 0.34.0
-- add timers in buildings, technologies, and shipyard
-- add graceful error handling in buildings, technologies, shipyard, and fleets
-- show espionage messages in reverse order in galaxy
-- show coordinates in user tooltip and when writing a message
-- fix deleting a single other report
-- add more colors
-
-* 0.33.0
-- add intergalactic research network boost
-- clicking in the empire on a picture now switches to the corresponding body
-- internal changes to buildings, technologies, units
-
-* 0.32.1
-- fix issues with deleting all messages & reports
-
-* 0.32.0
-- improve messages
-- add deletion of all reports
-
-* 0.31.0
-- inactive players are now marked in the galaxy view
-- noob protection is not anymore applied to inactive players
-- banned players have no special color (dark gray) anymore
-
-* 0.30.0
-- fix error when sending more ships than there are available
-- add raid button for espionage probes to reports 
-
-* 0.29.2
-- fix noob protection
-
-* 0.29.1
-- fix ships order in battle engine
-
-* 0.29.0
-- add basic alliances
-- add noob protection
-- improve event scheduler
-
-* 0.28.0
-- improve ranking
-- add statistics
-
-* 0.27.0
-- add admin panel
-- add bans
-
-* 0.26.0
-- add vacation mode
-- fix shipyard bug
-- fix defenders loss in combat reports
-- fix requirements
-
-* 0.25.1
-- fix resources in empire
-
-* 0.25.0
-- relax restrictions on body names
-- add empire view
-
-* 0.24.0
-- improve flight events format in overview and phalanx
-- add coordinates to combat reports
-- add tables to details pages
-- add sorting of bodies
-
-* 0.23.1
-- fix scheduler
-
-* 0.23.0
-- add proper activities
-- add more options in settings
-- fix some race conditions
-
-* 0.22.0
-- improve Send Fleet page
-- fix flight duration of missile attacks
-- add graviton technology
-- add astrophysics
-
-* 0.21.0
-- add shield domes
-- add missiles
-- add missile attack
-- improve shipyard
-
-* 0.20.0
-- abandoning planets is possible now
-- add destroy mission
-- add info about diameter to espionage reports
-- add hold mission (aka ACS defend)
-- fleets in a party are recallable now
-- improve plunder algorithm
-- add two mixed skins
-
-* 0.19.0
-- add descriptions for buildings, technologies and units
-- add keyboard shortcuts to galaxy view and phalanx ([↓], [↑], [←], [→], [space])
-- add settings
-- add evolution skin
-- add polish translation
-- improve frontend
-
-* 0.18.1
-- fix deuterium consumption of fusion reactor
-
-* 0.18.0
-- improve overview
-
-* 0.17.0
-- add technology queue
-
-* 0.16.1
-- fix sending private messages
-
-* 0.16.0
-- add jump gate
-
-* 0.15.0
-- add proper espionage
-- improve messages
-- improve reports
-- change behaviour of phalanx
-
-* 0.14.0
-- add possibility to destroy buildings
-
-* 0.13.0
-- add images for bodies
-
-* 0.12.1
-- fix resources button in the send fleet page
-
-* 0.12.0
-- add details page
-- add rapid fire table page
-- improve shipyard/defense view
-- add bomber
-- remove battle cruiser
-- change cost of battleship
-
-* 0.11.0
-- add harvest reports
-- disable reports of returning espionage
-- forbid sending fleet to the same body as the start one
-- forbid sending attacks and espionage to own bodies
-
-* 0.10.2
-- fix ships speed
-- fix moon chance
-
-* 0.10.1
-- fix reports
-
-* 0.10.0
-- change costs, params, formulas etc.
-- add fusion reactor
-
-* 0.9.0
-- rename methane to deuterium
-- rename some buildings and technologies
-- add missing requirements
-
-* 0.8.0
-- forbid sending fleet to non-existing debris field
-- add deletion of old debris fields
-
-* 0.7.1
-- fix fleet return when there is no fight
-
-* 0.7.0
-- basic ACS
-
-* 0.6.0
-- add proper combat reports
-- add flights limit
-- add send-fleet link to flights page for better usability
-- increase resource limit when sending fleet
-
-* 0.5.1
-- fix death star rapid fire
-- fix fuel consumption
-
-* 0.5.0
-- change cost of mines
-
-* 0.4.1
-- fix intergalactic research network
-
-* 0.4.0
-- split fleet page into flights and send-fleet pages for better usability
-- add move down/up, cancel operations to building queue
-- improve buildings view
-- improve technologies view
-- add intergalactic research network functionality
-- add more technologies
-- add info page
-
-* 0.3.0
-- add requirements for buildings, technologies, ships and defense systems
-- add technology tree
-
-* 0.2.1
-- fix displaying flight messages when remaining time is 0
-- fix initial value of deuterium production factor for new planets
-
-* 0.2.0
-- add flight messages in overview
-
-* 0.1.0
-- initial version
         </pre>
       </td>
     </tr>

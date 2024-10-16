@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:with="version='@project.version@'">
+  <meta charset="UTF-8">
+  <title th:text="#{signIn} + ' - Retro Game'">M-WARFARE | HOME</title>
+  <link
+      th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
+      rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+		<ul>
+			<li><a href="#">Home</a></li>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="#">Contact</a></li>
+		</ul>
+		<ul>
+			<li><a href="#">Login</a></li>
+			<li><a href="#">Sign Up</a></li>
+		</ul>
+	</nav>
+  <h1 class="page-title ">M - W A R F A R E</h1>
+
+  <div class="body-center">
+    <div class="portal-row">
+      <div class="tlft"></div>
+      <button type="button" class="bbtn">
+        Join
+      </button>
+      <div class="trit"></div>
+    </div>
+    <div class="portal-row">
+      <div class="blft"></div>
+      <button type="button" class="bbtn">
+        Login
+      </button>
+      <div class="brit"></div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
+</body>
+
+<!--
+<body>
+<div class="container">
+  <div>
+    <div>
+      <table th:if="${param.error}">
+        <tr>
+          <th th:text="#{error}">Error</th>
+        </tr>
+        <tr>
+          <td th:text="#{wrongEmailOrPassword}">Wrong email or password!</td>
+        </tr>
+      </table>
+      <table th:if="${param.joined}">
+        <tr>
+          <th th:text="#{joined}">Joined</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulRegistration}">Your registration was successful, you can sign in now!</td>
+        </tr>
+      </table>
+      <table th:if="${param.passwordResetSent}">
+        <tr>
+          <th th:text="#{passwordResetSent}">Password reset email sent</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordResetSent}">Your password reset request was sent, check your email!</td>
+        </tr>
+      </table>
+      <table th:if="${param.passwordWasChanged}">
+        <tr>
+          <th th:text="#{passwordWasChanged}">Your password was changed</th>
+        </tr>
+        <tr>
+          <td th:text="#{successfulPasswordWasChanged}">Your password was changed, login using new password!</td>
+        </tr>
+      </table>
+      <form th:action="@{/}" method="post" autocomplete="on">
+        <table>
+          <tr>
+            <th colspan="2" th:text="#{signIn}">Sign in</th>
+          </tr>
+          <tr>
+            <td>
+              <label for="email" th:text="#{email}">Email</label>
+            </td>
+            <td>
+              <input id="email" name="email" type="email" autofocus required>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="password" th:text="#{password}">Password</label>
+            </td>
+            <td>
+              <input id="password" name="password" type="password" required>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <button th:text="#{signIn}">Sign in</button>
+            </td>
+          </tr>
+        </table>
+      </form>
+      <p>
+        <span th:text="#{orJoin}">or join</span>
+        <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>.
+      </p>
+      <p th:if="${enablePasswordRecovery}">
+        <span th:text="#{forgotPassword}">Forgot password?</span>
+        <a th:href="@{/reset-password}"><strong th:text="#{forgotPasswordLink}">Reset here</strong></a>.
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+
+<!--
+  /*
+junk {
+  background-color: #93ecf7;
+  background-color: #6be9f7;
+  background-color: #c3f1fa;
+  background-color: #4ddff9;
+  background-color: #44b7f7;
+  background-color: #62b7f8;
+  background-color: #3a92ed;
+  background-color: #8db9f1;
+  background-color: #5c91e1;
+  background-color: #3473d4;
+  background-color: #2c5eba;
+  background-color: #2e50a3;
+  background-color: #5373f1;
+  background-color: #22316c;
+  background-color: #2c3a7e;
+  background-color: #7286f8;
+  background-color: #4f57cd;
+  background-color: #4a4caf;
+  background-color: #7862f4;
+  background-color: #cbbef4;
+  background-color: #eee9f8;
+  background-color: #4d3b89;
+  background-color: #a585f4;
+  background-color: #794eca;
+  background-color: #9656f4;
+  background-color: #6e3da4;
+  background-color: #c353f1;
+  background-color: #a749cb;
+  background-color: #d97cf7;
+  background-color: #f4a3fc;
+} */
+
+
+body {
+  min-height: 100%;
+  position: relative;
+  padding-bottom: 3rem;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  width: 100%;
+  background: url('resources/background.jpg') no-repeat center center fixed;
+  background-size: 100% 100%;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+-->

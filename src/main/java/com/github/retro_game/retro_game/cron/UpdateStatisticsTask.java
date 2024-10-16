@@ -154,8 +154,8 @@ class UpdateStatisticsTask {
         "            (rank() over (order by t.points desc))" +
         "       from total t";
   }
-
-  @Scheduled(cron = "0 0 0,8,16 * * *")
+// Update this line to change update frequency
+  @Scheduled(cron = "* */15 * * * *")
   private void update() {
     long now = Instant.now().getEpochSecond();
 

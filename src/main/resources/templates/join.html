@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:with="version='@project.version@'">
   <meta charset="UTF-8">
-  <title th:text="#{join} + ' - Retro Game'">Join - Retro Game</title>
+  <title th:text="#{join} + ' - MW-Classic'">Join - Retro Game</title>
   <link
       th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
       rel="stylesheet">
@@ -11,6 +11,17 @@
   </th:block>
 </head>
 <body>
+  <nav id="homeNav">
+		<ul>
+			<li><a href="http://game.mwarfare.com">Home</a></li>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="https://github.com/dglassow/mwarfare-web/wiki">Wiki</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://game.mwarfare.com"> Sign in</a></li>
+		</ul>
+	</nav>
+  <h1 class="page-title ">M - W A R F A R E</h1>
 <div class="container">
   <div>
     <div>
@@ -69,10 +80,6 @@
           </tr>
         </table>
       </form>
-      <p>
-        <span th:text="#{orSignIn}">or sign in</span>
-        <a th:href="@{/}"><strong th:text="#{here}">here</strong></a>.
-      </p>
     </div>
   </div>
 </div>

@@ -2,15 +2,28 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:with="version='@project.version@'">
   <meta charset="UTF-8">
-  <title th:text="#{signIn} + ' - Retro Game'">Sign in - Retro Game</title>
+  <title th:text="#{signIn} + ' - M-Warfare: Classic'">Sign in - M-Warfare: Classic</title>
   <link
       th:href="@{/static/skins/{skin}/style.css?{v}(skin=${@environment.getProperty('retro-game.default-skin')},v=${version})}"
       rel="stylesheet">
+  <!-- <link rel="stylesheet" href="style.css"> -->
 </head>
 <body>
+  <nav id="homeNav">
+		<ul>
+			<li><a href="#">Home</a></li>
+			<li><a href="https://discord.gg/glassow">Discord</a></li>
+			<li><a href="https://github.com/dglassow/mwarfare-web/wiki">Wiki</a></li>
+		</ul>
+		<ul>
+			<li><a href="http://game.mwarfare.com/join"> Sign Up</a></li>
+		</ul>
+	</nav>
+  <h1 class="page-title ">M - W A R F A R E</h1>
+  <h2 class="page-title ">Season 3</h2>
 <div class="container">
   <div>
-    <div>
+    <div id="login-menu">
       <table th:if="${param.error}">
         <tr>
           <th th:text="#{error}">Error</th>
@@ -71,10 +84,12 @@
           </tr>
         </table>
       </form>
+      <!--
       <p>
         <span th:text="#{orJoin}">or join</span>
-        <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>.
+        <a th:href="@{/join}"><strong th:text="#{here}">here</strong></a>
       </p>
+      -->
       <p th:if="${enablePasswordRecovery}">
         <span th:text="#{forgotPassword}">Forgot password?</span>
         <a th:href="@{/reset-password}"><strong th:text="#{forgotPasswordLink}">Reset here</strong></a>.

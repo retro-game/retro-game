@@ -1,4 +1,58 @@
+
+#homeNav {
+	border-bottom: 1px #93ecf7 solid;
+	color: #bbecf7;
+	height: 25px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 50px;
+}
+#homeNav::before,
+#homeNav::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  height: calc(100% + 1px);
+  width: 45px;
+  background-color: #93ecf7;
+  transform-origin: 50% 0;
+  transform: skew(-45deg);
+}
+
+#homeNav::before {
+  left: 0;
+}
+
+#homeNav::after {
+  right: 0;
+  transform: skew(45deg);
+}
+#homeNav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+}
+#homeNav li {
+	margin-right: 20px;
+}
+.page-title {
+  color: #eee;
+	text-align: center;
+	font-size: 48px;
+	margin-top: 100px;
+  font-family: sans-serif;
+}
+
+/* OLD CONTENT */
 .container {
+  padding-top: 50px;
   display: flex;
   flex-direction: column;
 }
@@ -17,6 +71,10 @@
     flex: 1 1 100%;
     order: 2;
     overflow: auto;
+  }
+
+  .login-menu {
+    margin-top: 15%;
   }
 
   .container > div > div {
@@ -73,7 +131,7 @@ html {
 
 body {
   background-image: url(background.webp);
-  color: #eee;
+  color: #c9dfde;
   font-family: sans-serif;
   margin: 0; /* 1 */
 }
@@ -86,10 +144,10 @@ body {
 
 a.btn,
 button {
-  background-color: #344566;
-  border: 1px solid #415680;
-  border-radius: 0; /* 1 */
-  color: #eee;
+  background-color: rgba(20, 20, 30, 0.6);
+  border: 1px solid #93ecf7;
+  border-radius: 5px; /* 1 */
+  color: #c9dfde;
   display: inline-block;
   padding: .25rem .5rem;
   text-align: center;
@@ -115,10 +173,10 @@ button:not(:disabled):hover {
 input,
 select,
 textarea {
-  background-color: #344566;
-  border: 1px solid #415680;
-  border-radius: 0;
-  color: #eee;
+  background-color: rgba(20, 24, 31, 0.5);
+  border: 1px solid #93ecf7;
+  border-radius: 5px;
+  color: #c9dfde;
   font-family: inherit;
   font-size: 100%;
   line-height: 1.15;
@@ -150,7 +208,7 @@ img {
 
 a {
   background-color: transparent; /* 1 */
-  color: #eee;
+  color: #c9dfde;
   text-decoration: none;
   -webkit-text-decoration-skip: objects; /* 2 */
 }
@@ -175,7 +233,7 @@ ul {
  */
 
 table {
-  background-color: #344566;
+  background-color: rgba(20, 20, 30, 0.3);
   border-collapse: collapse; /* 1 */
   max-width: 100%;
   width: 100%;
@@ -183,7 +241,7 @@ table {
 
 th,
 td {
-  border: 1px #415680 solid;
+  border: 1px #93ecf7; solid;
   padding: .25rem;
   vertical-align: middle;
 }
@@ -277,10 +335,11 @@ strong {
 }
 
 #sidebar li a {
-  background-color: #344566;
-  border-left: 1px #415680 solid;
-  border-right: 1px #415680 solid;
-  border-top: 1px #415680 solid;
+  background-color: rgba(20, 24, 31, 0.5);
+  border-left: 1px #93ecf7 solid;
+  border-right: 1px #93ecf7 solid;
+  border-top: 1px #93ecf7 solid;
+  border-radius: 5px;
   display: block;
   padding: .35rem;
   text-align: center;
@@ -296,9 +355,9 @@ strong {
 }
 
 .tooltip {
-  background-color: #344566;
-  border: 1px #234 solid;
-  color: #eee;
+  background-color: rrgba(20, 20, 30, 0.6);
+  border: 1px #93ecf7 solid;
+  color: #c9dfde;
   padding: .25rem;
 }
 
@@ -309,7 +368,7 @@ strong {
 
 .event mark {
   background: transparent;
-  color: #eee;
+  color: #c9dfde;
 }
 
 .overview-body a,
@@ -423,33 +482,45 @@ strong {
 }
 
 .own-attack, .own-destroy {
-  color: #0ff;
+  color: rgb(255, 150, 0);
+}
+.own-attack-return, .own-destroy-return {
+  color: rgb(155, 125, 100);
+}
+.foreign-attack, .foreign-destroy {
+  color: rgb(255, 0, 0);
 }
 
 .own-colonization, .own-harvest {
-  color: #8f0;
+  color: rgb(0, 255, 0);
+}
+.own-colonization-return, .own-harvest-return {
+  color: rgb(100, 155, 100);
 }
 
 .own-deployment, .own-transport {
-  color: #0f0;
+  color: rgb(0, 255, 0);
+}
+.own-deployment-recall, .own-transport-return {
+  color: rgb(50, 155, 50);
 }
 
 .own-espionage {
-  color: #0f8;
+  color: rgb(200, 100, 0);
+}
+.own-espionage-return {
+  color: rgb(100, 50, 25);
 }
 
 .own-hold {
-  color: #8f8;
+  color: rgb(136, 140, 255);
 }
 
-.foreign-attack, .foreign-destroy {
-  color: #f00;
-}
+
 
 .foreign-colonization, .foreign-harvest {
   color: #f88;
 }
-
 .foreign-deployment, .foreign-transport {
   color: #ff0;
 }
@@ -479,7 +550,7 @@ strong {
 }
 
 .short-inactive {
-  color: #FFB266;
+  color: #7b7b7b;
 }
 
 .long-inactive {
