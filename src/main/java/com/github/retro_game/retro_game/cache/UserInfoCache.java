@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ public class UserInfoCache {
   public UserInfoCache(BodyRepository bodyRepository, UserRepository userRepository) {
     cache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build(new CacheLoader<>() {
       @Override
-      @ParametersAreNonnullByDefault
       public UserInfoDto load(Long userId) {
         var user = userRepository.getOne(userId);
         var bodiesIds = bodyRepository.findIdsByUserIdOrderById(userId);
@@ -36,7 +34,6 @@ public class UserInfoCache {
       }
 
       @Override
-      @ParametersAreNonnullByDefault
       public Map<Long, UserInfoDto> loadAll(Iterable<? extends Long> userIds) {
         var map = new HashMap<Long, UserInfoDto>();
         var ids = new ArrayList<Long>();

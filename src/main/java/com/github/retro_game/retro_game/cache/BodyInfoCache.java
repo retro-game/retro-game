@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +26,6 @@ public class BodyInfoCache {
         .maximumSize(MAX_SIZE)
         .build(new CacheLoader<>() {
                  @Override
-                 @ParametersAreNonnullByDefault
                  public BodyInfoDto load(Long bodyId) {
                    var body = bodyRepository.getOne(bodyId);
                    // TODO: This will load the user, which is unnecessary. We could probably keep only the id of the
