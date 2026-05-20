@@ -19,13 +19,13 @@
                         th:value="${info.id}" th:text="|${info.name} [${c}]|"
                         th:selected="${info.id} == ${bodyId}"></option>
               </select>
-              <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+              <input th:each="entry : ${param}" th:unless="${entry.key} == 'body'"
                      th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
             </form>
             <div id="top-bar-body-pointers" th:with="pointers=${ctx.curBodyPointers}">
               <form th:with="info=${pointers.previous}">
                 <input name="body" type="hidden" th:value="${info?.id}">
-                <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+                <input th:each="entry : ${param}" th:unless="${entry.key} == 'body'"
                        th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
                 <button th:title="${info == null ? '' : info.name + ' [' + info.coordinates + ']'}"
                         th:disabled="${info == null}">
@@ -34,7 +34,7 @@
               </form>
               <form th:with="info=${pointers.next}">
                 <input name="body" type="hidden" th:value="${info?.id}">
-                <input th:each="entry : ${#request.getParameterMap()}" th:unless="${entry.key} == 'body'"
+                <input th:each="entry : ${param}" th:unless="${entry.key} == 'body'"
                        th:name="${entry.key}" type="hidden" th:value="${entry.value[0]}">
                 <button th:title="${info == null ? '' : info.name + ' [' + info.coordinates + ']'}"
                         th:disabled="${info == null}">
