@@ -95,7 +95,8 @@ public class User {
 
   @OneToMany(mappedBy = "user")
   @MapKey(name = "id")
-  @OrderBy("id")
+  // The SortedMap is already ordered by its key (the body id); Hibernate 6
+  // rejects pairing a sorted collection with @OrderBy.
   private SortedMap<Long, Body> bodies;
 
   @JoinTable(

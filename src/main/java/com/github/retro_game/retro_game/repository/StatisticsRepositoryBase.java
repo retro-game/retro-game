@@ -20,8 +20,10 @@ public interface StatisticsRepositoryBase<T extends Statistics> extends JpaRepos
       "extract(hour from s.at) = 0 order by s.at", nativeQuery = true)
   List<T> getLastMonthByUserId(long userId);
 
-  @Query("select s from #{#entityName} s where s.key.userId = ?1 and extract(dow from s.key.at) = 0 and " +
-      "extract(hour from s.key.at) = 0 order by s.key.at")
+  // Native query: Hibernate 6's HQL does not accept the Postgres-specific
+  // extract(dow ...) field, and the two sibling queries above are native too.
+  @Query(value = "select * from #{#entityName} s where s.user_id = ?1 and extract(dow from s.at) = 0 and " +
+      "extract(hour from s.at) = 0 order by s.at", nativeQuery = true)
   List<T> getAllTimeByUserId(long userId);
 
   @Query("select max(key.at) from #{#entityName}")
