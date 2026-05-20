@@ -1,11 +1,10 @@
 package com.github.retro_game.retro_game.entity;
 
-import com.vladmihalcea.hibernate.type.array.LongArrayType;
+import io.hypersistence.utils.hibernate.type.array.LongArrayType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import jakarta.persistence.*;
 import java.util.Date;
@@ -13,13 +12,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "combat_reports")
-@TypeDef(name = "long-array", typeClass = LongArrayType.class)
 @NoArgsConstructor
 @AllArgsConstructor
 public class CombatReport {
   @Column(name = "id")
   @Id
-  @Type(type = "pg-uuid")
   @Getter
   private UUID id;
 
@@ -29,12 +26,12 @@ public class CombatReport {
   private Date at;
 
   @Column(name = "attackers", nullable = false, updatable = false)
-  @Type(type = "long-array")
+  @Type(LongArrayType.class)
   @Getter
   private long[] attackers;
 
   @Column(name = "defenders", nullable = false, updatable = false)
-  @Type(type = "long-array")
+  @Type(LongArrayType.class)
   @Getter
   private long[] defenders;
 

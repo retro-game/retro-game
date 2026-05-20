@@ -125,6 +125,23 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!-- Declare Lombok explicitly as an annotation processor. Under the
+               Spring Boot 3 build it is no longer picked up from the classpath
+               automatically, so @Getter/@Setter/@AllArgsConstructor etc. would
+               otherwise not be generated. -->
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <configuration>
           <propertiesEncoding>UTF-8</propertiesEncoding>

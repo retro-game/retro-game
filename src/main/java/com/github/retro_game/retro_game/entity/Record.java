@@ -1,15 +1,13 @@
 package com.github.retro_game.retro_game.entity;
 
-import com.vladmihalcea.hibernate.type.array.LongArrayType;
+import io.hypersistence.utils.hibernate.type.array.LongArrayType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "records")
-@TypeDef(name = "long-array", typeClass = LongArrayType.class)
 public class Record {
   @Column(name = "key")
   @Id
@@ -23,7 +21,7 @@ public class Record {
   private Date at;
 
   @Column(name = "holders", nullable = false)
-  @Type(type = "long-array")
+  @Type(LongArrayType.class)
   private long[] holders;
 
   public String getKey() {

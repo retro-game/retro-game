@@ -1,8 +1,7 @@
 package com.github.retro_game.retro_game.entity;
 
-import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import io.hypersistence.utils.hibernate.type.array.IntArrayType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import jakarta.persistence.*;
 import java.util.Arrays;
@@ -12,7 +11,6 @@ import java.util.Map;
 
 @Entity
 @Table(name = "flights")
-@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class Flight {
   @Column(name = "id")
   @Id
@@ -76,7 +74,7 @@ public class Flight {
   private Resources resources;
 
   @Column(name = "units", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] unitsArray;
 
   @Column(name = "main_target", updatable = false)

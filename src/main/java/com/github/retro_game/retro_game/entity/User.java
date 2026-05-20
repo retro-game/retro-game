@@ -1,9 +1,8 @@
 package com.github.retro_game.retro_game.entity;
 
-import com.vladmihalcea.hibernate.type.array.IntArrayType;
-import com.vladmihalcea.hibernate.type.array.LongArrayType;
+import io.hypersistence.utils.hibernate.type.array.IntArrayType;
+import io.hypersistence.utils.hibernate.type.array.LongArrayType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.springframework.data.domain.Sort;
 
 import jakarta.persistence.*;
@@ -11,8 +10,6 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-@TypeDef(name = "int-array", typeClass = IntArrayType.class)
-@TypeDef(name = "long-array", typeClass = LongArrayType.class)
 public class User {
   @Column(name = "id")
   @Id
@@ -89,11 +86,11 @@ public class User {
   private boolean forcedVacation;
 
   @Column(name = "technologies", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] technologiesArray;
 
   @Column(name = "technology_queue", nullable = false)
-  @Type(type = "long-array")
+  @Type(LongArrayType.class)
   private long[] technologyQueueArray;
 
   @OneToMany(mappedBy = "user")

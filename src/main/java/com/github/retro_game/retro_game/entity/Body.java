@@ -1,8 +1,7 @@
 package com.github.retro_game.retro_game.entity;
 
-import com.vladmihalcea.hibernate.type.array.IntArrayType;
+import io.hypersistence.utils.hibernate.type.array.IntArrayType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
@@ -10,7 +9,6 @@ import java.util.*;
 
 @Entity
 @Table(name = "bodies")
-@TypeDef(name = "int-array", typeClass = IntArrayType.class)
 public class Body implements Serializable {
   @Column(name = "id")
   @Id
@@ -62,19 +60,19 @@ public class Body implements Serializable {
   private Date shipyardStartAt;
 
   @Column(name = "buildings", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] buildingsArray;
 
   @Column(name = "units", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] unitsArray;
 
   @Column(name = "building_queue", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] buildingQueueArray;
 
   @Column(name = "shipyard_queue", nullable = false)
-  @Type(type = "int-array")
+  @Type(IntArrayType.class)
   private int[] shipyardQueueArray;
 
   public long getId() {
