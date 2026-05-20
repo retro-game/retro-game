@@ -2,8 +2,8 @@ package com.github.retro_game.retro_game.security;
 
 import org.springframework.security.web.header.HeaderWriter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class CspHeaderWriter implements HeaderWriter {
   private final boolean enableJoinCaptcha;

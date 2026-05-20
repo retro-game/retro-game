@@ -4,7 +4,7 @@ import com.github.retro_game.retro_game.dto.BodiesSortOrderDto;
 import org.springframework.data.domain.Sort;
 import reactor.util.annotation.NonNull;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 public class SettingsForm {
   private long body;

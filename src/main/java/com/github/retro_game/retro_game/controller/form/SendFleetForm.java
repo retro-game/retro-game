@@ -5,9 +5,9 @@ import com.github.retro_game.retro_game.dto.MissionDto;
 import com.github.retro_game.retro_game.dto.UnitKindDto;
 import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 public class SendFleetForm {

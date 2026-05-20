@@ -6,7 +6,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.data.domain.Sort;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.*;
 
 @Entity

@@ -1,6 +1,6 @@
 package com.github.retro_game.retro_game.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "alliance_ranks")

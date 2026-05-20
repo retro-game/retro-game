@@ -4,7 +4,7 @@ import com.vladmihalcea.hibernate.type.array.LongArrayType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity

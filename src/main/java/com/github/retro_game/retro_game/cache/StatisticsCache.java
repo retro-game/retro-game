@@ -7,7 +7,7 @@ import com.github.retro_game.retro_game.repository.*;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;

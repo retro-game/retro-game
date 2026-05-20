@@ -5,7 +5,7 @@ import com.github.retro_game.retro_game.repository.AllianceRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component

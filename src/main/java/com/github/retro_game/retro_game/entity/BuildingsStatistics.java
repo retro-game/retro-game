@@ -1,7 +1,7 @@
 package com.github.retro_game.retro_game.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 @Entity(name = "buildings_statistics")
 @Table(name = "buildings_statistics")

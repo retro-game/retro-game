@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

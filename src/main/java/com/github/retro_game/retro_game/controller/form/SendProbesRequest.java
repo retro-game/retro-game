@@ -3,8 +3,8 @@ package com.github.retro_game.retro_game.controller.form;
 import com.github.retro_game.retro_game.dto.CoordinatesKindDto;
 import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 public class SendProbesRequest {
   private long body;

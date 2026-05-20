@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.locks.Condition;

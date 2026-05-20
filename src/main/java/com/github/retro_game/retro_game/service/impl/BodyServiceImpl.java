@@ -26,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BinaryOperator;

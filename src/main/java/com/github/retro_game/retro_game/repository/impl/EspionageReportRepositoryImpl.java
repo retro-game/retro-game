@@ -7,9 +7,9 @@ import com.github.retro_game.retro_game.repository.EspionageReportRepositoryCust
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import java.util.List;
 import java.util.function.Function;
 

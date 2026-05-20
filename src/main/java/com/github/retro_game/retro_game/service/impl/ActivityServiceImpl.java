@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

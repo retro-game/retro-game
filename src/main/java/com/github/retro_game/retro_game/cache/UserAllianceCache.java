@@ -6,7 +6,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
