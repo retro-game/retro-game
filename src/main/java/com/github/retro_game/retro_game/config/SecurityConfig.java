@@ -2,6 +2,7 @@ package com.github.retro_game.retro_game.config;
 
 import com.github.retro_game.retro_game.security.CspHeaderWriter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.DefaultHttpSecurityExpressionHandler;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -35,8 +37,15 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                  @Value("${retro-game.enable-join-captcha}") boolean enableJoinCaptcha,
-                                                 AuthenticationSuccessHandler authenticationSuccessHandler)
+                                                 AuthenticationSuccessHandler authenticationSuccessHandler,
+                                                 ApplicationContext context)
       throws Exception {
+    // The vacation-mode rules below evaluate the SpEL expression
+    // "!@userService.isOnVacation()". Resolving the @userService bean reference
+    // needs an expression handler that has been given the ApplicationContext.
+    var expressionHandler = new DefaultHttpSecurityExpressionHandler();
+    expressionHandler.setApplicationContext(context);
+
     // @formatter:off
     http
         .authorizeHttpRequests(authorize -> authorize
@@ -52,14 +61,14 @@ public class SecurityConfig {
             // Admin
             .requestMatchers("/admin/**").hasRole("ADMIN")
             // Vacation mode — these actions are blocked while the user is on vacation
-            .requestMatchers(HttpMethod.POST, "/body-settings/abandon").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/buildings/*").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/flights/*").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/jump-gate/jump").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/party/*").access(notOnVacation())
-            .requestMatchers(HttpMethod.GET, "/phalanx").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/shipyard/build").access(notOnVacation())
-            .requestMatchers(HttpMethod.POST, "/technologies/*").access(notOnVacation())
+            .requestMatchers(HttpMethod.POST, "/body-settings/abandon").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/buildings/*").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/flights/*").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/jump-gate/jump").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/party/*").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.GET, "/phalanx").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/shipyard/build").access(notOnVacation(expressionHandler))
+            .requestMatchers(HttpMethod.POST, "/technologies/*").access(notOnVacation(expressionHandler))
             // Other
             .anyRequest().authenticated())
         .csrf(csrf -> csrf
@@ -91,10 +100,13 @@ public class SecurityConfig {
 
   /**
    * Authorization rule that permits the request only when the current user is not on vacation.
-   * The SpEL expression resolves the {@code userService} bean at request time.
+   * The SpEL expression resolves the {@code userService} bean at request time, which is why the
+   * passed expression handler must be the ApplicationContext-aware one built above.
    */
-  private static WebExpressionAuthorizationManager notOnVacation() {
-    return new WebExpressionAuthorizationManager("!@userService.isOnVacation()");
+  private static WebExpressionAuthorizationManager notOnVacation(DefaultHttpSecurityExpressionHandler expressionHandler) {
+    var manager = new WebExpressionAuthorizationManager("!@userService.isOnVacation()");
+    manager.setExpressionHandler(expressionHandler);
+    return manager;
   }
 
   @Bean
