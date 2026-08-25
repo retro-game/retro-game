@@ -8,7 +8,9 @@ import com.github.retro_game.retro_game.dto.UserInfoDto;
 import com.github.retro_game.retro_game.service.HallOfFameService;
 import com.github.retro_game.retro_game.service.UserService;
 import com.google.common.collect.ImmutableMap;
+import org.junit.After;
 import org.junit.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.ui.ExtendedModelMap;
 
@@ -23,8 +25,16 @@ import java.util.stream.StreamSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class HallOfFameControllerTest {
+  @After
+  public void resetLocale() {
+    LocaleContextHolder.resetLocaleContext();
+  }
+
   @Test
   public void hallOfFameNamesNpcCombatantsWithoutLoadingThemFromUserCache() {
+    // StaticMessageSource has no en_US -> en fallback, so the locale the controller resolves must
+    // match the one the messages are registered under, regardless of the machine's default locale.
+    LocaleContextHolder.setLocale(Locale.ENGLISH);
     var userInfoCache = new CapturingUserInfoCache(ImmutableMap.of(
         7L, new UserInfoDto(7, "Player", List.of()),
         8L, new UserInfoDto(8, "Rival", List.of())
